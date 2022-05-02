@@ -26,6 +26,7 @@ describe('High level tests', () => {
   });
 
   it("Incorrect url test", async () => {
+    expect(mx10.connected).toBe(false);
     const res = mx10.initSocket(createSocket, "192.168.2.145");
     await expect(res).rejects.toThrow('mx10.connection.timeout')
 

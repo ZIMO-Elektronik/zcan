@@ -21,7 +21,7 @@ describe('Data group tests - 0x07', () => {
       if (data.objectType === 0x0000) {
 
         expect(data.objectType).toBe(0x000);
-        expect(data.number).toBe(49);
+        expect(data.number).toBeDefined();
 
         done();
         sub.unsubscribe();

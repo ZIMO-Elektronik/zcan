@@ -1,8 +1,9 @@
-import {afterAll, beforeAll, describe} from "@jest/globals";
+import {afterAll, beforeAll, describe, expect, jest} from "@jest/globals";
 import {createMX10, initConnection} from "./util/index.js";
-import {SystemStateModes} from "../src/util/enums.js";
+import {SystemStateMode} from "../src/util/enums.js";
+import {delay} from "../src/internal/utils";
 
-describe('System Control Group group tests - 0x18', () => {
+describe('System Control Group group tests - 0x00', () => {
   const mx10 = createMX10();
 
   beforeAll(async () => {
@@ -10,23 +11,33 @@ describe('System Control Group group tests - 0x18', () => {
   })
 
   afterAll(() => {
-    mx10.closeSocket();
+    mx10.systemControl.systemState(SystemStateMode.NORMAL);
+
+    delay(1000).then(() => {
+      mx10.closeSocket();
+    });
   })
 
 
   test.each([
-    SystemStateModes.SSPe, SystemStateModes.OFF, SystemStateModes.SSP0, SystemStateModes.NORMAL
+    SystemStateMode.SSPe, SystemStateMode.OFF, SystemStateMode.SSP0,
   ])("0x00 - System state test", (mode, done) => {
     mx10.systemControl.systemState(mode);
 
-    const sub = mx10.systemControl.onSystemStateChange.subscribe((data) => {
+    const callback = jest.fn(function(data) {
       if (data.nid === mx10.mx10NID) {
-        expect(data.port).toBe(128) // boosters are first to respond
+        expect(data.port).toBeDefined();
         expect(data.mode).toBe(mode);
+        this.counter++;
 
-        sub.unsubscribe();
-        done();
+        if (this.counter === 3) {
+          sub.unsubscribe();
+          done();
+          expect(callback.mock.calls).toBe(3);
+        }
       }
-    });
+    }.bind({counter: 0}));
+
+    const sub = mx10.systemControl.onSystemStateChange.subscribe(callback);
   })
 })

@@ -30,7 +30,10 @@
 
     "outDir": "dist",
     "rootDir": "src",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@types": ["./@types/"]
+    }
   },
   "exclude": [
     "dist",

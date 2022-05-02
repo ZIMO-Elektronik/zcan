@@ -19,7 +19,7 @@ export default {
       useESM: true,
     },
   },
-  collectCoverageFrom: ['<rootDir>/src/*.ts', '<rootDir>/src/zcan/*.ts', '<rootDir>/src/util/utils.ts'],
+  collectCoverageFrom: ['<rootDir>/src/*.ts', '<rootDir>/src/zcan/*.ts', '<rootDir>/src/util/speedUtils.ts'],
   coveragePathIgnorePatterns: ['<rootDir>/dist/', '/node_modules/', '<rootDir>/scripts', '<rootDir>/tools'],
   coverageProvider: 'v8',
   coverageReporters: isCI ? ['json'] : ['text'],

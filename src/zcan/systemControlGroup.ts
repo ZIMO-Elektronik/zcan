@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import MX10 from '../MX10';
-import {SystemStateModes} from "../util/enums";
+import {SystemStateMode} from "../util/enums";
 import {Buffer} from "buffer";
 import {Subject} from "rxjs";
 import {SystemStateData} from "../@types/models";
@@ -15,7 +15,7 @@ export default class SystemControlGroup {
   }
 
   //0x00.0x00
-  systemState(mode: SystemStateModes, port=0xff, device = this.mx10.mx10NID) {
+  systemState(mode: SystemStateMode, port=0xff, device = this.mx10.mx10NID) {
 
     this.mx10.sendData(0x00, 0x00, [
       {value: device, length: 2},

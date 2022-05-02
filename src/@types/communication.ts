@@ -11,11 +11,6 @@ export type ZcanDataArray = ZcanData[];
 export type NIDGenerator = () => Promise<number>;
 
 export interface Socket {
-  constructor(options: {
-    type: string;
-    reusePort?: boolean;
-    debug?: boolean;
-  });
 
   bind(port?: number, address?: string, callback?: () => void): this;
   bind(port?: number, callback?: () => void): this;

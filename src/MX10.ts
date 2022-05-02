@@ -1,6 +1,8 @@
 /* eslint-disable no-bitwise */
 
 import {Buffer} from 'buffer';
+import {Subject} from "rxjs";
+
 import {
   AccessoryCommandGroup,
   DataGroup,
@@ -20,12 +22,8 @@ import {
   VehicleGroup,
   ZimoProgrammableScriptGroup,
 } from './zcan';
-
-
-import {ZcanDataArray} from '../../zimo_app/src/@types/communication';
-import {CreateSocketFunction, NIDGenerator, Socket} from "./@types/communication";
-import {delay} from "./util/utils";
-import {Subject} from "rxjs";
+import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from "./@types/communication";
+import {delay} from "./internal/utils";
 
 export default class MX10 {
   myNID = 0;
@@ -89,6 +87,8 @@ export default class MX10 {
       this.lanNetwork.portOpen();
 
       await delay(this.connectionTimeout);
+
+      console.log(this.connected)
 
       if (!this.connected) {
         this.closeSocket();
@@ -179,7 +179,7 @@ export default class MX10 {
         this.mx10IP,
       );
     } else {
-      this.errors.next('connection.not_connected');
+      this.errors.next('mx10.connection.not_connected');
     }
   }
 

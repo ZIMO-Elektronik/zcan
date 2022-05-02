@@ -1,6 +1,6 @@
-import {ExternalController, FunctionMode, OperatingMode} from "../util/enums";
+import {ExternalController, FunctionMode, OperatingMode, SystemStateMode} from "src/util/enums";
 
-interface Train {
+export interface Train {
   nid: number,
   subId: number,
   name: string,
@@ -18,38 +18,38 @@ interface Train {
   functions: TrainFunction[],
 }
 
-interface TrainFunction {
+export interface TrainFunction {
   mode: FunctionMode,
   icon?: string,
   active: boolean,
 }
 
-interface DataValueExtendedData {
+export interface DataValueExtendedData {
   nid: number,
   speedAndDirection: number,
   operatingMode: OperatingMode,
   functionsStates: boolean[]
 }
 
-interface GroupCountData {
+export interface GroupCountData {
   objectType: number,
   number: number,
 }
 
-interface ItemListByIndexData {
+export interface ItemListByIndexData {
   nid: number,
   index: number,
   msSinceLastCommunication: number,
 }
 
-interface ItemListByNidData {
+export interface ItemListByNidData {
   nid: number,
   index: number,
   itemState: number,
   lastTick: number
 }
 
-interface ModulePowerInfoData {
+export interface ModulePowerInfoData {
   deviceNID: number,
   port1Status: number,
   port1Voltage: number,
@@ -63,26 +63,26 @@ interface ModulePowerInfoData {
   temperature: number,
 }
 
-interface BidiInfoData {
+export interface BidiInfoData {
   nid: number,
   type: number,
   data: number,
 }
 
-interface VehicleSpeedData {
+export interface VehicleSpeedData {
   nid: number,
   divisor: number,
   speedAndDirection: number
 }
 
-interface CallFunctionData {
+export interface CallFunctionData {
   nid: number,
   functionNumber: number,
-  functionState: number
+  functionState: boolean
 }
 
-interface SystemStateData {
+export interface SystemStateData {
   nid: number,
   port: number,
-  mode: number
+  mode: SystemStateMode
 }

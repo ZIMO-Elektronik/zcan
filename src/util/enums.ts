@@ -31,7 +31,7 @@ export enum FunctionMode {
 }
 
 
-export enum SystemStateModes {
+export enum SystemStateMode {
   NORMAL = 1,
   SSP0 = 2,
   SSPe= 3,

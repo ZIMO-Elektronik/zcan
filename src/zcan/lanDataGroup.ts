@@ -111,7 +111,7 @@ export default class LanDataGroup {
     const VMaxRev = buffer.readUInt16LE(53);
     const vRange = buffer.readUInt16LE(55);
     const driveType = buffer.readUInt16LE(57);
-    const era = buffer.readUInt16LE(59); // TODO correctly parse era
+    const era = buffer.readUInt16LE(59); //TODO correctly parse era
     const countryCode = buffer.readUInt16LE(62);
 
     // reading 64 bytes of functions

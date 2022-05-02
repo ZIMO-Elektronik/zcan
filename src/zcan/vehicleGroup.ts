@@ -15,21 +15,21 @@ export default class VehicleGroup {
 
   changeSpeed(
     vehicleAddress: number,
-    speed_direction: number,
+    speedAndDirection: number,
   ) {
 
     this.mx10.sendData(0x02, 0x02, [
       {value: vehicleAddress, length: 2},
-      {value: speed_direction, length: 2},
+      {value: speedAndDirection, length: 2},
       {value: 0x0000, length: 2},
     ]);
   }
 
-  callFunction(vehicleAddress: number, buttonId: number, status: boolean) {
+  callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean) {
     this.mx10.sendData(0x02, 0x04, [
       {value: vehicleAddress, length: 2},
-      {value: buttonId, length: 2},
-      {value: Number(status), length: 2},
+      {value: functionId, length: 2},
+      {value: Number(functionStatus), length: 2},
     ]);
   }
 
@@ -74,10 +74,12 @@ export default class VehicleGroup {
     const functionNumber = buffer.readUInt16LE(2);
     const functionState = buffer.readUInt16LE(4);
 
+    const functionActive = functionState !== 0x00;
+
     this.onCallFunction.next({
       nid: NID,
       functionNumber,
-      functionState
+      functionState: functionActive
     });
   }
 }
