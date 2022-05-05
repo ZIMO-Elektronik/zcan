@@ -2,13 +2,14 @@
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {Subject} from "rxjs";
-import {GroupCountData, ItemListByIndexData, ItemListByNidData} from "../@types/models";
+import {DataClearData, GroupCountData, ItemListByIndexData, ItemListByNidData} from "../@types/models";
 
 export default class DataGroup {
 
   public readonly onGroupCount = new Subject<GroupCountData>();
   public readonly onListItemsByIndex = new Subject<ItemListByIndexData>();
   public readonly onListItemsByNID = new Subject<ItemListByNidData>();
+  public readonly onDataClear = new Subject<DataClearData>();
 
   private mx10: MX10;
 
@@ -53,6 +54,17 @@ export default class DataGroup {
     );
   }
 
+  dataClear(nidToRemove: number, removeFromNID = this.mx10.mx10NID) {
+    this.mx10.sendData(
+      0x07,
+      0x04,
+      [
+        {value: removeFromNID, length: 2},
+        {value: nidToRemove, length: 2},
+      ],
+    );
+  }
+
   _parse(
     size: number,
     command: number,
@@ -69,6 +81,9 @@ export default class DataGroup {
         break;
       case 0x02:
         this.parseItemListByNid(size, mode, nid, buffer);
+        break;
+      case 0x04:
+        this.parseDataClear(size, mode, nid, buffer);
         break;
       default:
         // eslint-disable-next-line no-console
@@ -129,6 +144,22 @@ export default class DataGroup {
       index,
       itemState,
       lastTick,
+    })
+  }
+
+  // 0x07.0x04
+  private parseDataClear(
+    _size: number,
+    _mode: number,
+    _nid: number,
+    buffer: Buffer,
+  ) {
+    const NID = buffer.readUInt16LE(0);
+    const state = buffer.readUInt16LE(2);
+
+    this.onDataClear.next({
+      nid: NID,
+      state: state
     })
   }
 

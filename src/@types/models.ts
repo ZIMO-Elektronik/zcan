@@ -86,3 +86,8 @@ export interface SystemStateData {
   port: number,
   mode: SystemStateMode
 }
+
+export interface DataClearData {
+  nid: number,
+  state: number
+}
