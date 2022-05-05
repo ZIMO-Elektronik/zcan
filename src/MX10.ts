@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 
 import {Buffer} from 'buffer';
-import {Subject} from "rxjs";
+import {interval, Subject} from "rxjs";
 
 import {
   AccessoryCommandGroup,
@@ -63,6 +63,13 @@ export default class MX10 {
     this.nidGeneratorFunction = nidGeneratorFunction;
     this.connectionTimeout = connectionTimeout;
     this.debugCommunication = debugCommunication;
+
+    const pingIntervalMs = 60 * 1000;
+    interval(pingIntervalMs).subscribe(() => {
+      if (this.connected) {
+        this.network.ping()
+      }
+    });
   }
 
   async initSocket(createSocketFunction: CreateSocketFunction, ipAddress: string, incomingPort = 14521, outgoingPort = 14520) {
@@ -87,8 +94,6 @@ export default class MX10 {
       this.lanNetwork.portOpen();
 
       await delay(this.connectionTimeout);
-
-      console.log(this.connected)
 
       if (!this.connected) {
         this.closeSocket();
