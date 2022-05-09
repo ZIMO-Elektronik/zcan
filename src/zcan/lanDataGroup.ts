@@ -3,6 +3,7 @@ import MX10 from '../MX10';
 import {FunctionMode, getOperatingMode, OperatingMode} from "../util/enums";
 import {DataValueExtendedData, Train, TrainFunction} from "../@types/models";
 import { Subject} from "rxjs";
+import {parseSpeed} from "../internal/speedUtils";
 
 const functionsCount = 31;
 
@@ -72,6 +73,7 @@ export default class LanDataGroup {
     const trackMode = buffer.readUInt8(16);
     const speedAndDirection = buffer.readUInt16LE(36);
 
+    const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
     const operatingMode = getOperatingMode(trackMode);
 
 
@@ -87,7 +89,10 @@ export default class LanDataGroup {
 
     this.onDataValueExtended.next({
       nid: NID,
-      speedAndDirection,
+      speedStep,
+      forward,
+      eastWest,
+      emergencyStop,
       operatingMode,
       functionsStates
     })

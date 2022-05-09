@@ -1,4 +1,4 @@
-import {ExternalController, FunctionMode, OperatingMode, SystemStateMode} from "src/util/enums";
+import {Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode} from "src/util/enums";
 
 export interface Train {
   nid: number,
@@ -26,7 +26,10 @@ export interface TrainFunction {
 
 export interface DataValueExtendedData {
   nid: number,
-  speedAndDirection: number,
+  speedStep: number,
+  forward: boolean,
+  eastWest: Direction,
+  emergencyStop: boolean,
   operatingMode: OperatingMode,
   functionsStates: boolean[]
 }
@@ -69,10 +72,21 @@ export interface BidiInfoData {
   data: number,
 }
 
+export interface VehicleModeData {
+  nid: number,
+  speedSteps: number | undefined,
+  operatingMode: OperatingMode,
+  mode2: number,
+  mode3: number
+}
+
 export interface VehicleSpeedData {
   nid: number,
   divisor: number,
-  speedAndDirection: number
+  speedStep: number,
+  forward: boolean,
+  eastWest: Direction,
+  emergencyStop: boolean,
 }
 
 export interface CallFunctionData {

@@ -1,8 +1,8 @@
 import {createMX10, initConnection} from "./util/index.js";
 import {afterAll, beforeAll, expect, it} from "@jest/globals";
 import {firstValueFrom} from "rxjs";
-import {combineSpeedAndDirection, parseSpeed} from "../src/util/speedUtils.js";
 import {delay} from "../src/internal/utils"
+import {Direction, OperatingMode} from "../src/index.js";
 
 describe('Vehicle group tests - 0x02', () => {
   const mx10 = createMX10();
@@ -13,39 +13,47 @@ describe('Vehicle group tests - 0x02', () => {
   })
 
   afterAll(() => {
-    mx10.vehicle.changeSpeed(testNID, combineSpeedAndDirection(0, true, undefined))
+    mx10.vehicle.changeSpeed(testNID, 0, true)
 
     delay(1000).then(() => {
     mx10.closeSocket();
     })
   })
 
+  it("0x01 - retrieve operating mode", async () => {
+
+    mx10.vehicle.vehicleMode(3);
+    const data = await firstValueFrom(mx10.vehicle.onVehicleMode);
+
+    expect(data.nid).toBe(3)
+
+    expect(data.operatingMode).toBe(OperatingMode.DCC)
+
+  })
+
   test.each([
-    {nid: testNID, speedStep: 10, forward: true, eastWest: undefined},
-    {nid: testNID, speedStep: 30, forward: false, eastWest: true},
-    {nid: testNID, speedStep: 40, forward: false, eastWest: false},
+    {nid: testNID, speedStep: 10, forward: true, eastWest: Direction.UNDEFINED},
+    {nid: testNID, speedStep: 30, forward: false, eastWest: Direction.EAST},
+    {nid: testNID, speedStep: 40, forward: false, eastWest: Direction.WEST},
   ])("0x02 - change speed and directions", async ({nid, speedStep, forward, eastWest}) => {
 
-    const speedAndDirection = combineSpeedAndDirection(speedStep, forward, eastWest);
-    mx10.vehicle.changeSpeed(nid, speedAndDirection);
+    mx10.vehicle.changeSpeed(nid, speedStep, forward, eastWest);
 
     const data = await firstValueFrom(mx10.vehicle.onChangeSpeed);
     expect(data).toBeDefined();
     expect(data.nid).toBe(nid);
     expect(data.divisor).toBe(0);
 
-    const speed = parseSpeed(data.speedAndDirection);
-
-    expect(speed.speedStep).toBe(speedStep);
-    expect(speed.forward).toBe(forward);
-    expect(speed.eastWest).toBe(eastWest);
+    expect(data.speedStep).toBe(speedStep);
+    expect(data.forward).toBe(forward);
+    expect(data.eastWest).toBe(eastWest);
+    expect(data.emergencyStop).toBe(false);
   })
 
   it("0x02 - change speed with bidi feedback", (done) => {
-    const nid = testNID, speedStep = 500, forward = true;
+    const speedStep = 500, forward = true;
 
-    const speedAndDirection = combineSpeedAndDirection(speedStep, forward, undefined);
-    mx10.vehicle.changeSpeed(nid, speedAndDirection);
+    mx10.vehicle.changeSpeed(testNID, speedStep, forward);
 
     delay(1000).then(() => {
       const sub = mx10.info.onBidiInfoChange.subscribe((data) => {

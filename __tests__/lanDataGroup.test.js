@@ -1,6 +1,7 @@
 import {createMX10, initConnection} from "./util/index.js";
 import {afterAll, beforeAll, describe, it, expect} from "@jest/globals";
 import {firstValueFrom} from "rxjs";
+import {OperatingMode} from "../src/index.js";
 
 describe('LAN Data group tests - 0x17', () => {
   const mx10 = createMX10();
@@ -32,7 +33,10 @@ describe('LAN Data group tests - 0x17', () => {
 
     expect(data).toBeDefined();
     expect(data.nid).toBe(3);
+    expect(data.operatingMode).toBe(OperatingMode.DCC)
     expect(data.operatingMode).toBeDefined();
-    expect(data.speedAndDirection).toBeDefined();
+    expect(data.speedStep).toBeDefined();
+    expect(data.forward).toBeDefined();
+    expect(data.emergencyStop).toBeDefined();
   })
 });

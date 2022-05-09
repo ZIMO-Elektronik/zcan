@@ -1,14 +1,16 @@
+import {modeBites_____} from "../internal/bites";
+
 export enum OperatingMode {
   UNKNOWN = '',
   DCC = 'DCC',
-  MM1 = 'MM1',
-  NOT_DEFINED = 'N/A',
   MM2 = 'MM2',
+  NOT_DEFINED = 'N/A',
+  MFX = 'mfx',
 }
 
 export const getOperatingMode = (val: number) => {
   // eslint-disable-next-line no-bitwise
-  const mode = val & 0b00001111;
+  const mode = val & modeBites_____;
   const modes = Object.values(OperatingMode);
   if (mode === 1 || mode === 2 || mode === 4) {
     return modes[mode];
@@ -38,4 +40,10 @@ export enum SystemStateMode {
   OFF=4,
   SERVICE=5,
   OVERRCURRENT = 10
+}
+
+export enum Direction {
+  UNDEFINED = 0,
+  EAST = 1,
+  WEST = 2,
 }
