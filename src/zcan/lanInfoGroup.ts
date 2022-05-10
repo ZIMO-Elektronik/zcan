@@ -3,6 +3,7 @@
 import MX10 from '../MX10';
 import {Subject} from "rxjs";
 import {ModulePowerInfoData} from "../@types/models";
+import {SystemStateMode} from "../util/enums";
 
 export default class LanInfoGroup {
   private mx10: MX10;
@@ -35,16 +36,19 @@ export default class LanInfoGroup {
     buffer: Buffer,
   ) {
     const deviceNID = buffer.readUInt16LE(0);
-    const port1Status = buffer.readUInt16LE(2);
+    const port1 = buffer.readUInt16LE(2);
     const port1Voltage = buffer.readUInt16LE(4);
     const port1Amperage = buffer.readUInt16LE(6);
-    const port2Status = buffer.readUInt16LE(8);
+    const port2 = buffer.readUInt16LE(8);
     const port2Voltage = buffer.readUInt16LE(10);
     const port2Amperage = buffer.readUInt16LE(12);
     const amperage32V = buffer.readUInt16LE(14);
     const amperage12V = buffer.readUInt16LE(16);
     const voltageTotal = buffer.readUInt16LE(18);
     const temperature = buffer.readUInt16LE(20);
+
+    const port1Status = this.parsePortStatus(port1);
+    const port2Status = this.parsePortStatus(port2);
 
     this.onModulePowerInfo.next({
       deviceNID,
@@ -59,5 +63,29 @@ export default class LanInfoGroup {
       voltageTotal,
       temperature
     });
+  }
+
+  private parsePortStatus(state: number) {
+    const offBites = 0b0000000000001;
+    const ovrBites = 0b0000000000100;
+    const stateBts = 0b0000011110000;
+
+    const off = (state & offBites) === 1;
+    const overCurrent = (state & ovrBites) === 1;
+    const ssp = (state & stateBts) === 1;
+    const service = (state & stateBts) === 2;
+
+
+    if (off) {
+      return SystemStateMode.OFF
+    } else if (overCurrent) {
+      return SystemStateMode.OVERRCURRENT;
+    } else if (ssp) {
+      return SystemStateMode.SSP0;
+    } else if (service) {
+      return SystemStateMode.SERVICE;
+    }
+
+    return SystemStateMode.NORMAL
   }
 }

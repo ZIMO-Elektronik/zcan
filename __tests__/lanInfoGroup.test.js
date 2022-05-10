@@ -1,6 +1,6 @@
 import {createMX10, initConnection} from "./util/";
 import {afterAll, beforeAll, it, describe, expect} from "@jest/globals";
-import {firstValueFrom} from "rxjs";
+import {SystemStateMode} from "../src/index.js";
 
 describe('LAN Info group tests - 0x18', () => {
   const mx10 = createMX10();
@@ -18,11 +18,15 @@ describe('LAN Info group tests - 0x18', () => {
       if (data.deviceNID === mx10.mx10NID) {
 
         expect(data.port1Status).toBeDefined();
+        expect(data.port1Status).toBe(SystemStateMode.NORMAL);
         expect(data.port1Voltage).toBeDefined();
         expect(data.port1Amperage).toBeDefined();
+
         expect(data.port2Status).toBeDefined();
+        expect(data.port2Status).toBe(SystemStateMode.NORMAL);
         expect(data.port2Voltage).toBeDefined();
         expect(data.port2Amperage).toBeDefined();
+
         expect(data.amperage32V).toBeDefined();
         expect(data.amperage12V).toBeDefined();
         expect(data.voltageTotal).toBeDefined();

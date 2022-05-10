@@ -54,10 +54,10 @@ export interface ItemListByNidData {
 
 export interface ModulePowerInfoData {
   deviceNID: number,
-  port1Status: number,
+  port1Status: SystemStateMode,
   port1Voltage: number,
   port1Amperage: number,
-  port2Status: number,
+  port2Status: SystemStateMode,
   port2Voltage: number,
   port2Amperage: number,
   amperage32V: number,
