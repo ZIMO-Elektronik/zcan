@@ -39,5 +39,11 @@
     "dist",
     "node_modules"
   ],
-  "include": ["src"]
+  "include": ["src"],
+  "typedocOptions": {
+    "entryPoints": ["src/docs_entrypoint.ts"],
+    "out": "docs",
+    "excludePrivate": true,
+    "githubPages": false
+  }
 }

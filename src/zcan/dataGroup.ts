@@ -4,6 +4,10 @@ import {Buffer} from 'buffer';
 import {Subject} from "rxjs";
 import {DataClearData, GroupCountData, ItemListByIndexData, ItemListByNidData} from "../@types/models";
 
+/**
+ *
+ * @category Groups
+ */
 export default class DataGroup {
 
   public readonly onGroupCount = new Subject<GroupCountData>();

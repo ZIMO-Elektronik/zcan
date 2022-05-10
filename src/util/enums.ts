@@ -19,16 +19,26 @@ export const getOperatingMode = (val: number) => {
 };
 
 export enum ExternalController {
-  FS = 'FS', // external controll: active on another controller
-  T1 = 'T1', // vehicle intergrated to its own traction T1, T2
+  /** external controll: active on another controller */
+  FS = 'FS',
+  /** vehicle intergrated to its own traction T1, T2 */
+  T1 = 'T1',
   T2 = 'T2',
   FT = 'FT',
-  FT2 = 'FT(2)', // FT(...) f.e. FT(2) external traction on different controller
-  FS2 = 'FS(2)', // external traction active on different controller
+  /** FT(...) f.e. FT(2) external traction on different controller */
+  FT2 = 'FT(2)',
+  /** external traction active on different controller */
+  FS2 = 'FS(2)',
 }
 
+/**
+ * Enum describing how given functions behaves.
+ */
 export enum FunctionMode {
+  /** Functions needs to be pressed down and held to remain activated */
   momentary,
+
+  /** Functions works as standart toggle switch */
   switch,
 }
 

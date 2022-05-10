@@ -7,6 +7,10 @@ import {parseSpeed} from "../internal/speedUtils";
 
 const functionsCount = 31;
 
+/**
+ *
+ * @category Groups
+ */
 export default class LanDataGroup {
   public readonly onLocoGuiExtended = new Subject<Train>();
   public readonly onDataValueExtended = new Subject<DataValueExtendedData>();

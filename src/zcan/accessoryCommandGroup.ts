@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import MX10 from '../MX10';
 
+/**
+ *
+ * @category Groups
+ */
 export default class AccessoryCommandGroup {
   private mx10: MX10;
 

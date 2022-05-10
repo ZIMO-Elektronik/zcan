@@ -2,6 +2,10 @@
 import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 
+/**
+ *
+ * @category Groups
+ */
 export default class FileTransferGroup {
   private mx10: MX10;
 

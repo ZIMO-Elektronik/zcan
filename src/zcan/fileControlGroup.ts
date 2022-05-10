@@ -2,6 +2,10 @@
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 
+/**
+ *
+ * @category Groups
+ */
 export default class FileControlGroup {
   private mx10: MX10;
 

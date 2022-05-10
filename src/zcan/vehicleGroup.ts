@@ -5,6 +5,10 @@ import {CallFunctionData, VehicleModeData, VehicleSpeedData} from "../@types/mod
 import {Direction, getOperatingMode} from "../util/enums";
 import {combineSpeedAndDirection, getSpeedSteps, parseSpeed} from "../internal/speedUtils";
 
+/**
+ *
+ * @category Groups
+ */
 export default class VehicleGroup {
   private mx10: MX10;
 

@@ -3,6 +3,10 @@ import MX10 from '../MX10';
 import {Subject} from "rxjs";
 import {BidiInfoData} from "../@types/models";
 
+/**
+ *
+ * @category Groups
+ */
 export default class InfoGroup {
   private mx10: MX10;
 

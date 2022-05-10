@@ -5,6 +5,10 @@ import {Buffer} from "buffer";
 import {Subject} from "rxjs";
 import {SystemStateData} from "../@types/models";
 
+/**
+ *
+ * @category Groups
+ */
 export default class SystemControlGroup {
   private mx10: MX10;
 

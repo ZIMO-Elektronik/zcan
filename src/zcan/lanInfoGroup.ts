@@ -5,6 +5,10 @@ import {Subject} from "rxjs";
 import {ModulePowerInfoData} from "../@types/models";
 import {SystemStateMode} from "../util/enums";
 
+/**
+ *
+ * @category Groups
+ */
 export default class LanInfoGroup {
   private mx10: MX10;
 

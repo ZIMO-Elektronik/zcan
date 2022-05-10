@@ -3,6 +3,10 @@
 // 0x1A
 import MX10 from '../MX10';
 
+/**
+ *
+ * @category Groups
+ */
 export default class LanNetworkGroup {
   private mx10: MX10;
 

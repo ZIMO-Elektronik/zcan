@@ -25,6 +25,10 @@ import {
 import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from "./@types/communication";
 import {delay} from "./internal/utils";
 
+/**
+ *
+ * @category Entrypoint
+ */
 export default class MX10 {
   myNID = 0;
   mx10NID = 0;
