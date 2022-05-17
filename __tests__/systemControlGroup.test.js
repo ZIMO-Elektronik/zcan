@@ -1,6 +1,6 @@
 import {afterAll, beforeAll, describe, expect, jest} from "@jest/globals";
 import {createMX10, initConnection} from "./util/index.js";
-import {SystemStateMode} from "../src/util/enums.js";
+import {SystemStateMode} from "../src/index.js";
 import {delay} from "../src/internal/utils";
 
 describe('System Control Group group tests - 0x00', () => {
