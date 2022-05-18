@@ -1,4 +1,4 @@
-import {Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode} from "src/util/enums";
+import {Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode, TrackMode} from "src/util/enums";
 
 export interface Train {
   nid: number,
@@ -54,10 +54,10 @@ export interface ItemListByNidData {
 
 export interface ModulePowerInfoData {
   deviceNID: number,
-  port1Status: SystemStateMode,
+  port1Status: TrackMode,
   port1Voltage: number,
   port1Amperage: number,
-  port2Status: SystemStateMode,
+  port2Status: TrackMode,
   port2Voltage: number,
   port2Amperage: number,
   amperage32V: number,

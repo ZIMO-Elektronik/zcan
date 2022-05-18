@@ -3,7 +3,7 @@
 import MX10 from '../MX10';
 import {Subject} from "rxjs";
 import {ModulePowerInfoData} from "../@types/models";
-import {SystemStateMode} from "../util/enums";
+import {TrackMode} from "../util/enums";
 
 /**
  *
@@ -34,9 +34,9 @@ export default class LanInfoGroup {
 
   // 0x18.0x00
   private parseModulePowerInfo(
-    size: number,
-    mode: number,
-    nid: number,
+    _size: number,
+    _mode: number,
+    _nid: number,
     buffer: Buffer,
   ) {
     const deviceNID = buffer.readUInt16LE(0);
@@ -71,25 +71,14 @@ export default class LanInfoGroup {
 
   private parsePortStatus(state: number) {
     const offBites = 0b0000000000001;
-    const ovrBites = 0b0000000000100;
-    const stateBts = 0b0000011110000;
 
     const off = (state & offBites) === 1;
-    const overCurrent = (state & ovrBites) === 1;
-    const ssp = (state & stateBts) === 1;
-    const service = (state & stateBts) === 2;
-
+    const tmp = (state >> 4) & 0x0F;
 
     if (off) {
-      return SystemStateMode.OFF
-    } else if (overCurrent) {
-      return SystemStateMode.OVERRCURRENT;
-    } else if (ssp) {
-      return SystemStateMode.SSP0;
-    } else if (service) {
-      return SystemStateMode.SERVICE;
+      return TrackMode.OFF;
+    } else {
+      return tmp as TrackMode;
     }
-
-    return SystemStateMode.NORMAL
   }
 }

@@ -52,6 +52,18 @@ export enum SystemStateMode {
   OVERRCURRENT = 10
 }
 
+export enum TrackMode {
+  OFF = -1,
+  NORMAL = 0,
+  SSP0 = 1,
+  SSPe = 2,
+  SMP = 4,
+  UPDATE = 5,
+  SOUND = 6,
+  ERROR = 8,
+  ERROR_SMP = 9,
+}
+
 export enum Direction {
   UNDEFINED = 0,
   EAST = 1,
