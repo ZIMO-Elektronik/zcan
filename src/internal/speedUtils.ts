@@ -13,10 +13,9 @@ export const parseSpeed = (speedAndDirection: number) => {
   const direction = (speedAndDirection & directionBites) === directionBites;
   const directionACK = (speedAndDirection & directACKBites) === directACKBites;
   const sideways = speedAndDirection & eastWestBites_;
-  const eStop = speedAndDirection & emergencyStopB;
+  const emergencyStop = (speedAndDirection & emergencyStopB) === emergencyStopB;
 
   const forward = !direction && !directionACK;
-  const emergencyStop = eStop === 1;
 
   return {
     speedStep,
