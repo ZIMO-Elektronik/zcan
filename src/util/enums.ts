@@ -12,7 +12,7 @@ export const getOperatingMode = (val: number) => {
   // eslint-disable-next-line no-bitwise
   const mode = val & modeBites_____;
   const modes = Object.values(OperatingMode);
-  if (mode === 1 || mode === 2 || mode === 4) {
+  if (mode >= 1 && mode <= 4) {
     return modes[mode];
   }
   return OperatingMode.UNKNOWN;

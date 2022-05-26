@@ -27,6 +27,7 @@ describe('Vehicle group tests - 0x02', () => {
 
     expect(data.nid).toBe(3)
 
+    expect(data.nid).toBe(3)
     expect(data.operatingMode).toBe(OperatingMode.DCC)
 
   })
