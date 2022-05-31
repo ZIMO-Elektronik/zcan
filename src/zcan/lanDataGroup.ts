@@ -5,8 +5,6 @@ import {DataValueExtendedData, Train, TrainFunction} from "../@types/models";
 import { Subject} from "rxjs";
 import {parseSpeed} from "../internal/speedUtils";
 
-const functionsCount = 31;
-
 /**
  *
  * @category Groups
@@ -66,9 +64,9 @@ export default class LanDataGroup {
 
   // 0x17.0x08
   private _parseDataValueExtended(
-    size: number,
-    mode: number,
-    nid: number,
+    _size: number,
+    _mode: number,
+    _nid: number,
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
@@ -104,40 +102,34 @@ export default class LanDataGroup {
 
   // 0x17.0x27
   private _parseLocoGuiExtended(
-    size: number,
-    mode: number,
-    nid: number,
+    _size: number,
+    _mode: number,
+    _nid: number,
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
     const SubID = buffer.readUInt16LE(2);
     const vehicleGroup = buffer.readUInt16LE(4);
 
-    const name = buffer.subarray(6, 38).toString('ascii');
-    const imageId = buffer.readUInt16LE(39);
-    const tacho = buffer.readUInt16LE(45);
-    const VMaxFwd = buffer.readUInt16LE(51);
-    const VMaxRev = buffer.readUInt16LE(53);
-    const vRange = buffer.readUInt16LE(55);
-    const driveType = buffer.readUInt16LE(57);
-    const era = buffer.readUInt16LE(59); //TODO correctly parse era
-    const countryCode = buffer.readUInt16LE(62);
+    const name = buffer.subarray(6, 32).toString('ascii');
+    const imageId = buffer.readUInt16LE(38);
+    const tacho = buffer.readUInt16LE(40);
+    const speedFwd = buffer.readUInt16LE(42);
+    const speedRev = buffer.readUInt16LE(44);
+    const speedRange = buffer.readUInt16LE(46);
+    const driveType = buffer.readUInt16LE(48);
+    const era = buffer.readUInt16LE(50);
+    const countryCode = buffer.readUInt16LE(52);
 
     // reading 64 bytes of functions
-    const functionsIconsStart = 63;
-    const functionsIconsSize = functionsCount * 2;
-    const functionsBuff = buffer.subarray(
-      functionsIconsStart,
-      functionsIconsStart + functionsIconsSize,
-    );
     const functions = Array<TrainFunction>();
-    for (let offset = 0; offset < functionsIconsSize; offset += 2) {
-      const icon = functionsBuff.toString('ascii', offset, 2);
+    for (let i = 0; i < 64; i++) {
+      const icon = buffer.readUInt16LE(54 + i*2)
       functions.push(
         {
           mode: FunctionMode.switch,
           active: false,
-          icon: icon.toString(),
+          icon: String(icon).padStart(4, '0'),
         },
       );
     }
@@ -149,14 +141,50 @@ export default class LanDataGroup {
       group: vehicleGroup,
       image: imageId.toString(),
       tacho: tacho.toString(),
-      vMaxFWD: VMaxFwd,
-      vMaxREV: VMaxRev,
-      vRange: vRange,
+      speedFwd: speedFwd,
+      speedRev: speedRev,
+      speedRange: speedRange,
       operatingMode: OperatingMode.UNKNOWN,
       driveType: driveType,
-      era: era.toString(),
+      era: this.parseEra(era),
       countryCode: countryCode,
       functions,
     })
+  }
+
+  private parseEra(eraString: number) {
+    let result = '';
+    switch (eraString & 0xF0) {
+      case 0x10:
+        result += 'I';
+        break;
+      case 0x20:
+        result += 'I';
+        result += 'I';
+        break;
+      case 0x30:
+        result += 'I';
+        result += 'I';
+        result += 'I';
+        break;
+      case 0x40:
+        result += 'I';
+        result += 'V';
+        break;
+      case 0x50:
+        result += 'V';
+        break;
+      case 0x60:
+        result += 'V';
+        result += 'I';
+        break;
+      case 0x70:
+        result += 'V';
+        result += 'I';
+        result += 'I';
+        break;
+    }
+
+    return result;
   }
 }
