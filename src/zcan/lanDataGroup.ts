@@ -123,7 +123,7 @@ export default class LanDataGroup {
 
     // reading 64 bytes of functions
     const functions = Array<TrainFunction>();
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < 32; i++) {
       const icon = buffer.readUInt16LE(54 + i*2)
       functions.push(
         {
