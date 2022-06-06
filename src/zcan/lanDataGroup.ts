@@ -1,9 +1,9 @@
 // 0x17
-import MX10 from '../MX10';
-import {FunctionMode, getOperatingMode, OperatingMode} from "../util/enums";
-import {DataValueExtendedData, Train, TrainFunction} from "../@types/models";
-import { Subject} from "rxjs";
-import {parseSpeed} from "../internal/speedUtils";
+import MX10 from "../MX10";
+import { FunctionMode, getOperatingMode, OperatingMode } from "../util/enums";
+import { DataValueExtendedData, Train, TrainFunction } from "../@types/models";
+import { Subject } from "rxjs";
+import { parseSpeed } from "../internal/speedUtils";
 
 /**
  *
@@ -123,7 +123,7 @@ export default class LanDataGroup {
 
     // reading 64 bytes of functions
     const functions = Array<TrainFunction>();
-    for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < 33; i++) {
       const icon = buffer.readUInt16LE(54 + i*2)
       functions.push(
         {
