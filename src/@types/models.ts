@@ -5,7 +5,7 @@ export interface Train {
   subId: number,
   name: string,
   group: number,
-  image: string,
+  image?: string,
   externalController?: ExternalController,
   operatingMode: OperatingMode,
   tacho: string,

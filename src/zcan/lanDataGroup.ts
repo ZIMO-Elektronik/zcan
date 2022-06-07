@@ -139,7 +139,7 @@ export default class LanDataGroup {
       subId: SubID,
       name: name,
       group: vehicleGroup,
-      image: imageId.toString(),
+      image: imageId == 0 ? undefined : imageId.toString(),
       tacho: tacho.toString(),
       speedFwd: speedFwd,
       speedRev: speedRev,
