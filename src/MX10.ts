@@ -106,9 +106,9 @@ export default class MX10 {
     }
   }
 
-  closeSocket() {
+  closeSocket(callMx10: boolean = true) {
     if (this.mx10Socket != null) {
-      if (this.connected) {
+      if (this.connected && callMx10) {
         this.network.portClose();
       }
       this.mx10Socket.close();
