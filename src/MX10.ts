@@ -186,6 +186,12 @@ export default class MX10 {
         message.length,
         this.outgoingPort,
         this.mx10IP,
+        (err) => {
+          if (err && this.debugCommunication) {
+            // eslint-disable-next-line no-console
+            console.log(err)
+          }
+        }
       );
     } else {
       this.errors.next('mx10.connection.not_connected');
