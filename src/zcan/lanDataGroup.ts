@@ -2,7 +2,7 @@
 import MX10 from "../MX10";
 import { FunctionMode, getOperatingMode, OperatingMode } from "../util/enums";
 import { DataValueExtendedData, Train, TrainFunction } from "../@types/models";
-import { Subject } from "rxjs";
+import {Subject} from "rxjs";
 import { parseSpeed } from "../internal/speedUtils";
 
 /**
@@ -70,34 +70,36 @@ export default class LanDataGroup {
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
-    // const SubID = buffer.readUInt16LE(2);
+    const subId = buffer.readUInt16LE(2);
+    const offset = subId == 0 ? 0 : 10;
 
-    const trackMode = buffer.readUInt8(16);
-    const speedAndDirection = buffer.readUInt16LE(36);
+      const trackMode = buffer.readUInt8(16 + offset);
+    const functionCount = buffer.readUInt8(17 + offset);
+      const speedAndDirection = buffer.readUInt16LE(36 + offset);
 
-    const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
-    const operatingMode = getOperatingMode(trackMode);
+      const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
+      const operatingMode = getOperatingMode(trackMode);
 
+      // train?.setConsist(consist); // TODO set once it is part of data
 
+      let functions = buffer.readUInt32LE(38 + offset);
+      const functionsStates = [];
+      for (let i = 0; i < 31; i++) {
+        const active = (functions & 1) == 1;
+        functionsStates.push(active);
+        functions = functions >> 1;
+      }
 
-    // train?.setConsist(consist); // TODO set once it is part of data
-
-    const functions = buffer.subarray(38, 41);
-    const functionsStates = [];
-    for (let i = 0; i < functions.length; i++) {
-      const active = Boolean(functions[i]);
-      functionsStates.push(active);
-    }
-
-    this.onDataValueExtended.next({
-      nid: NID,
-      speedStep,
-      forward,
-      eastWest,
-      emergencyStop,
-      operatingMode,
-      functionsStates
-    })
+      this.onDataValueExtended.next({
+        nid: NID,
+        functionCount,
+        speedStep,
+        forward,
+        eastWest,
+        emergencyStop,
+        operatingMode,
+        functionsStates
+      })
   }
 
   // 0x17.0x27

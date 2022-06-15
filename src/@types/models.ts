@@ -26,6 +26,7 @@ export interface TrainFunction {
 
 export interface DataValueExtendedData {
   nid: number,
+  functionCount: number,
   speedStep: number,
   forward: boolean,
   eastWest: Direction,

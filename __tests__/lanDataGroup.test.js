@@ -33,10 +33,12 @@ describe('LAN Data group tests - 0x17', () => {
 
     expect(data).toBeDefined();
     expect(data.nid).toBe(3);
+    expect(data.functionCount).toBeDefined();
     expect(data.operatingMode).toBeDefined();
     expect(data.operatingMode).toBe(OperatingMode.DCC)
     expect(data.speedStep).toBeDefined();
     expect(data.forward).toBeDefined();
     expect(data.emergencyStop).toBeDefined();
+    expect(data.functionsStates).toBeDefined();
   })
 });

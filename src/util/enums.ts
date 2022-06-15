@@ -1,22 +1,32 @@
-import {modeBites_____} from "../internal/bites";
-
 export enum OperatingMode {
   UNKNOWN = '',
   DCC = 'DCC',
+  MM1 = 'MM1',
   MM2 = 'MM2',
-  NOT_DEFINED = 'N/A',
+  SX = 'SX',
   MFX = 'mfx',
+  NOT_DEFINED = 'N/A',
+  SYS = 'System',
 }
 
 export const getOperatingMode = (val: number) => {
   // eslint-disable-next-line no-bitwise
-  const mode = val & modeBites_____;
+  const mode = val >> 4;
   const modes = Object.values(OperatingMode);
-  if (mode >= 1 && mode <= 4) {
+  if (mode >= 1 && mode <= 7) {
     return modes[mode];
   }
   return OperatingMode.UNKNOWN;
 };
+
+export enum MaxSpeedSteps {
+  UNKNOWN,
+  MAX14,
+  MAX27,
+  MAX28,
+  MAX128,
+  MAX1024,
+}
 
 export enum ExternalController {
   /** external controll: active on another controller */
