@@ -1,6 +1,7 @@
 import {createSocket} from "dgram";
 import {afterAll, beforeAll, it, jest, describe, expect} from "@jest/globals";
 import {createMX10, initConnection} from "./util";
+import {firstValueFrom} from "rxjs";
 
 describe('High level tests', () => {
   const mx10 = createMX10(true);
@@ -19,7 +20,10 @@ describe('High level tests', () => {
     expect(mx10.connected).toBe(false);
 
     await initConnection(mx10);
+    const data = await firstValueFrom(mx10.lanNetwork.onPortOpen)
+
     expect(mx10.connected).toBe(true);
+    expect(data).toBe(true);
 
     mx10.closeSocket();
     expect(mx10.connected).toBe(false);
