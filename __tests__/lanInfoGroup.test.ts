@@ -1,6 +1,6 @@
 import {createMX10, initConnection} from "./util/";
 import {afterAll, beforeAll, it, describe, expect} from "@jest/globals";
-import {TrackMode} from "../src/index.js";
+import {TrackMode} from "../src";
 
 describe('LAN Info group tests - 0x18', () => {
   const mx10 = createMX10();

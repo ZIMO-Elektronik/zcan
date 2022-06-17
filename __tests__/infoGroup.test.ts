@@ -1,4 +1,4 @@
-import {createMX10, initConnection} from "./util/index.js";
+import {createMX10, initConnection} from "./util";
 import {afterAll, beforeAll, expect, it} from "@jest/globals";
 
 describe('Info group tests - 0x08', () => {

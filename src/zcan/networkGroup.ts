@@ -46,11 +46,13 @@ export default class NetworkGroup {
   }
 
   // 0x0A.0x00
-  _pingResponse(size: number, mode: number, nid: number, _buffer: Buffer) {
+  _pingResponse(size: number, _mode: number, nid: number, _buffer: Buffer) {
     if (size === 8) {
       // TODO IMPLEMENT DETAIL READOUT
 
-      this.mx10.mx10NID = nid;
+      if (!this.mx10.mx10NID) {
+        this.mx10.mx10NID = nid;
+      }
       this.mx10.connected = true;
 
       // TODO reconnect when uuid has changed

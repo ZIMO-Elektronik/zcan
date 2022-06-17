@@ -1,9 +1,9 @@
-import {BindOptions, RemoteInfo, SocketOptions, SocketType} from "dgram";
+import {BindOptions, RemoteInfo, SocketOptions} from "dgram";
 import {Buffer} from "buffer";
 
 export type ZcanData = {
   length: number;
-  value: number;
+  value: number | string;
 };
 
 export type ZcanDataArray = ZcanData[];

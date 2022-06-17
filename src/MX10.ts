@@ -111,11 +111,9 @@ export default class MX10 {
       if (this.connected && callMx10) {
         this.network.portClose();
 
-        delay(this.connectionTimeout).then(() => {
-          this.mx10Socket?.close();
-          this.mx10Socket = null;
-          this.connected = false;
-        });
+        this.mx10Socket?.close();
+        this.mx10Socket = null;
+        this.connected = false;
       }
     }
   }
@@ -155,6 +153,10 @@ export default class MX10 {
     let offset = 8;
 
     data.forEach((element) => {
+      if (typeof element.value  === 'string') {
+        const tmp = Buffer.from(element.value, 'ascii');
+        buffer.fill(tmp, offset, element.length)
+      } else {
       switch (element.length) {
         case 1:
           buffer.writeUInt8(element.value, offset);
@@ -173,6 +175,7 @@ export default class MX10 {
 
         default:
           throw new Error(`ELEMENT LENGTH NOT DEFINED, ${element}`)
+      }
       }
     });
 

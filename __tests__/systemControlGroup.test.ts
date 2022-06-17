@@ -1,7 +1,8 @@
 import {afterAll, beforeAll, describe, expect, jest} from "@jest/globals";
-import {createMX10, initConnection} from "./util/index.js";
-import {SystemStateMode} from "../src/index.js";
+import {createMX10, initConnection} from "./util";
+import {SystemStateData, SystemStateMode} from "../src";
 import {delay} from "../src/internal/utils";
+import DoneCallback = jest.DoneCallback;
 
 describe('System Control Group group tests - 0x00', () => {
   const mx10 = createMX10();
@@ -19,24 +20,24 @@ describe('System Control Group group tests - 0x00', () => {
   })
 
 
-  test.each([
-    SystemStateMode.SSPe, SystemStateMode.OFF, SystemStateMode.SSP0,
-  ])("0x00 - System state test", (mode, done) => {
+  test.each<any>([
+    {mode: SystemStateMode.SSPe},
+    {mode: SystemStateMode.OFF},
+    {mode: SystemStateMode.SSP0},
+  ])("0x00 - System state test", ({mode}, done: DoneCallback) => {
     mx10.systemControl.systemState(mode);
 
-    const callback = jest.fn(function(data) {
+    const callback = jest.fn((data: SystemStateData) => {
       if (data.nid === mx10.mx10NID) {
         expect(data.port).toBeDefined();
         expect(data.mode).toBe(mode);
-        this.counter++;
 
-        if (this.counter === 3) {
+        if (callback.mock.calls.length === 3) {
           sub.unsubscribe();
           done();
-          expect(callback.mock.calls).toBe(3);
         }
       }
-    }.bind({counter: 0}));
+    });
 
     const sub = mx10.systemControl.onSystemStateChange.subscribe(callback);
   })

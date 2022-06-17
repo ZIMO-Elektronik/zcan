@@ -1,4 +1,4 @@
-import {createMX10, initConnection} from "./util/index.js";
+import {createMX10, initConnection} from "./util";
 import {afterAll, beforeAll, it, describe, expect} from "@jest/globals";
 import {firstValueFrom} from "rxjs";
 
@@ -43,8 +43,8 @@ describe('Data group tests - 0x07', () => {
     mx10.data.listItemsByNID(3);
 
     const data = await firstValueFrom(mx10.data.onListItemsByNID);
-    expect(data.nid).toBe(4);
-    expect(data.index).toBe(3);
+    expect(data.nid).toBe(65535);
+    expect(data.index).toBe(65535);
   });
 
 });

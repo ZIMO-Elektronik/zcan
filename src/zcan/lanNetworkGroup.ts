@@ -18,7 +18,11 @@ export default class LanNetworkGroup {
   }
 
   portOpen() {
-    this.mx10.sendData(0x1a, 0x06, [], 0b01, this.mx10.myNID, true);
+    this.mx10.sendData(0x1a, 0x06, [
+      {value: 1, length: 4},
+      {value: 214748364, length: 4},
+      {value: 'ZIMO APP', length: 20}
+    ], 0b01, this.mx10.myNID, true);
   }
 
   // Responses
@@ -48,6 +52,9 @@ export default class LanNetworkGroup {
     nid: number,
     buffer: Buffer,
   ) {
+    this.mx10.mx10NID = nid;
+    this.mx10.connected = true;
+
     this.onPortOpen.next(true);
   }
 

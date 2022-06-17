@@ -1,8 +1,8 @@
-import {createMX10, initConnection} from "./util/index.js";
+import {createMX10, initConnection} from "./util";
 import {afterAll, beforeAll, expect, it} from "@jest/globals";
 import {firstValueFrom} from "rxjs";
 import {delay} from "../src/internal/utils"
-import {Direction, OperatingMode} from "../src/index.js";
+import {Direction, OperatingMode} from "../src";
 
 describe('Vehicle group tests - 0x02', () => {
   const mx10 = createMX10();
@@ -54,20 +54,18 @@ describe('Vehicle group tests - 0x02', () => {
   it("0x02 - change speed with bidi feedback", (done) => {
     const speedStep = 500, forward = true;
 
-    mx10.vehicle.changeSpeed(testNID, speedStep, forward);
+    const sub = mx10.info.onBidiInfoChange.subscribe((data) => {
+      if (data.type === 0x0100) {
+        expect(data).toBeDefined();
+        expect(data.type).toBe(0x0100);
+        expect(data.data).toBeGreaterThan(10);
 
-    delay(1000).then(() => {
-      const sub = mx10.info.onBidiInfoChange.subscribe((data) => {
-        if (data.type === 0x0100) {
-          expect(data).toBeDefined();
-          expect(data.type).toBe(0x0100);
-          expect(data.data).toBeGreaterThan(10);
-
-          sub.unsubscribe();
-          done()
-        }
-      });
+        sub.unsubscribe();
+        done()
+      }
     });
+
+    mx10.vehicle.changeSpeed(testNID, speedStep, forward);
   })
 
   it("0x04 - call function", async () => {
@@ -79,7 +77,7 @@ describe('Vehicle group tests - 0x02', () => {
     expect(data).toBeDefined();
     expect(data.nid).toBe(nid);
     expect(data.functionNumber).toBe(buttonId);
-    expect(data.functionState).toBe(1);
+    expect(data.functionState).toBe(true);
 
     await delay(500);
 
@@ -89,6 +87,6 @@ describe('Vehicle group tests - 0x02', () => {
     expect(data2).toBeDefined();
     expect(data2.nid).toBe(nid);
     expect(data2.functionNumber).toBe(buttonId);
-    expect(data2.functionState).toBe(0);
+    expect(data2.functionState).toBe(false);
   })
 });
