@@ -36,6 +36,7 @@ describe('Vehicle group tests - 0x02', () => {
     {nid: testNID, speedStep: 10, forward: true, eastWest: Direction.UNDEFINED},
     {nid: testNID, speedStep: 30, forward: false, eastWest: Direction.EAST},
     {nid: testNID, speedStep: 40, forward: false, eastWest: Direction.WEST},
+    {nid: testNID, speedStep: 35, forward: true, eastWest: Direction.WEST},
   ])("0x02 - change speed and directions", async ({nid, speedStep, forward, eastWest}) => {
 
     mx10.vehicle.changeSpeed(nid, speedStep, forward, eastWest);
