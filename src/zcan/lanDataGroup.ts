@@ -1,7 +1,7 @@
 // 0x17
 import MX10 from "../MX10";
 import {FunctionMode, getOperatingMode, OperatingMode} from "../util/enums";
-import {DataValueExtendedData, Train, TrainFunction} from "../@types/models";
+import {DataValueExtendedData, Train, TrainFlags, TrainFunction} from "../@types/models";
 import {Subject} from "rxjs";
 import {parseSpeed} from "../internal/speedUtils";
 
@@ -70,19 +70,20 @@ export default class LanDataGroup {
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
-    const subId = buffer.readUInt16LE(2);
-    const offset = subId == 0 ? 0 : 10;
+    // const subId = buffer.readUInt16LE(2); // command version
 
-    const trackMode = buffer.readUInt8(16 + offset);
-    const functionCount = buffer.readUInt8(17 + offset);
-    const speedAndDirection = buffer.readUInt16LE(36 + offset);
+    const flagsBytes = buffer.readUInt32LE(6);
+    const trackMode = buffer.readUInt8(26);
+    const functionCount = buffer.readUInt8(27);
+    const speedAndDirection = buffer.readUInt16LE(46);
 
     const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
     const operatingMode = getOperatingMode(trackMode);
+    const flags = this.parseFlags(flagsBytes);
 
     // train?.setConsist(consist); // TODO set once it is part of data
 
-    let functions = buffer.readUInt32LE(38 + offset);
+    let functions = buffer.readUInt32LE(48);
     const functionsStates = [];
     for (let i = 0; i < 31; i++) {
       const active = (functions & 1) == 1;
@@ -92,6 +93,7 @@ export default class LanDataGroup {
 
     this.onDataValueExtended.next({
       nid: NID,
+      flags,
       functionCount,
       speedStep,
       forward,
@@ -188,5 +190,11 @@ export default class LanDataGroup {
     }
 
     return result;
+  }
+
+  private parseFlags(flagsNumber: number) : TrainFlags {
+    return {
+      deleted: flagsNumber >> 31 === 1,
+    }
   }
 }

@@ -32,7 +32,8 @@ export interface DataValueExtendedData {
   eastWest: Direction,
   emergencyStop: boolean,
   operatingMode: OperatingMode,
-  functionsStates: boolean[]
+  functionsStates: boolean[],
+  flags: TrainFlags
 }
 
 export interface GroupCountData {
@@ -105,4 +106,8 @@ export interface SystemStateData {
 export interface DataClearData {
   nid: number,
   state: number
+}
+
+export interface TrainFlags {
+  deleted: boolean,
 }
