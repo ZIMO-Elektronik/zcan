@@ -1,50 +1,56 @@
-import {createMX10, initConnection} from "./util";
-import {afterAll, beforeAll, it, describe, expect} from "@jest/globals";
-import {firstValueFrom} from "rxjs";
+import { createMX10, initConnection } from './util'
+import { afterAll, beforeAll, it, describe, expect } from '@jest/globals'
+import { firstValueFrom } from 'rxjs'
 
 describe('Data group tests - 0x07', () => {
-
-  const mx10 = createMX10();
+  const mx10 = createMX10()
 
   beforeAll(async () => {
     await initConnection(mx10)
   })
 
   afterAll(() => {
-    mx10.closeSocket();
+    mx10.closeSocket()
   })
 
-  it("0x00 - Group count test", (done) => {
-    mx10.data.groupCount();
+  it('0x00 - Group count test', done => {
+    mx10.data.groupCount()
 
-    const sub = mx10.data.onGroupCount.subscribe((data) => {
+    const sub = mx10.data.onGroupCount.subscribe(data => {
       if (data.objectType === 0x0000) {
+        expect(data.objectType).toBe(0x000)
+        expect(data.number).toBeDefined()
 
-        expect(data.objectType).toBe(0x000);
-        expect(data.number).toBeDefined();
-
-        done();
-        sub.unsubscribe();
+        done()
+        sub.unsubscribe()
       }
-    });
-  });
+    })
+  })
 
-  it("0x01 - List item by index test", async () => {
-    mx10.data.listItemsByIndex(0x0000, 3);
+  it('0x01 - List item by index test', async () => {
+    mx10.data.listItemsByIndex(0x0000, 3)
 
-    const data = await firstValueFrom(mx10.data.onListItemsByIndex);
+    const data = await firstValueFrom(mx10.data.onListItemsByIndex)
 
-    expect(data.index).toBe(3);
-    expect(data.nid).toBe(4);
+    expect(data.index).toBe(3)
+    expect(data.nid).toBe(4)
+  })
 
-  });
+  it('0x02 - List item by nid test', async () => {
+    mx10.data.listItemsByNID(3)
 
-  it("0x02 - List item by nid test", async () => {
-    mx10.data.listItemsByNID(3);
+    const data = await firstValueFrom(mx10.data.onListItemsByNID)
+    expect(data.nid).toBe(65535)
+    expect(data.index).toBe(65535)
+  })
 
-    const data = await firstValueFrom(mx10.data.onListItemsByNID);
-    expect(data.nid).toBe(65535);
-    expect(data.index).toBe(65535);
-  });
+  it('0x21 - Data name extended test', async () => {
+    mx10.data.dataNameExtended(3, 0, 'test of a name')
 
-});
+    const data = await firstValueFrom(mx10.data.onDataNameExtended)
+    expect(data.nid).toBe(3)
+    expect(data.use.value).toBe(0)
+    expect(data.value1).toBe(undefined)
+    expect(data.name).toBe('test of a name')
+  })
+})

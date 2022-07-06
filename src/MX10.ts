@@ -154,8 +154,8 @@ export default class MX10 {
 
     data.forEach((element) => {
       if (typeof element.value  === 'string') {
-        const tmp = Buffer.from(element.value, 'ascii');
-        buffer.fill(tmp, offset, element.length)
+        buffer.write(element.value, offset, element.length, 'ascii');
+        offset += element.length;
       } else {
       switch (element.length) {
         case 1:

@@ -79,3 +79,17 @@ export enum Direction {
   EAST = 1,
   WEST = 2,
 }
+
+export enum DataNameUse {
+  VEHICLE,
+  RAILWAY,
+  CONNECTION,
+  MANUFACTURER,
+  DECODER,
+  DESIGNATION,
+  CFGDB,
+  ICON,
+  ZIMO_PARTNER,
+  LAND,
+  COMPANY_CV,
+}
