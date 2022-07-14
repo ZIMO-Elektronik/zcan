@@ -203,13 +203,14 @@ export default class DataGroup {
       case 0x7f21:
         type = NameType.COMPANY_CV;
         break
-      // case '0xC2nn':
-      //   break;
-      default: // Zubehör(Accessories)
+      case 0xC2:
+        type = NameType.CONNECTION;
+        break;
+      default:
         if (subID == 1) {
-          type = NameType.VEHICLE;
+          type = NameType.COMPANY_CV;
         } else if (subID == 0) {
-          type = NameType.RAILWAY;
+          type = NameType.VEHICLE;
         } else {
           type = NameType.CONNECTION;
         }
