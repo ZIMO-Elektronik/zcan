@@ -1,5 +1,5 @@
 import {
-  DataNameUse,
+  NameType,
   Direction,
   ExternalController,
   FunctionMode,
@@ -64,8 +64,10 @@ export interface ItemListByNidData {
 
 export interface DataNameExtended {
   nid: number
-  value1: { type: string; cfgNum: number } | undefined
-  use: { type: DataNameUse; value: number }
+  type: NameType
+  subID: number
+  value1: DataNameValue1 | undefined
+  value2: number
   name: string
 }
 
@@ -125,4 +127,9 @@ export interface DataClearData {
 
 export interface TrainFlags {
   deleted: boolean
+}
+
+export interface DataNameValue1 {
+  type: string,
+  cfgNum: number;
 }

@@ -80,7 +80,7 @@ export enum Direction {
   WEST = 2,
 }
 
-export enum DataNameUse {
+export enum NameType {
   VEHICLE,
   RAILWAY,
   CONNECTION,

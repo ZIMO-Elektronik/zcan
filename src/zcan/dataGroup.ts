@@ -4,12 +4,12 @@ import { Buffer } from 'buffer'
 import { Subject } from 'rxjs'
 import {
   DataClearData,
-  DataNameExtended,
+  DataNameExtended, DataNameValue1,
   GroupCountData,
   ItemListByIndexData,
   ItemListByNidData,
 } from '../@types/models'
-import { DataNameUse } from '../util/enums'
+import { NameType } from '../util/enums'
 
 /**
  *
@@ -167,56 +167,60 @@ export default class DataGroup {
     const subID = buffer.readUInt16LE(2)
     const name = buffer.subarray(12, 203).toString('ascii').replace(/\x00/, '');
 
-    let value1 = undefined
-    // const value2 = buffer.readUInt32LE(8);
-
-    let use
+    let value1: DataNameValue1 | undefined;
+    const value2 = buffer.readUInt32LE(8);
+    let type: NameType;
 
     switch (NID) {
       case 0x7f00:
-        use = { type: DataNameUse.MANUFACTURER, value: subID }
+        type = NameType.MANUFACTURER;
         break
       case 0x7f02:
-        use = { type: DataNameUse.DECODER, value: subID }
+        type = NameType.DECODER;
         break
       case 0x7f04:
-        use = { type: DataNameUse.DESIGNATION, value: subID }
+        type = NameType.DESIGNATION;
         value1 = {
           type: buffer.subarray(4).toString('ascii').trim(),
           cfgNum: parseInt(buffer.subarray(5, 7).toString('ascii')),
         }
         break
       case 0x7f06:
-        use = { type: DataNameUse.CFGDB, value: subID }
+        type = NameType.CFGDB;
         break
       case 0x7f10:
-        use = { type: DataNameUse.ICON, value: subID }
+        type = NameType.ICON;
         break
       case 0x7f11:
-        use = { type: DataNameUse.ICON, value: subID }
+        type = NameType.ICON;
         break
       case 0x7f18:
-        use = { type: DataNameUse.ZIMO_PARTNER, value: subID }
+        type = NameType.ZIMO_PARTNER;
         break
       case 0x7f20:
-        use = { type: DataNameUse.LAND, value: subID }
+        type = NameType.LAND;
         break
       case 0x7f21:
-        use = { type: DataNameUse.COMPANY_CV, value: subID }
+        type = NameType.COMPANY_CV;
         break
       // case '0xC2nn':
       //   break;
       default: // Zubehör(Accessories)
-        if (subID == 1) use = { type: DataNameUse.VEHICLE, value: subID }
-        else if (subID == 0) use = { type: DataNameUse.RAILWAY, value: subID }
-        else use = { type: DataNameUse.CONNECTION, value: subID }
-        break
+        if (subID == 1) {
+          type = NameType.VEHICLE;
+        } else if (subID == 0) {
+          type = NameType.RAILWAY;
+        } else {
+          type = NameType.CONNECTION;
+        }
     }
 
     this.onDataNameExtended.next({
       nid: NID,
-      use,
+      type,
+      subID,
       value1,
+      value2,
       name,
     })
   }
