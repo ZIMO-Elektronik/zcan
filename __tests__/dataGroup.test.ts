@@ -1,6 +1,7 @@
 import { createMX10, initConnection } from './util'
 import { afterAll, beforeAll, it, describe, expect } from '@jest/globals'
 import { firstValueFrom } from 'rxjs'
+import {NameType} from "../src";
 
 describe('Data group tests - 0x07', () => {
   const mx10 = createMX10()
@@ -49,7 +50,7 @@ describe('Data group tests - 0x07', () => {
 
     const data = await firstValueFrom(mx10.data.onDataNameExtended)
     expect(data.nid).toBe(3)
-    expect(data.use.value).toBe(0)
+    expect(data.type).toBe(NameType.VEHICLE)
     expect(data.value1).toBe(undefined)
     expect(data.name).toBe('test of a name')
   })
