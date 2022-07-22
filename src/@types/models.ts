@@ -5,7 +5,7 @@ import {
   FunctionMode,
   OperatingMode,
   SystemStateMode,
-  TrackMode,
+  TrackMode, ImageType,
 } from 'src/util/enums'
 
 export interface Train {
@@ -132,4 +132,10 @@ export interface TrainFlags {
 export interface DataNameValue1 {
   type: string,
   cfgNum: number;
+}
+
+export interface ItemImageData {
+  nid: number;
+  type: ImageType;
+  imageId: number;
 }

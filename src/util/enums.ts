@@ -93,3 +93,11 @@ export enum NameType {
   LAND,
   COMPANY_CV,
 }
+
+export enum ImageType {
+  VEHICLE = 1,
+  VEHICLE_CRC32 = 2,
+  TACHO = 3,
+  VEHICLE_INSTRUMENT_BRAKE_BAR = 10,
+  VEHICLE_INSTRUMENT = 0x1F
+}

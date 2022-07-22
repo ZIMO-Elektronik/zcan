@@ -5,11 +5,11 @@ import { Subject } from 'rxjs'
 import {
   DataClearData,
   DataNameExtended, DataNameValue1,
-  GroupCountData,
+  GroupCountData, ItemImageData,
   ItemListByIndexData,
   ItemListByNidData,
 } from '../@types/models'
-import { NameType } from '../util/enums'
+import {ImageType, NameType} from '../util/enums'
 
 /**
  *
@@ -20,6 +20,7 @@ export default class DataGroup {
   public readonly onListItemsByIndex = new Subject<ItemListByIndexData>()
   public readonly onListItemsByNID = new Subject<ItemListByNidData>()
   public readonly onDataClear = new Subject<DataClearData>()
+  public readonly onItemImageConfig = new Subject<ItemImageData>()
   public readonly onDataNameExtended = new Subject<DataNameExtended>()
 
   private mx10: MX10
@@ -72,6 +73,17 @@ export default class DataGroup {
     ])
   }
 
+  itemImageConfig(nid: number, type: ImageType ,imageId: number) {
+    this.mx10.sendData(
+      0x07,
+      0x12,
+      [
+      { value: nid, length: 2 },
+      { value: type, length: 2 },
+      { value: imageId, length: 2 },
+    ])
+  }
+
   dataNameExtended(NID: number, subID: number, name: string) {
     this.mx10.sendData(
       0x07,
@@ -101,6 +113,9 @@ export default class DataGroup {
         break
       case 0x04:
         this.parseDataClear(size, mode, nid, buffer)
+        break
+      case 0x12:
+        this.parseItemImageConfig(size, mode, nid, buffer)
         break
       case 0x21:
         this.parseDataNameExtended(size, mode, nid, buffer)
@@ -159,6 +174,19 @@ export default class DataGroup {
       nid: NID,
       state: state,
     })
+  }
+
+  // 0x07.0x12
+  private parseItemImageConfig(_size: number, _mode: number, _nid: number, buffer: Buffer) {
+    const NID = buffer.readUInt16LE(0)
+    const type = buffer.readUInt16LE(2);
+    const imageId = buffer.readUInt16LE(4);
+
+    this.onItemImageConfig.next({
+      nid: NID,
+      type,
+      imageId
+    });
   }
 
   // 0x07.0x21

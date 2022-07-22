@@ -1,10 +1,10 @@
-import { createMX10, initConnection } from './util'
-import { afterAll, beforeAll, it, describe, expect } from '@jest/globals'
-import { firstValueFrom } from 'rxjs'
-import {NameType} from "../src";
+import {createMX10, initConnection} from './util'
+import {afterAll, beforeAll, describe, expect, it} from '@jest/globals'
+import {firstValueFrom} from 'rxjs'
+import {ImageType, NameType} from "../src";
 
 describe('Data group tests - 0x07', () => {
-  const mx10 = createMX10()
+  const mx10 = createMX10(true)
 
   beforeAll(async () => {
     await initConnection(mx10)
@@ -43,6 +43,18 @@ describe('Data group tests - 0x07', () => {
     const data = await firstValueFrom(mx10.data.onListItemsByNID)
     expect(data.nid).toBe(65535)
     expect(data.index).toBe(65535)
+  })
+
+  it('0x12 - Image config test', async () => {
+    const promise = firstValueFrom(mx10.data.onItemImageConfig).then((data) => {
+      expect(data.nid).toBe(3)
+      expect(data.type).toBe(ImageType.VEHICLE)
+      expect(data.imageId).toBe(6055)
+    })
+
+    mx10.data.itemImageConfig(3, ImageType.VEHICLE, 6055);
+
+    return promise;
   })
 
   it('0x21 - Data name extended test', async () => {
