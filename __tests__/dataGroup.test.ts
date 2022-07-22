@@ -57,13 +57,17 @@ describe('Data group tests - 0x07', () => {
     return promise;
   })
 
-  it('0x21 - Data name extended test', async () => {
-    mx10.data.dataNameExtended(3, 0, 'test of a name')
+  test.each<{ name: string }>([
+    {name: '---'},
+    {name: 'teßt Öf a näme'},
+    {name: 'dodo1'},
+  ])('0x21 - Data name extended test', async ({name}) => {
+    mx10.data.dataNameExtended(3, 0, name)
 
     const data = await firstValueFrom(mx10.data.onDataNameExtended)
     expect(data.nid).toBe(3)
     expect(data.type).toBe(NameType.VEHICLE)
     expect(data.value1).toBe(undefined)
-    expect(data.name).toBe('test of a name')
+    expect(data.name).toBe(name)
   })
 })

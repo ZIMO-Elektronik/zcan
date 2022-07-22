@@ -4,6 +4,7 @@ import {FunctionMode, getOperatingMode, OperatingMode} from "../util/enums";
 import {DataValueExtendedData, Train, TrainFlags, TrainFunction} from "../@types/models";
 import {Subject} from "rxjs";
 import {parseSpeed} from "../internal/speedUtils";
+import ExtendedASCII from "../util/extended-ascii";
 
 /**
  *
@@ -115,7 +116,7 @@ export default class LanDataGroup {
     const SubID = buffer.readUInt16LE(2);
     const vehicleGroup = buffer.readUInt16LE(4);
 
-    const name = buffer.subarray(6, 32).toString('ascii');
+    const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
     const imageId = buffer.readUInt16LE(38);
     const tacho = buffer.readUInt16LE(40);
     const speedFwd = buffer.readUInt16LE(42);

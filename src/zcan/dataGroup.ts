@@ -10,6 +10,7 @@ import {
   ItemListByNidData,
 } from '../@types/models'
 import {ImageType, NameType} from '../util/enums'
+import ExtendedASCII from "../util/extended-ascii";
 
 /**
  *
@@ -193,7 +194,7 @@ export default class DataGroup {
   private parseDataNameExtended(_size: number, _mode: number, _nid: number, buffer: Buffer) {
     const NID = buffer.readUInt16LE(0)
     const subID = buffer.readUInt16LE(2)
-    const name = buffer.subarray(12, 203).toString('ascii').replace(/\x00/, '');
+    const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
 
     let value1: DataNameValue1 | undefined;
     const value2 = buffer.readUInt32LE(8);

@@ -24,6 +24,7 @@ import {
 } from './zcan';
 import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from "./@types/communication";
 import {delay} from "./internal/utils";
+import ExtendedASCII from "./util/extended-ascii";
 
 /**
  *
@@ -154,7 +155,7 @@ export default class MX10 {
 
     data.forEach((element) => {
       if (typeof element.value  === 'string') {
-        buffer.write(element.value, offset, element.length, 'ascii');
+        ExtendedASCII.str2byte(element.value, buffer, offset, element.length);
         offset += element.length;
       } else {
       switch (element.length) {
