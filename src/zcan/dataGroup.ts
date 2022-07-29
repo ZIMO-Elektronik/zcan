@@ -5,11 +5,11 @@ import { Subject } from 'rxjs'
 import {
   DataClearData,
   DataNameExtended, DataNameValue1,
-  GroupCountData, ItemImageData,
+  GroupCountData, ItemFxInfo, ItemImageData,
   ItemListByIndexData,
   ItemListByNidData,
 } from '../@types/models'
-import {ImageType, NameType} from '../util/enums'
+import {FxInfoType, ImageType, NameType} from '../util/enums'
 import ExtendedASCII from "../util/extended-ascii";
 
 /**
@@ -22,6 +22,7 @@ export default class DataGroup {
   public readonly onListItemsByNID = new Subject<ItemListByNidData>()
   public readonly onDataClear = new Subject<DataClearData>()
   public readonly onItemImageConfig = new Subject<ItemImageData>()
+  public readonly onItemFxInfo = new Subject<ItemFxInfo>()
   public readonly onDataNameExtended = new Subject<DataNameExtended>()
 
   private mx10: MX10
@@ -74,7 +75,7 @@ export default class DataGroup {
     ])
   }
 
-  itemImageConfig(nid: number, type: ImageType ,imageId: number) {
+  itemImageConfig(nid: number, type: ImageType, imageId: number) {
     this.mx10.sendData(
       0x07,
       0x12,
@@ -83,6 +84,19 @@ export default class DataGroup {
       { value: type, length: 2 },
       { value: imageId, length: 2 },
     ])
+  }
+
+  itemFxInfo(nid: number, fx: number, type: FxInfoType, data: number) {
+    this.mx10.sendData(
+      0x07,
+      0x15,
+      [
+        { value: nid, length: 2 },
+        { value: fx, length: 2 },
+        { value: 0, length: 1 },
+        { value: type, length: 1 },
+        { value: data, length: 2 },
+      ])
   }
 
   dataNameExtended(NID: number, subID: number, name: string) {
@@ -117,6 +131,9 @@ export default class DataGroup {
         break
       case 0x12:
         this.parseItemImageConfig(size, mode, nid, buffer)
+        break
+      case 0x15:
+        this.parseItemFxInfo(size, mode, nid, buffer)
         break
       case 0x21:
         this.parseDataNameExtended(size, mode, nid, buffer)
@@ -187,6 +204,21 @@ export default class DataGroup {
       nid: NID,
       type,
       imageId
+    });
+  }
+
+  private parseItemFxInfo(_size: number, _mode: number, _nid: number, buffer: Buffer) {
+    const NID = buffer.readUInt16LE(0);
+    const fx = buffer.readUInt16LE(2);
+    // const base = buffer.readUInt8(4);
+    const type = buffer.readUInt8(5);
+    const data = buffer.readUInt16LE(6);
+
+    this.onItemFxInfo.next({
+      nid: NID,
+      function: fx,
+      type,
+      data
     });
   }
 

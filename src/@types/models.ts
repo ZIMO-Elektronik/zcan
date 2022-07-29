@@ -5,7 +5,7 @@ import {
   FunctionMode,
   OperatingMode,
   SystemStateMode,
-  TrackMode, ImageType,
+  TrackMode, ImageType, FxInfoType,
 } from 'src/util/enums'
 
 export interface Train {
@@ -138,4 +138,11 @@ export interface ItemImageData {
   nid: number;
   type: ImageType;
   imageId: number;
+}
+
+export interface ItemFxInfo {
+  nid: number;
+  function: number;
+  type: FxInfoType;
+  data: number;
 }

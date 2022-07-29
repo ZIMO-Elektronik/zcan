@@ -101,3 +101,7 @@ export enum ImageType {
   VEHICLE_INSTRUMENT_BRAKE_BAR = 10,
   VEHICLE_INSTRUMENT = 0x1F
 }
+
+export enum FxInfoType {
+  ICON = 0x10
+}

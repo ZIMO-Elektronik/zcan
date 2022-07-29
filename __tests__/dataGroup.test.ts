@@ -1,7 +1,7 @@
 import {createMX10, initConnection} from './util'
 import {afterAll, beforeAll, describe, expect, it} from '@jest/globals'
 import {firstValueFrom} from 'rxjs'
-import {ImageType, NameType} from "../src";
+import {FxInfoType, ImageType, NameType} from "../src";
 
 describe('Data group tests - 0x07', () => {
   const mx10 = createMX10(true)
@@ -53,6 +53,23 @@ describe('Data group tests - 0x07', () => {
     })
 
     mx10.data.itemImageConfig(3, ImageType.VEHICLE, 6055);
+
+    return promise;
+  })
+
+  test.each<{ icon: number, fx: number }>([
+    {icon: 755, fx: 1},
+    {icon: 756, fx: 1},
+    {icon: 700, fx: 1},
+  ])('0x15 - Function image change test', async ({icon, fx}) => {
+    const promise = firstValueFrom(mx10.data.onItemFxInfo).then((data) => {
+      expect(data.nid).toBe(3)
+      expect(data.function).toBe(fx)
+      expect(data.type).toBe(FxInfoType.ICON)
+      expect(data.data).toBe(icon)
+    })
+
+    mx10.data.itemFxInfo(3, fx, FxInfoType.ICON, icon);
 
     return promise;
   })
