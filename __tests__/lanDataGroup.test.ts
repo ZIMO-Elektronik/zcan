@@ -20,7 +20,7 @@ describe('LAN Data group tests - 0x17', () => {
     const train: Train = await firstValueFrom(mx10.lanData.onLocoGuiExtended)
     expect(train).toBeDefined();
     expect(train.nid).toBe(3);
-    expect(train.name).toMatch(/dodo1.*/)
+    expect(train.name).toMatch("dodo1")
     expect(train.era).toBeDefined();
     expect(train.functions).toBeDefined();
   })

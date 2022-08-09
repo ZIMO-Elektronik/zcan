@@ -52,7 +52,7 @@ export default class ExtendedASCII {
         chars[i] = String.fromCharCode(charCode);
       }
     }
-    return chars.join('').replace(/\x00/, '');
+    return chars.join('').replace(/[\x00-\x1f]/, '');
   }
 
   public static byteLength(str: string): number { return str.length; }
