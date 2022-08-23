@@ -5,6 +5,7 @@
  */
 
 /* You can override the default Infima variables here. */
+
 :root {
   --ifm-color-primary: #2e8555;
   --ifm-color-primary-dark: #29784c;
@@ -27,4 +28,28 @@
   --ifm-color-primary-lighter: #32d8b4;
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  padding: 20px;
+}
+.card h4 {
+  text-transform: uppercase;
+  font-size: 1.1rem;
+}
+.card a {
+  margin-left: auto;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+.card:hover .arrow {
+  transform: translateX(5px);
+}
+
+.left_align {
+  text-align: left;
 }

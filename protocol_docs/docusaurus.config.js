@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'ZCAN js library',
-  tagline: 'ZIMO CAN Bus documentation and javascript library',
+  title: 'ZCAN',
+  tagline: 'ZIMO CAN Bus Documentation',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -38,6 +38,7 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://git.consultis.sk/Consultis/zcan',
         },
+        blog: false,
 
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -70,14 +71,19 @@ const config = {
     ({
       navbar: {
         title: 'Zcan',
-        logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
-        },
+        // logo: {
+        //   alt: 'My Site Logo',
+        //   src: 'img/logo.svg',
+        // },
         items: [
           {
             type: 'doc',
-            docId: 'getting-started',
+            docId: 'introduction/introduction',
+            position: 'right',
+            label: 'Protocol',
+          },
+          {
+            href: '#',
             position: 'right',
             label: 'Docs',
           },
@@ -90,27 +96,8 @@ const config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Introduction',
-                to: '/docs/getting-started',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'Git',
-                href: 'https://git.consultis.sk/Consultis/zcan',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+
+        copyright: `Copyright © ${new Date().getFullYear()} ZCAN, Consultis k.s.`,
       },
       prism: {
         theme: lightCodeTheme,

@@ -15,8 +15,7 @@
     "lint": "eslint --ext .ts,.js .",
     "format": "prettier \"./**\" --write --ignore-unknown",
     "format:check": "prettier \"./**\" --ignore-unknown --check",
-    "docs": "typedoc",
-    "docusaurus": "cd docusaurus_docs && npm start"
+    "docs": "typedoc"
   },
   "dependencies": {
     "rxjs": "^7.5.5",
