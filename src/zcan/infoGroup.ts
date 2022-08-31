@@ -1,7 +1,7 @@
 import {Buffer} from 'buffer';
 import MX10 from '../MX10';
-import {Subject} from "rxjs";
-import {BidiInfoData} from "../@types/models";
+import {Subject} from 'rxjs';
+import {BidiInfoData} from '../@types/models';
 
 /**
  *
@@ -16,7 +16,7 @@ export default class InfoGroup {
     this.mx10 = mx10;
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -24,7 +24,6 @@ export default class InfoGroup {
     buffer: Buffer,
   ) {
     switch (command) {
-
       case 0x05:
         this.parseBidiInfo(size, mode, nid, buffer);
         break;
@@ -34,7 +33,12 @@ export default class InfoGroup {
     }
   }
 
-  private parseBidiInfo(size: number, mode: number, nid: number, buffer: Buffer) {
+  private parseBidiInfo(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
     const NID = buffer.readUInt16LE(0);
     const type = buffer.readUInt16LE(2);
     const data = buffer.readUInt32LE(4);
@@ -43,6 +47,6 @@ export default class InfoGroup {
       nid: NID,
       type,
       data,
-    })
+    });
   }
 }

@@ -1,9 +1,17 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import MX10 from '../MX10';
-import {Subject} from "rxjs";
-import {CallFunctionData, VehicleModeData, VehicleSpeedData} from "../@types/models";
-import {Direction, getOperatingMode} from "../util/enums";
-import {combineSpeedAndDirection, getSpeedSteps, parseSpeed} from "../internal/speedUtils";
+import {Subject} from 'rxjs';
+import {
+  CallFunctionData,
+  VehicleModeData,
+  VehicleSpeedData,
+} from '../@types/models';
+import {Direction, getOperatingMode} from '../util/enums';
+import {
+  combineSpeedAndDirection,
+  getSpeedSteps,
+  parseSpeed,
+} from '../internal/speedUtils';
 
 /**
  *
@@ -20,13 +28,8 @@ export default class VehicleGroup {
     this.mx10 = mx10;
   }
 
-  vehicleMode(
-    vehicleAddress: number,
-  ) {
-
-    this.mx10.sendData(0x02, 0x01, [
-      {value: vehicleAddress, length: 2},
-    ]);
+  vehicleMode(vehicleAddress: number) {
+    this.mx10.sendData(0x02, 0x01, [{value: vehicleAddress, length: 2}]);
   }
 
   changeSpeed(
@@ -34,10 +37,14 @@ export default class VehicleGroup {
     speedStep: number,
     forward: boolean,
     eastWest?: Direction,
-    emergencyStop?: boolean
+    emergencyStop?: boolean,
   ) {
-
-    const speedAndDirection = combineSpeedAndDirection(speedStep, forward, eastWest, emergencyStop);
+    const speedAndDirection = combineSpeedAndDirection(
+      speedStep,
+      forward,
+      eastWest,
+      emergencyStop,
+    );
 
     this.mx10.sendData(0x02, 0x02, [
       {value: vehicleAddress, length: 2},
@@ -46,7 +53,11 @@ export default class VehicleGroup {
     ]);
   }
 
-  callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean) {
+  callFunction(
+    vehicleAddress: number,
+    functionId: number,
+    functionStatus: boolean,
+  ) {
     this.mx10.sendData(0x02, 0x04, [
       {value: vehicleAddress, length: 2},
       {value: functionId, length: 2},
@@ -54,7 +65,7 @@ export default class VehicleGroup {
     ]);
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -75,8 +86,12 @@ export default class VehicleGroup {
   }
 
   // 0x02.0x01
-  private parseVehicleMode(size: number, mode: number, nid: number, buffer: Buffer) {
-
+  private parseVehicleMode(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
     const NID = buffer.readUInt16LE(0);
     const mode1 = buffer.readUInt8(2);
     const mode2 = buffer.readUInt8(3);
@@ -91,22 +106,22 @@ export default class VehicleGroup {
       operatingMode,
       mode2,
       mode3,
-    })
-
+    });
   }
 
   // 0x02.0x02
-  private parseVehicleSpeed(size: number, mode: number, nid: number, buffer: Buffer) {
+  private parseVehicleSpeed(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
     const NID = buffer.readUInt16LE(0);
     const speedAndDirection = buffer.readUInt16LE(2);
     const divisor = buffer.readUint8(4);
 
-    const {
-      speedStep,
-      forward,
-      eastWest,
-      emergencyStop
-    } = parseSpeed(speedAndDirection);
+    const {speedStep, forward, eastWest, emergencyStop} =
+      parseSpeed(speedAndDirection);
 
     this.onChangeSpeed.next({
       nid: NID,
@@ -114,7 +129,7 @@ export default class VehicleGroup {
       speedStep,
       forward,
       eastWest,
-      emergencyStop
+      emergencyStop,
     });
   }
 
@@ -134,7 +149,7 @@ export default class VehicleGroup {
     this.onCallFunction.next({
       nid: NID,
       functionNumber,
-      functionState: functionActive
+      functionState: functionActive,
     });
   }
 }

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // 0x18
 import MX10 from '../MX10';
-import {Subject} from "rxjs";
-import {ModulePowerInfoData} from "../@types/models";
-import {TrackMode} from "../util/enums";
+import {Subject} from 'rxjs';
+import {ModulePowerInfoData} from '../@types/models';
+import {TrackMode} from '../util/enums';
 
 /**
  *
@@ -18,7 +18,7 @@ export default class LanInfoGroup {
     this.mx10 = mx10;
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -65,7 +65,7 @@ export default class LanInfoGroup {
       amperage32V,
       amperage12V,
       voltageTotal,
-      temperature
+      temperature,
     });
   }
 
@@ -73,7 +73,7 @@ export default class LanInfoGroup {
     const offBites = 0b0000000000001;
 
     const off = (state & offBites) === 1;
-    const tmp = (state >> 4) & 0x0F;
+    const tmp = (state >> 4) & 0x0f;
 
     if (off) {
       return TrackMode.OFF;

@@ -26,7 +26,7 @@ export default class TrackCfgGroup {
     ]);
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -55,7 +55,7 @@ export default class TrackCfgGroup {
       FahrzeugNID,
       cfgNum,
       valCV,
-    }
+    };
   }
 
   // 0x16.0x09
@@ -69,7 +69,7 @@ export default class TrackCfgGroup {
       SysNId,
       FahrzeugNID,
       cfgNum,
-      valCV
-    }
+      valCV,
+    };
   }
 }

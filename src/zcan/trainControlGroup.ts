@@ -17,7 +17,7 @@ export default class TrainControlGroup {
     this.mx10.sendData(0x05, 0x02, [{value: NID, length: 2}], 0b00);
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -42,7 +42,7 @@ export default class TrainControlGroup {
       NID,
       trainNID,
       ownerNID,
-      state
-    }
+      state,
+    };
   }
 }

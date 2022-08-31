@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 
 import {Buffer} from 'buffer';
-import {interval, Subject} from "rxjs";
+import {interval, Subject} from 'rxjs';
 
 import {
   AccessoryCommandGroup,
@@ -22,9 +22,14 @@ import {
   VehicleGroup,
   ZimoProgrammableScriptGroup,
 } from './zcan';
-import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from "./@types/communication";
-import {delay} from "./internal/utils";
-import ExtendedASCII from "./util/extended-ascii";
+import {
+  CreateSocketFunction,
+  NIDGenerator,
+  Socket,
+  ZcanDataArray,
+} from './@types/communication';
+import {delay} from './internal/utils';
+import ExtendedASCII from './util/extended-ascii';
 
 /**
  *
@@ -64,7 +69,11 @@ export default class MX10 {
   private readonly connectionTimeout: number;
   private readonly debugCommunication: boolean;
 
-  constructor(nidGeneratorFunction: NIDGenerator, connectionTimeout = 1000, debugCommunication = false) {
+  constructor(
+    nidGeneratorFunction: NIDGenerator,
+    connectionTimeout = 1000,
+    debugCommunication = false,
+  ) {
     this.nidGeneratorFunction = nidGeneratorFunction;
     this.connectionTimeout = connectionTimeout;
     this.debugCommunication = debugCommunication;
@@ -72,12 +81,17 @@ export default class MX10 {
     const pingIntervalMs = 60 * 1000;
     interval(pingIntervalMs).subscribe(() => {
       if (this.connected) {
-        this.network.ping()
+        this.network.ping();
       }
     });
   }
 
-  async initSocket(createSocketFunction: CreateSocketFunction, ipAddress: string, incomingPort = 14521, outgoingPort = 14520) {
+  async initSocket(
+    createSocketFunction: CreateSocketFunction,
+    ipAddress: string,
+    incomingPort = 14521,
+    outgoingPort = 14520,
+  ) {
     this.mx10IP = ipAddress;
     this.incomingPort = incomingPort;
     this.outgoingPort = outgoingPort;
@@ -93,7 +107,7 @@ export default class MX10 {
         });
       });
 
-      this.mx10Socket.on('message', this._readRawData.bind(this));
+      this.mx10Socket.on('message', this.readRawData.bind(this));
 
       this.myNID = await this.nidGeneratorFunction();
       this.lanNetwork.portOpen();
@@ -127,11 +141,11 @@ export default class MX10 {
     nid = this.myNID,
     force = false,
   ) {
-    const buffer = this._formatData(group, cmd, mode, nid, data);
-    this._send(buffer, force);
+    const buffer = this.formatData(group, cmd, mode, nid, data);
+    this.send(buffer, force);
   }
 
-  private _formatData(
+  private formatData(
     group: number,
     cmd: number,
     mode: number,
@@ -154,38 +168,38 @@ export default class MX10 {
     let offset = 8;
 
     data.forEach((element) => {
-      if (typeof element.value  === 'string') {
+      if (typeof element.value === 'string') {
         ExtendedASCII.str2byte(element.value, buffer, offset, element.length);
         offset += element.length;
       } else {
-      switch (element.length) {
-        case 1:
-          buffer.writeUInt8(element.value, offset);
-          offset += 1;
-          break;
+        switch (element.length) {
+          case 1:
+            buffer.writeUInt8(element.value, offset);
+            offset += 1;
+            break;
 
-        case 2:
-          buffer.writeUInt16LE(element.value, offset);
-          offset += 2;
-          break;
+          case 2:
+            buffer.writeUInt16LE(element.value, offset);
+            offset += 2;
+            break;
 
-        case 4:
-          buffer.writeUInt32LE(element.value, offset);
-          offset += 4;
-          break;
+          case 4:
+            buffer.writeUInt32LE(element.value, offset);
+            offset += 4;
+            break;
 
-        default:
-          throw new Error(`ELEMENT LENGTH NOT DEFINED, ${element}`)
-      }
+          default:
+            throw new Error(`ELEMENT LENGTH NOT DEFINED, ${element}`);
+        }
       }
     });
 
-    this._printReadout(group, cmd, mode, nid, size, buffer.slice(8));
+    this.printReadout(group, cmd, mode, nid, size, buffer.slice(8));
 
     return buffer;
   }
 
-  private _send(message: Buffer, force = false) {
+  private send(message: Buffer, force = false) {
     if (this.connected || force) {
       this.mx10Socket?.send(
         message,
@@ -196,16 +210,16 @@ export default class MX10 {
         (err) => {
           if (err && this.debugCommunication) {
             // eslint-disable-next-line no-console
-            console.log(err)
+            console.log(err);
           }
-        }
+        },
       );
     } else {
       this.errors.next('mx10.connection.not_connected');
     }
   }
 
-  private _readRawData(message: Buffer) {
+  private readRawData(message: Buffer) {
     const size = message.readUInt16LE(0);
     const group = message.readUInt8(4);
     const commandAndMode = message.readUInt8(5);
@@ -217,60 +231,60 @@ export default class MX10 {
 
     const buffer = message.slice(8); //Remove first 8 bytes; left only with data
 
-    this._printReadout(group, command, mode, nid, size, buffer, false);
+    this.printReadout(group, command, mode, nid, size, buffer, false);
 
     switch (group) {
       case 0x00:
-        this.systemControl._parse(size, command, mode, nid, buffer);
+        this.systemControl.parse(size, command, mode, nid, buffer);
         break;
       case 0x01:
-        this.accessoryCommand._parse(size, command, mode, nid, buffer);
+        this.accessoryCommand.parse(size, command, mode, nid, buffer);
         break;
       case 0x02:
-        this.vehicle._parse(size, command, mode, nid, buffer);
+        this.vehicle.parse(size, command, mode, nid, buffer);
         break;
       case 0x05:
-        this.trainControl._parse(size, command, mode, nid, buffer);
+        this.trainControl.parse(size, command, mode, nid, buffer);
         break;
       case 0x06:
       case 0x16:
-        this.trackCfg._parse(size, command, mode, nid, buffer);
+        this.trackCfg.parse(size, command, mode, nid, buffer);
         break;
       case 0x07:
-        this.data._parse(size, command, mode, nid, buffer);
+        this.data.parse(size, command, mode, nid, buffer);
         break;
       case 0x08:
-        this.info._parse(size, command, mode, nid, buffer);
+        this.info.parse(size, command, mode, nid, buffer);
         break;
       case 0x09:
-        this.propertyConfig._parse(size, command, mode, nid, buffer);
+        this.propertyConfig.parse(size, command, mode, nid, buffer);
         break;
       case 0x0a:
-        this.network._parse(size, command, mode, nid, buffer);
+        this.network.parse(size, command, mode, nid, buffer);
         break;
       case 0x0b:
-        this.railwayControl._parse(size, command, mode, nid, buffer);
+        this.railwayControl.parse(size, command, mode, nid, buffer);
         break;
       case 0x0c:
-        this.zimoProgrammableScript._parse(size, command, mode, nid, buffer);
+        this.zimoProgrammableScript.parse(size, command, mode, nid, buffer);
         break;
       case 0x0e:
-        this.fileControl._parse(size, command, mode, nid, buffer);
+        this.fileControl.parse(size, command, mode, nid, buffer);
         break;
       case 0x0f:
-        this.fileTransfer._parse(size, command, mode, nid, buffer);
+        this.fileTransfer.parse(size, command, mode, nid, buffer);
         break;
       case 0x17:
-        this.lanData._parse(size, command, mode, nid, buffer);
+        this.lanData.parse(size, command, mode, nid, buffer);
         break;
       case 0x18:
-        this.lanInfo._parse(size, command, mode, nid, buffer);
+        this.lanInfo.parse(size, command, mode, nid, buffer);
         break;
       case 0x1a:
-        this.lanNetwork._parse(size, command, mode, nid, buffer);
+        this.lanNetwork.parse(size, command, mode, nid, buffer);
         break;
       case 0x1c:
-        this.lanZimoProgrammableScript._parse(size, command, mode, nid, buffer);
+        this.lanZimoProgrammableScript.parse(size, command, mode, nid, buffer);
         break;
       default:
         // eslint-disable-next-line no-console
@@ -278,7 +292,7 @@ export default class MX10 {
     }
   }
 
-  private _printReadout(
+  private printReadout(
     group: number,
     cmd: number,
     mode: number,

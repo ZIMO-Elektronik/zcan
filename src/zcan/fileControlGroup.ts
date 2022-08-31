@@ -13,7 +13,7 @@ export default class FileControlGroup {
     this.mx10 = mx10;
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,

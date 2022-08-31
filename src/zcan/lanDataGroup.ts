@@ -1,10 +1,15 @@
 // 0x17
-import MX10 from "../MX10";
-import {FunctionMode, getOperatingMode, OperatingMode} from "../util/enums";
-import {DataValueExtendedData, Train, TrainFlags, TrainFunction} from "../@types/models";
-import {Subject} from "rxjs";
-import {parseSpeed} from "../internal/speedUtils";
-import ExtendedASCII from "../util/extended-ascii";
+import MX10 from '../MX10';
+import {FunctionMode, getOperatingMode, OperatingMode} from '../util/enums';
+import {
+  DataValueExtendedData,
+  Train,
+  TrainFlags,
+  TrainFunction,
+} from '../@types/models';
+import {Subject} from 'rxjs';
+import {parseSpeed} from '../internal/speedUtils';
+import ExtendedASCII from '../util/extended-ascii';
 
 /**
  *
@@ -46,7 +51,7 @@ export default class LanDataGroup {
     );
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,
@@ -55,19 +60,19 @@ export default class LanDataGroup {
   ) {
     switch (command) {
       case 0x08:
-        this._parseDataValueExtended(size, mode, nid, buffer);
+        this.parseDataValueExtended(size, mode, nid, buffer);
         break;
       case 0x27:
-        this._parseLocoGuiExtended(size, mode, nid, buffer);
+        this.parseLocoGuiExtended(size, mode, nid, buffer);
         break;
     }
   }
 
   // 0x17.0x08
-  private _parseDataValueExtended(
-    _size: number,
-    _mode: number,
-    _nid: number,
+  private parseDataValueExtended(
+    size: number,
+    mode: number,
+    nid: number,
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
@@ -78,7 +83,8 @@ export default class LanDataGroup {
     const functionCount = buffer.readUInt8(27);
     const speedAndDirection = buffer.readUInt16LE(46);
 
-    const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
+    const {speedStep, forward, eastWest, emergencyStop} =
+      parseSpeed(speedAndDirection);
     const operatingMode = getOperatingMode(trackMode);
     const flags = this.parseFlags(flagsBytes);
 
@@ -101,15 +107,15 @@ export default class LanDataGroup {
       eastWest,
       emergencyStop,
       operatingMode,
-      functionsStates
-    })
+      functionsStates,
+    });
   }
 
   // 0x17.0x27
-  private _parseLocoGuiExtended(
-    _size: number,
-    _mode: number,
-    _nid: number,
+  private parseLocoGuiExtended(
+    size: number,
+    mode: number,
+    nid: number,
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
@@ -129,14 +135,12 @@ export default class LanDataGroup {
     // reading 64 bytes of functions
     const functions = Array<TrainFunction>();
     for (let i = 0; i < 33; i++) {
-      const icon = buffer.readUInt16LE(54 + i * 2)
-      functions.push(
-        {
-          mode: FunctionMode.switch,
-          active: false,
-          icon: String(icon).padStart(4, '0'),
-        },
-      );
+      const icon = buffer.readUInt16LE(54 + i * 2);
+      functions.push({
+        mode: FunctionMode.switch,
+        active: false,
+        icon: String(icon).padStart(4, '0'),
+      });
     }
 
     this.onLocoGuiExtended.next({
@@ -154,48 +158,33 @@ export default class LanDataGroup {
       era: this.parseEra(era),
       countryCode: countryCode,
       functions,
-    })
+    });
   }
 
   private parseEra(eraString: number) {
-    let result = '';
-    switch (eraString & 0xF0) {
+    switch (eraString & 0xf0) {
       case 0x10:
-        result += 'I';
-        break;
+        return 'I';
       case 0x20:
-        result += 'I';
-        result += 'I';
-        break;
+        return 'II';
       case 0x30:
-        result += 'I';
-        result += 'I';
-        result += 'I';
-        break;
+        return 'III';
       case 0x40:
-        result += 'I';
-        result += 'V';
-        break;
+        return 'IV';
       case 0x50:
-        result += 'V';
-        break;
+        return 'V';
       case 0x60:
-        result += 'V';
-        result += 'I';
-        break;
+        return 'VI';
       case 0x70:
-        result += 'V';
-        result += 'I';
-        result += 'I';
-        break;
+        return 'VII';
+      default:
+        return '';
     }
-
-    return result;
   }
 
-  private parseFlags(flagsNumber: number) : TrainFlags {
+  private parseFlags(flagsNumber: number): TrainFlags {
     return {
       deleted: flagsNumber >> 31 === 1,
-    }
+    };
   }
 }

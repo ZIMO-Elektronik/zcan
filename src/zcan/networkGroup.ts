@@ -31,7 +31,7 @@ export default class NetworkGroup {
     this.mx10.sendData(0x0a, 0x07, [{value: this.mx10.myNID, length: 2}], 0b01);
   }
 
-  _parse(
+  parse(
     size: number,
     command: number,
     mode: number,

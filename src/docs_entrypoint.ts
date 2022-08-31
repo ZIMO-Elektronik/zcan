@@ -1,6 +1,4 @@
-export {
-  default as MX10
-} from "./MX10";
+export {default as MX10} from './MX10';
 
 export {
   AccessoryCommandGroup,
@@ -27,10 +25,10 @@ export {
   ExternalController,
   FunctionMode,
   OperatingMode,
-  SystemStateMode
-} from "./util/enums";
+  SystemStateMode,
+} from './util/enums';
 
 export * from './@types/models';
 export * from './@types/communication';
 
-export { Subject, Observable} from "rxjs"
+export {Subject, Observable} from 'rxjs';
