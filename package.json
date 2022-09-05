@@ -15,7 +15,7 @@
     "lint": "eslint --ext .ts,.js .",
     "format": "prettier \"./**\" --write --ignore-unknown",
     "format:check": "prettier \"./**\" --ignore-unknown --check",
-    "docs": "typedoc"
+    "docs": "gulp documentation"
   },
   "dependencies": {
     "rxjs": "^7.5.5",
@@ -29,10 +29,15 @@
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "cross-env": "^7.0.3",
+    "del": "^7.0.0",
     "eslint": "^8.12.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-tsdoc": "^0.2.14",
+    "gulp": "^4.0.2",
+    "gulp-install": "^1.1.0",
+    "gulp-spawn": "^1.0.0",
+    "gulp-typedoc": "^3.0.2",
     "jest": "^27.5.1",
     "nodemon": "^2.0.15",
     "prettier": "^2.6.1",

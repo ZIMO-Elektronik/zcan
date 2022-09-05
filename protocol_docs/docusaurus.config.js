@@ -70,22 +70,24 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Zcan',
+        title: 'ZCan',
         // logo: {
         //   alt: 'My Site Logo',
         //   src: 'img/logo.svg',
         // },
         items: [
           {
+            href: 'typedoc/index.html',
+            position: 'right',
+            label: 'API',
+            target: '_blank',
+            prependBaseUrlToHref: true
+          },
+          {
             type: 'doc',
             docId: 'introduction/introduction',
             position: 'right',
             label: 'Protocol',
-          },
-          {
-            href: '#',
-            position: 'right',
-            label: 'Docs',
           },
           {
             href: 'https://git.consultis.sk/Consultis/zcan',
