@@ -115,4 +115,5 @@ dist
 .idea/
 .vscode/
 tools/dev
-./docs/
+docs/
+!protocol_docs/docs
