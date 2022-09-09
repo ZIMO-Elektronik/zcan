@@ -34,9 +34,9 @@ export default class LanInfoGroup {
 
   // 0x18.0x00
   private parseModulePowerInfo(
-    _size: number,
-    _mode: number,
-    _nid: number,
+    size: number,
+    mode: number,
+    nid: number,
     buffer: Buffer,
   ) {
     const deviceNID = buffer.readUInt16LE(0);

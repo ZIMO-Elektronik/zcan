@@ -66,8 +66,9 @@ export default class MX10 {
   private outgoingPort = 14520;
 
   private readonly nidGeneratorFunction: NIDGenerator;
-  private readonly connectionTimeout: number;
   private readonly debugCommunication: boolean;
+
+  readonly connectionTimeout: number;
 
   constructor(
     nidGeneratorFunction: NIDGenerator,
@@ -119,6 +120,11 @@ export default class MX10 {
         throw new Error('mx10.connection.timeout');
       }
     }
+  }
+
+  reconnect() {
+    this.network.portClose();
+    this.lanNetwork.portOpen();
   }
 
   closeSocket(callMx10: boolean = true) {
