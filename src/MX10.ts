@@ -65,6 +65,10 @@ export default class MX10 {
   private incomingPort = 14521;
   private outgoingPort = 14520;
 
+  private lastPing = 0;
+  private interval: NodeJS.Timeout | undefined = undefined;
+  private reconnectionTime: number = 0;
+
   private readonly nidGeneratorFunction: NIDGenerator;
   private readonly debugCommunication: boolean;
 
@@ -78,6 +82,7 @@ export default class MX10 {
     this.nidGeneratorFunction = nidGeneratorFunction;
     this.connectionTimeout = connectionTimeout;
     this.debugCommunication = debugCommunication;
+    this.reconnectionTime = 2 * connectionTimeout;
 
     const pingIntervalMs = 60 * 1000;
     interval(pingIntervalMs).subscribe(() => {
@@ -122,9 +127,25 @@ export default class MX10 {
     }
   }
 
-  reconnect() {
-    this.network.portClose();
-    this.lanNetwork.portOpen();
+  reconnectLogic() {
+    const date = Date.now();
+    if (
+      date - this.lastPing < this.reconnectionTime &&
+      this.interval !== undefined
+    ) {
+      clearInterval(this.interval);
+      this.interval = undefined;
+    }
+
+    if (this.interval === undefined) {
+      this.interval = setInterval(() => {
+        console.log('Reconnecting...');
+        this.network.portClose();
+        this.lanNetwork.portOpen();
+      }, this.reconnectionTime);
+    }
+
+    this.lastPing = date;
   }
 
   closeSocket(callMx10: boolean = true) {

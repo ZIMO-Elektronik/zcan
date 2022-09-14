@@ -62,7 +62,7 @@ export default class NetworkGroup {
       // TODO reconnect when uuid has changed
       // const uuid = buffer.readUInt32LE(0);
 
-      this.reconnectLogic();
+      this.mx10.reconnectLogic();
 
       //Return Ping ACK
       this.ping(0b011);
@@ -74,23 +74,5 @@ export default class NetworkGroup {
           size.toString(),
       );
     }
-  }
-
-  private reconnectLogic() {
-    const date = Date.now();
-    if (date - this.lastPing < this.reconnectionTime && this.interval) {
-      clearInterval(this.interval);
-    }
-
-    this.reconnectLoop();
-
-    this.lastPing = date;
-  }
-
-  private reconnectLoop() {
-    this.interval = setInterval(() => {
-      this.mx10.reconnect();
-      this.reconnectLoop();
-    }, this.reconnectionTime);
   }
 }
