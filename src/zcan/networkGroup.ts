@@ -8,13 +8,9 @@ import {Buffer} from 'buffer';
  */
 export default class NetworkGroup {
   private mx10: MX10;
-  private lastPing: number = 0;
-  private interval: NodeJS.Timeout | undefined;
-  private readonly reconnectionTime: number;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
-    this.reconnectionTime = this.mx10.connectionTimeout * 2;
   }
 
   ping(mode = 0b01) {
