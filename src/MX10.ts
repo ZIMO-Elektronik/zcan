@@ -67,10 +67,10 @@ export default class MX10 {
 
   private lastPing = 0;
   private interval: NodeJS.Timeout | undefined = undefined;
-  private reconnectionTime: number = 0;
 
   private readonly nidGeneratorFunction: NIDGenerator;
   private readonly debugCommunication: boolean;
+  private readonly reconnectionTime: number = 0;
 
   readonly connectionTimeout: number;
 
@@ -82,7 +82,7 @@ export default class MX10 {
     this.nidGeneratorFunction = nidGeneratorFunction;
     this.connectionTimeout = connectionTimeout;
     this.debugCommunication = debugCommunication;
-    this.reconnectionTime = 2 * connectionTimeout;
+    this.reconnectionTime = connectionTimeout * 4;
 
     const pingIntervalMs = 60 * 1000;
     interval(pingIntervalMs).subscribe(() => {
