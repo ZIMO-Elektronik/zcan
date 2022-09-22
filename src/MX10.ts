@@ -139,7 +139,7 @@ export default class MX10 {
 
     if (this.interval === undefined) {
       this.interval = setInterval(() => {
-        if (this.connected) {
+        if (!this.connected) {
           console.log('Reconnecting...');
           this.network.portClose();
           this.lanNetwork.portOpen();
