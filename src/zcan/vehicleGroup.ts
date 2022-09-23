@@ -3,10 +3,18 @@ import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {
   CallFunctionData,
+  CallSpecialFunctionData,
   VehicleModeData,
   VehicleSpeedData,
 } from '../@types/models';
-import {Direction, getOperatingMode} from '../util/enums';
+import {
+  Direction,
+  DirectionDefault,
+  getOperatingMode,
+  Manual,
+  ShuntingFunction,
+  SpecialFunctionMode,
+} from '../util/enums';
 import {
   combineSpeedAndDirection,
   getSpeedSteps,
@@ -23,6 +31,8 @@ export default class VehicleGroup {
   public readonly onVehicleMode = new Subject<VehicleModeData>();
   public readonly onChangeSpeed = new Subject<VehicleSpeedData>();
   public readonly onCallFunction = new Subject<CallFunctionData>();
+  public readonly onCallSpecialFunction =
+    new Subject<CallSpecialFunctionData>();
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
@@ -65,6 +75,18 @@ export default class VehicleGroup {
     ]);
   }
 
+  changeSpecialFunction(
+    vehicleAddress: number,
+    specialFunctionMode: SpecialFunctionMode,
+    specialFunctionStatus: Manual | ShuntingFunction | DirectionDefault,
+  ) {
+    this.mx10.sendData(0x02, 0x05, [
+      {value: vehicleAddress, length: 2},
+      {value: specialFunctionMode, length: 2},
+      {value: specialFunctionStatus, length: 2},
+    ]);
+  }
+
   parse(
     size: number,
     command: number,
@@ -81,6 +103,9 @@ export default class VehicleGroup {
         break;
       case 0x04:
         this.parseVehicleFunction(size, mode, nid, buffer);
+        break;
+      case 0x05:
+        this.parseVehicleSpecialFunction(size, mode, nid, buffer);
         break;
     }
   }
@@ -150,6 +175,24 @@ export default class VehicleGroup {
       nid: NID,
       functionNumber,
       functionState: functionActive,
+    });
+  }
+
+  // 0x02.0x05
+  private parseVehicleSpecialFunction(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    const NID = buffer.readUInt16LE(0);
+    const specialFunctionMode = buffer.readUInt16LE(2);
+    const specialFunctionState = buffer.readUInt16LE(4);
+
+    this.onCallSpecialFunction.next({
+      nid: NID,
+      specialFunctionMode,
+      specialFunctionState,
     });
   }
 }

@@ -52,14 +52,13 @@ export enum FunctionMode {
   switch,
 }
 
-
 export enum SystemStateMode {
   NORMAL = 1,
   SSP0 = 2,
-  SSPe= 3,
-  OFF=4,
-  SERVICE=5,
-  OVERRCURRENT = 10
+  SSPe = 3,
+  OFF = 4,
+  SERVICE = 5,
+  OVERRCURRENT = 10,
 }
 
 export enum TrackMode {
@@ -99,9 +98,32 @@ export enum ImageType {
   VEHICLE_CRC32 = 2,
   TACHO = 3,
   VEHICLE_INSTRUMENT_BRAKE_BAR = 10,
-  VEHICLE_INSTRUMENT = 0x1F
+  VEHICLE_INSTRUMENT = 0x1f,
 }
 
 export enum FxInfoType {
-  ICON = 0x10
+  ICON = 0x10,
+}
+
+export enum SpecialFunctionMode {
+  MANUAL = 1,
+  SHUNTING_FUNCTION = 2,
+  DIRECTION_DEFAULT = 3,
+}
+
+export enum Manual {
+  OFF = 0,
+  ON = 1,
+}
+
+export enum ShuntingFunction {
+  OFF = 0,
+  AZBZ = 1,
+  HALF = 2,
+}
+
+export enum DirectionDefault {
+  NO_CHANGE = 0,
+  DIRECTION_EAST = 1,
+  DIRECTION_WEST = 2,
 }
