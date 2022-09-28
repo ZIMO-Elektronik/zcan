@@ -98,6 +98,9 @@ export default class LanDataGroup {
       functions = functions >> 1;
     }
 
+    const shuntingFunction = buffer.readUInt16LE(52);
+    const manualMode = buffer.readUInt16LE(54);
+
     this.onDataValueExtended.next({
       nid: NID,
       flags,
@@ -108,6 +111,8 @@ export default class LanDataGroup {
       emergencyStop,
       operatingMode,
       functionsStates,
+      shuntingFunction,
+      manualMode,
     });
   }
 

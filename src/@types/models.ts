@@ -48,6 +48,8 @@ export interface DataValueExtendedData {
   operatingMode: OperatingMode;
   functionsStates: boolean[];
   flags: TrainFlags;
+  shuntingFunction: ShuntingFunction;
+  manualMode: Manual;
 }
 
 export interface GroupCountData {
