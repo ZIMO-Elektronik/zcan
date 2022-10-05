@@ -40,6 +40,7 @@ export default class MX10 {
   mx10NID = 0;
   mx10IP: string | undefined;
   connected = false;
+  queue: {buffer: Buffer; force: boolean; group: number; cmd: number}[] = [];
 
   readonly systemControl = new SystemControlGroup(this);
   readonly accessoryCommand = new AccessoryCommandGroup(this);
@@ -170,7 +171,16 @@ export default class MX10 {
     force = false,
   ) {
     const buffer = this.formatData(group, cmd, mode, nid, data);
-    this.send(buffer, force);
+
+    if (group === 0x0a || group === 0x1a) {
+      this.send(buffer, force);
+      return;
+    }
+
+    if (this.queue.length === 0) {
+      this.send(buffer, force);
+    }
+    this.queue.push({buffer: buffer, force: force, group: group, cmd: cmd});
   }
 
   private formatData(
@@ -259,6 +269,16 @@ export default class MX10 {
 
     const buffer = message.slice(8); //Remove first 8 bytes; left only with data
 
+    if (
+      this.queue.length > 0 &&
+      this.queue[0].group === group &&
+      this.queue[0].cmd === command
+    ) {
+      this.queue.shift();
+      if (this.queue[0]) {
+        this.send(this.queue[0].buffer, this.queue[0].force);
+      }
+    }
     this.printReadout(group, command, mode, nid, size, buffer, false);
 
     switch (group) {
