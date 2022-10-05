@@ -6,3 +6,6 @@ export const emergencyStopB = 0b1000000000000000; // 15
 
 export const speedStepBites = 0b00001111;
 export const modeBites_____ = 0b11110000;
+
+export const shuntingFunctionB = 0b1111;
+export const manualModeB = 0b110000;

@@ -10,6 +10,7 @@ import {
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../internal/speedUtils';
 import ExtendedASCII from '../util/extended-ascii';
+import {manualModeB, shuntingFunctionB} from 'src/internal/bites';
 
 /**
  *
@@ -45,7 +46,7 @@ export default class LanDataGroup {
       [
         {value: this.mx10.mx10NID, length: 2},
         {value: NID, length: 2},
-        {value: 0, length: 2},
+        {value: 1, length: 2},
       ],
       0b00,
     );
@@ -76,21 +77,18 @@ export default class LanDataGroup {
     buffer: Buffer,
   ) {
     const NID = buffer.readUInt16LE(0);
-    // const subId = buffer.readUInt16LE(2); // command version
 
-    const flagsBytes = buffer.readUInt32LE(6);
-    const trackMode = buffer.readUInt8(26);
-    const functionCount = buffer.readUInt8(27);
-    const speedAndDirection = buffer.readUInt16LE(46);
+    const flagsBytes = buffer.readUInt32LE(4);
+    const trackMode = buffer.readUInt8(24);
+    const functionCount = buffer.readUInt8(25);
+    const speedAndDirection = buffer.readUInt16LE(44);
 
     const {speedStep, forward, eastWest, emergencyStop} =
       parseSpeed(speedAndDirection);
     const operatingMode = getOperatingMode(trackMode);
     const flags = this.parseFlags(flagsBytes);
 
-    // train?.setConsist(consist); // TODO set once it is part of data
-
-    let functions = buffer.readUInt32LE(48);
+    let functions = buffer.readUInt32LE(46);
     const functionsStates = [];
     for (let i = 0; i < 31; i++) {
       const active = (functions & 1) == 1;
@@ -98,8 +96,10 @@ export default class LanDataGroup {
       functions = functions >> 1;
     }
 
-    const shuntingFunction = buffer.readUInt16LE(52);
-    const manualMode = buffer.readUInt16LE(54);
+    const specialFunc = buffer.readUInt32LE(50);
+
+    const shuntingFunction = specialFunc & shuntingFunctionB;
+    const manualMode = (specialFunc & manualModeB) >> 4;
 
     this.onDataValueExtended.next({
       nid: NID,
