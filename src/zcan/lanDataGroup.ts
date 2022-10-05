@@ -10,7 +10,7 @@ import {
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../internal/speedUtils';
 import ExtendedASCII from '../util/extended-ascii';
-import {manualModeB, shuntingFunctionB} from 'src/internal/bites';
+import {manualModeB, shuntingFunctionB} from '../internal/bites';
 
 /**
  *
