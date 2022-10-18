@@ -3,7 +3,7 @@ import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {Subject} from 'rxjs';
 import {
-  DataClearData,
+  RemoveLocomotiveData,
   DataNameExtended,
   DataNameValue1,
   GroupCountData,
@@ -23,7 +23,7 @@ export default class DataGroup {
   public readonly onGroupCount = new Subject<GroupCountData>();
   public readonly onListItemsByIndex = new Subject<ItemListByIndexData>();
   public readonly onListItemsByNID = new Subject<ItemListByNidData>();
-  public readonly onDataClear = new Subject<DataClearData>();
+  public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
   public readonly onItemImageConfig = new Subject<ItemImageData>();
   public readonly onItemFxInfo = new Subject<ItemFxInfo>();
   public readonly onDataNameExtended = new Subject<DataNameExtended>();
@@ -71,10 +71,10 @@ export default class DataGroup {
     );
   }
 
-  dataClear(nidToRemove: number, removeFromNID = this.mx10.mx10NID) {
-    this.mx10.sendData(0x07, 0x04, [
-      {value: removeFromNID, length: 2},
-      {value: nidToRemove, length: 2},
+  removeLocomotive(toRemove: number, removeFrom = this.mx10.mx10NID) {
+    this.mx10.sendData(0x07, 0x1f, [
+      {value: removeFrom, length: 2},
+      {value: toRemove, length: 2},
     ]);
   }
 
@@ -129,14 +129,14 @@ export default class DataGroup {
       case 0x02:
         this.parseItemListByNid(size, mode, nid, buffer);
         break;
-      case 0x04:
-        this.parseDataClear(size, mode, nid, buffer);
-        break;
       case 0x12:
         this.parseItemImageConfig(size, mode, nid, buffer);
         break;
       case 0x15:
         this.parseItemFxInfo(size, mode, nid, buffer);
+        break;
+      case 0x1f:
+        this.parseDataClear(size, mode, nid, buffer);
         break;
       case 0x21:
         this.parseDataNameExtended(size, mode, nid, buffer);
@@ -211,7 +211,7 @@ export default class DataGroup {
     const NID = buffer.readUInt16LE(0);
     const state = buffer.readUInt16LE(2);
 
-    this.onDataClear.next({
+    this.onRemoveLocomotive.next({
       nid: NID,
       state: state,
     });

@@ -133,7 +133,7 @@ export interface SystemStateData {
   mode: SystemStateMode;
 }
 
-export interface DataClearData {
+export interface RemoveLocomotiveData {
   nid: number;
   state: number;
 }
