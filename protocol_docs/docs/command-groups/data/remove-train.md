@@ -1,12 +1,16 @@
 ---
 id: remove-train
 title: Remove Train
+description: 0x07.0x1f
 sidebar_position: 4
 ---
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
-## Receiving [0x07, 0x04]
+<CommandAndGroup group="07" command="1f"/>
 
-When receiving command _0x04_ the 'Data' section will look like this:
+## Receiving 
+
+When receiving command the 'Data' section will look like this:
 
 <table>
   <tr>
@@ -19,14 +23,14 @@ When receiving command _0x04_ the 'Data' section will look like this:
   </tr>
 </table>
 
-## Sending [0x07, 0x04]
+## Sending
 
-When sending command _0x04_ the 'Data' section will look like this:
+When sending command the 'Data' section will look like this:
 
 <table>
   <tr>
-    <th>Remove from NID</th>
-    <th>NID to remove</th>
+    <th>Remove from device with NID</th>
+    <th>NID of locomotive (or other device) to remove</th>
   </tr>
   <tr>
     <th>16 Bit</th>

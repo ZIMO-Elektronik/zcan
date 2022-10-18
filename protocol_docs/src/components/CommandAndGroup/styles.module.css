@@ -1,0 +1,11 @@
+.chip {
+  padding: 0 10px;
+  width: fit-content;
+  background: var(--ifm-color-info-lightest);
+  margin-top: -20px !important;
+  border-radius: 15px;
+}
+
+
+
+
