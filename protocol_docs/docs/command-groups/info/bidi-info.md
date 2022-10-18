@@ -4,7 +4,11 @@ title: BiDi Info
 sidebar_position: 1
 ---
 
-## Receiving [0x08, 0x05]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="08" command="05"/>
+
+## Receiving
 
 When receiving command _0x05_ the 'Data' section will look like this:
 

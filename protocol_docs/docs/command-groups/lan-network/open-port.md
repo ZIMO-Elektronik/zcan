@@ -4,11 +4,15 @@ title: Open Port
 sidebar_position: 1
 ---
 
-## Receiving [0x1a, 0x0e]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="1a" command="0e"/>
+
+## Receiving
 
 When receiving command _0x0e_ , NID is used from message data-gram for connection!
 
-## Sending [0x1a, 0x0e]
+## Sending
 
 When sending command _0x0e_ the 'Data' section will look like this:
 

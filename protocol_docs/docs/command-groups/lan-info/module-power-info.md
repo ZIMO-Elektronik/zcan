@@ -4,7 +4,11 @@ title: Module Power Info
 sidebar_position: 1
 ---
 
-## Receiving [0x18, 0x00]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="18" command="00"/>
+
+## Receiving
 
 If a PC software/client has 'long' data-grams enabled, the MX10 sends its track status, current and voltage values in a 'long' data-gram.
 

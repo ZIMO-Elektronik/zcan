@@ -4,7 +4,11 @@ title: Data Name Extended
 sidebar_position: 7
 ---
 
-## Receiving [0x07, 0x21]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="21"/>
+
+## Receiving
 
 This command is only available on the PC interface (USB/LAN). This allows an app to transfer texts with up to 192 characters in one command. However, some entries are limited to 32 characters, or there are limitations in the GUI display.
 
@@ -149,7 +153,7 @@ Value2 is intended for groups.
 
 :::
 
-## Sending [0x07, 0x21]
+## Sending
 
 When sending command _0x21_ the 'Data' section will look like this:
 

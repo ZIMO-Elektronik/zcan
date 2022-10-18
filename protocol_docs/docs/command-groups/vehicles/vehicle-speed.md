@@ -4,7 +4,11 @@ title: Vehicle Speed
 sidebar_position: 1
 ---
 
-## Receiving [0x02, 0x02]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="02" command="02"/>
+
+## Receiving
 
 When receiving command _0x02_ the 'Data' section will look like this:
 
@@ -66,7 +70,7 @@ If Mode = 0b00, then the speed of the locomotive is requested with 'NID'. <br/> 
   </tbody>
 </table>
 
-## Sending [0x02, 0x02]
+## Sending
 
 When sending command _0x02_ the 'Data' section will look like this:
 

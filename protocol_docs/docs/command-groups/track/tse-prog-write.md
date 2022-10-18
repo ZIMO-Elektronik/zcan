@@ -4,7 +4,11 @@ title: TSE Prog Write
 sidebar_position: 2
 ---
 
-## Receiving [0x16, 0x09]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="16" command="09"/>
+
+## Receiving
 
 When receiving command _0x09_ the 'Data' section will look like this:
 
@@ -31,7 +35,7 @@ After Read/Write commands the respective control unit (MX32, PC, ...) should kee
 
 :::
 
-## Sending [0x16, 0x09]
+## Sending
 
 When sending command _0x09_ the 'Data' section will look like this:
 

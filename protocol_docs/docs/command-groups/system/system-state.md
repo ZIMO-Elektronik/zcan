@@ -4,6 +4,10 @@ title: System State
 sidebar_position: 0
 ---
 
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="00" command="00"/>
+
 The Command Group 0x00 summarizes all system 'High-Priority' commands and must be implemented by all boosters and drive consoles.
 
 With Cmd=0x00/M=0b00 the power status of the respective device can be queried.
@@ -52,7 +56,7 @@ If several outputs are switched at the same time, the confirmation still takes p
 
 Applications (whether via PC interface or one of the internal bus systems) should ALWAYS wait for the ACK of the MX10 after a power mode change. ALWAYS wait for the respective ACK of the MX10, which basically makes a 'query' unnecessary.
 
-## Receiving [0x00, 0x00]
+## Receiving
 
 When receiving command _0x00_ the 'Data' section will look like this:
 
@@ -69,7 +73,7 @@ When receiving command _0x00_ the 'Data' section will look like this:
   </tr>
 </table>
 
-## Sending [0x00, 0x00]
+## Sending
 
 When sending command _0x00_ the 'Data' section will look like this:
 

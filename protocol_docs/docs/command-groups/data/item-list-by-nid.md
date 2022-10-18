@@ -4,7 +4,11 @@ title: Item List By NID
 sidebar_position: 3
 ---
 
-## Receiving [0x07, 0x02]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="02"/>
+
+## Receiving
 
 When receiving command _0x02_ the 'Data' section will look like this:
 
@@ -34,7 +38,7 @@ MX10 will return 'yes' answers if it finds more data and empty memory locations 
 
 :::
 
-## Sending [0x07, 0x02]
+## Sending
 
 When sending command _0x02_ the 'Data' section will look like this:
 

@@ -4,9 +4,13 @@ title: Vehicle Mode
 sidebar_position: 0
 ---
 
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="02" command="01"/>
+
 These data-grams are used to query or set the vehicle's operating mode. In order for the MX10 to control the vehicle, the operating parameters must be known. The operating parameters of the vehicle can/must be determined by the PC software! To do this, it can query them first and add only the "unknown" parameters, or simply send "your" parameters as a command. In any case, the MX10 works with the last defined (received) vehicle parameters and stores them on the end of operation.
 
-## Receiving [0x02, 0x01]
+## Receiving
 
 When receiving command _0x01_ the 'Data' section will look like this:
 
@@ -100,7 +104,7 @@ Mode=0b00 allows the control unit to query the current operating parameters for 
   </tr>
 </table>
 
-## Sending [0x02, 0x01]
+## Sending
 
 When sending command _0x01_ the 'Data' section will look like this:
 

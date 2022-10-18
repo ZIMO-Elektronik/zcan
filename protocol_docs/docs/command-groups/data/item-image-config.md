@@ -4,7 +4,11 @@ title: Item Image Config
 sidebar_position: 5
 ---
 
-## Receiving [0x07, 0x12]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="12"/>
+
+## Receiving
 
 With the 'Data Image Config' data-grams the images can be transferred for each vehicle, accessory, device in the system.
 
@@ -62,7 +66,7 @@ Vehicle images can also be retrieved or specified by ImageCRC32, the conversion 
   </tr>
 </table>
 
-## Sending [0x07, 0x12]
+## Sending
 
 When sending command _0x12_ the 'Data' section will look like this:
 

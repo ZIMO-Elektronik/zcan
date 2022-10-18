@@ -4,7 +4,11 @@ title: Train Part Find
 sidebar_position: 1
 ---
 
-## Receiving [0x05, 0x02]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="05" command="02"/>
+
+## Receiving
 
 When receiving command _0x02_ the 'Data' section will look like this:
 
@@ -23,7 +27,7 @@ When receiving command _0x02_ the 'Data' section will look like this:
   </tr>
 </table>
 
-## Sending [0x05, 0x02]
+## Sending
 
 When sending command _0x02_ the 'Data' section will look like this:
 

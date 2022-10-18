@@ -4,7 +4,11 @@ title: Vehicle Function
 sidebar_position: 2
 ---
 
-## Receiving [0x02, 0x04]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="02" command="04"/>
+
+## Receiving
 
 When receiving command _0x04_ the 'Data' section will look like this:
 
@@ -53,7 +57,7 @@ number depends on the respective format.</th>
   </tr>
 </table>
 
-## Sending [0x02, 0x04]
+## Sending
 
 When sending command _0x04_ the 'Data' section will look like this:
 

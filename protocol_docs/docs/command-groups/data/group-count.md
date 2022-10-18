@@ -4,7 +4,11 @@ title: Group Count
 sidebar_position: 1
 ---
 
-## Receiving [0x07, 0x00]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="00"/>
+
+## Receiving
 
 When receiving command _0x00_ the 'Data' section will look like this:
 
@@ -60,7 +64,7 @@ Group Count for MX8, MX9 modules returns with unknown count (e.g. because reques
   </tr>
 </table>
 
-## Sending [0x07, 0x00]
+## Sending
 
 When sending command _0x00_ the 'Data' section will look like this:
 

@@ -4,7 +4,11 @@ title: Ping
 sidebar_position: 1
 ---
 
-## Receiving [0x0a, 0x00]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="0a" command="00"/>
+
+## Receiving
 
 When receiving command _0x00_ you use the NID provided in the message!
 
@@ -26,7 +30,7 @@ The primary control panel sends this command approximately every 500ms, but at l
 
 With this command, the connected modules should recognize that they are still connected to the known control panel. The session number must also be checked. This session number is incremented by the central unit with every UID change. This happens e.g.: when the control panel adds a new object to your object list or when an existing object is removed. or if an existing object is deleted from this list. If a module detects that it is connected to an 'unknown' control center, it must initiate a login process.
 
-## Sending [0x0a, 0x00]
+## Sending
 
 When sending command _0x00_ the 'Data' section will look like this:
 

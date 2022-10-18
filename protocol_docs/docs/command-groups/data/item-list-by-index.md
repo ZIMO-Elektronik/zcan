@@ -4,7 +4,11 @@ title: Item List By Index
 sidebar_position: 2
 ---
 
-## Receiving [0x07, 0x01]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="01"/>
+
+## Receiving
 
 When receiving command _0x01_ the 'Data' section will look like this:
 
@@ -33,7 +37,7 @@ With this command a 'direct' memory access is performed. The object may or may n
 
 :::
 
-## Sending [0x07, 0x01]
+## Sending
 
 When sending command _0x01_ the 'Data' section will look like this:
 

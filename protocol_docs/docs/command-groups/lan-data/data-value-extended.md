@@ -4,7 +4,11 @@ title: Data Value Extended
 sidebar_position: 1
 ---
 
-## Receiving [0x17, 0x08]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="17" command="08"/>
+
+## Receiving
 
 When receiving command _0x08_ the 'Data' section will look like this:
 
@@ -19,17 +23,19 @@ When receiving command _0x08_ the 'Data' section will look like this:
     <th>Unused 🚧</th>
     <th>Speed and direction</th>
     <th>Functions</th>
+    <th>Special functions</th>
   </tr>
   <tr>
     <th>16 Bit</th>
-    <th>64 Bit</th>
+    <th>16 Bit</th>
     <th>32 Bit</th>
-    <th>160 Bit</th>
+    <th>128 Bit</th>
     <th>8 Bit</th>
     <th>8 Bit</th>
-    <th>152 Bit</th>
+    <th>144 Bit</th>
     <th>16 Bit</th>
-    <th>16 Bit</th>
+    <th>32 Bit</th>
+    <th>32 Bit</th>
   </tr>
 </table>
 
@@ -103,7 +109,25 @@ Description of flags is needed
 
 :::
 
-## Sending [0x17, 0x08]
+### Special functions
+
+<table>
+  <tr>
+    <th>Bit</th>
+    <th>Meaning</th>
+  </tr>
+  <tr>
+    <th>0 ... 3</th>
+    <th class='left_align'>
+        Shunting function state</th>
+  </tr>
+  <tr>
+    <th>4 ... 5</th>
+    <th class='left_align'>
+        Manual mode state</th>
+  </tr>
+</table>
+## Sending
 
 When sending command _0x08_ the 'Data' section will look like this:
 

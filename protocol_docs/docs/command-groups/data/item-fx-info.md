@@ -4,7 +4,11 @@ title: Item Fx Info
 sidebar_position: 6
 ---
 
-## Receiving [0x07, 0x15]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="07" command="15"/>
+
+## Receiving
 
 When receiving command _0x15_ the 'Data' section will look like this:
 
@@ -25,7 +29,7 @@ When receiving command _0x15_ the 'Data' section will look like this:
   </tr>
 </table>
 
-## Sending [0x07, 0x15]
+## Sending
 
 When sending command _0x15_ the 'Data' section will look like this:
 

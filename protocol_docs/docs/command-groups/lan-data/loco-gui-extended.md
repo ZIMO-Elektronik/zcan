@@ -4,7 +4,11 @@ title: Loco Gui Extended
 sidebar_position: 2
 ---
 
-## Receiving [0x017, 0x27]
+import CommandAndGroup from '@site/src/components/CommandAndGroup';
+
+<CommandAndGroup group="17" command="27"/>
+
+## Receiving
 
 When receiving command _0x27_ the 'Data' section will look like this:
 
@@ -57,7 +61,7 @@ Further description is needed! Explain What is done with functions
 
 :::
 
-## Sending [0x017, 0x27]
+## Sending
 
 When sending command _0x27_ the 'Data' section will look like this:
 
