@@ -86,3 +86,9 @@ When sending command _0x02_ the 'Data' section will look like this:
     <th>0x0000 - 16 Bit</th>
   </tr>
 </table>
+
+:::info
+
+Direction can not be changed with this command. It can be only changed with command 0x05 - (Vehicle special function switch)
+
+:::
