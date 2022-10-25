@@ -127,3 +127,15 @@ export enum DirectionDefault {
   DIRECTION_EAST = 1,
   DIRECTION_WEST = 2,
 }
+
+export enum BidType {
+  RAILCOM_STATISTICS = 0x0000,
+  SPEED_REPORT = 0x0100,
+  TILT_AND_CURVE = 0x0101,
+  CV = 0x0200,
+  QOS = 0x0300,
+  FILL_LEVEL = 0x0400,
+  DIRECTION = 0x0800,
+  TRACK_VOLTAGE = 0x1000,
+  ALARMS = 0x1100,
+}
