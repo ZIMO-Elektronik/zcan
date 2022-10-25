@@ -12,38 +12,9 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command _0x27_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Sub ID</th>
-    <th>Vehicle group</th>
-    <th>Name</th>
-    <th>Image ID</th>
-    <th>Tacho</th>
-    <th>Speed forward</th>
-    <th>Speed rev 🚧 What is this? (Rev as max rev on cars?)</th>
-    <th>Speed range</th>
-    <th>Drive type</th>
-    <th>Era</th>
-    <th>Country code</th>
-    <th>Icons 🚧 What is done with icons?</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>26 Bytes</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>64 Bytes</th>
-  </tr>
-</table>
+| NID    | Sub ID | Vehicle group | Name     | Image ID | Tacho  | Speed forward | Speed rev 🚧 What is this? (Rev as max rev on cars?) | Speed range | Drive type | Era    | Country code | Icons 🚧 What is done with icons? |
+|--------|--------|---------------|----------|----------|--------|---------------|------------------------------------------------------|-------------|------------|--------|--------------|-----------------------------------|
+| 16 Bit | 16 Bit | 16 Bit        | 26 Bytes | 16 Bit   | 16 Bit | 16 Bit        | 16 Bit                                               | 16 Bit      | 16 Bit     | 16 Bit | 16 Bit       | 64 Bytes                          |
 
 ### Era parsing 🚧
 
@@ -65,18 +36,10 @@ Further description is needed! Explain What is done with functions
 
 When sending command _0x27_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Mx10 NID</th>
-    <th>NID</th>
-    <th>0</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| Mx10 NID | NID    | 0      |
+|----------|--------|--------|
+| 16 Bit   | 16 Bit | 16 Bit |
+
 
 :::note
 

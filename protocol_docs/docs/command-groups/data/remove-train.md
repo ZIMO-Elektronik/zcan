@@ -12,31 +12,19 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>State</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | State  |
+|--------|--------|
+| 16 Bit | 16 Bit |
+
 
 ## Sending
 
 When sending command the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Remove from device with NID</th>
-    <th>NID of locomotive (or other device) to remove</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| Remove from device with NID | NID of locomotive (or other device) to remove |
+|-----------------------------|-----------------------------------------------|
+| 16 Bit                      | 16 Bit                                        |
+
 
 :::note
 

@@ -12,18 +12,10 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command _0x01_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Index</th>
-    <th>Device NID</th>
-    <th>Last tick (ms)</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| Index  | Device NID | Last tick (ms) |
+|--------|------------|----------------|
+| 16 Bit | 16 Bit     | 16 Bit         |
+
 
 By Mode = 0b00 a device can query the object list via the object index in the MX10. The MX10 responds (Mode = 0b11) with the object index and the NID of the object. This allows a device to build up a list of objects known to the MX10.
 
@@ -41,18 +33,10 @@ With this command a 'direct' memory access is performed. The object may or may n
 
 When sending command _0x01_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Group NID</th>
-    <th>Index</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Group NID | Index  |
+|--------|-----------|--------|
+| 16 Bit | 16 Bit    | 16 Bit |
+
 
 :::note
 

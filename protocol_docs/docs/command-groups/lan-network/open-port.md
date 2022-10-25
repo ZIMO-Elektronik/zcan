@@ -16,18 +16,10 @@ When receiving command _0x0e_ , NID is used from message data-gram for connectio
 
 When sending command _0x0e_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Options</th>
-    <th>App code</th>
-    <th>App name</th>
-  </tr>
-  <tr>
-    <th>32 Bit</th>
-    <th>32 Bit</th>
-    <th>0 ... x Bit</th>
-  </tr>
-</table>
+| Options | App code | App name    |
+|---------|----------|-------------|
+| 32 Bit  | 32 Bit   | 0 ... x Bit |
+
 
 With this data-gram a device can 'open' the Ethernet interface of the MX10. In response, the device receives a 'ping' from the MX10.
 
@@ -43,37 +35,13 @@ If NO name is sent, the 32 bit identifier is displayed, if this is not sent eith
 
 ### Options
 
-<table>
-  <tr>
-    <th>Bit</th>
-    <th>Content</th>
-  </tr>
-  <tr>
-    <th>0</th>
-    <th>Long message</th>
-  </tr>
-  <tr>
-    <th>1</th>
-    <th>Free</th>
-  </tr>
-  <tr>
-    <th>2 ... 7</th>
-    <th>Multi list</th>
-  </tr>
-  <tr>
-    <th>8 ... 22</th>
-    <th>Free</th>
-  </tr>
-  <tr>
-    <th>23</th>
-    <th>Connection lost ➔ Stop all locos</th>
-  </tr>
-  <tr>
-    <th>24</th>
-    <th>Debug Output</th>
-  </tr>
-  <tr>
-    <th>25 ... 31</th>
-    <th>Free</th>
-  </tr>
-</table>
+| Bit       | Content                          |
+|-----------|----------------------------------|
+| 0         | Long message                     |
+| 1         | Free                             |
+| 2 ... 7   | Multi list                       |
+| 8 ... 22  | Free                             |
+| 23        | Connection lost ➔ Stop all locos |
+| 24        | Debug Output                     |
+| 25 ... 31 | Free                             |
+

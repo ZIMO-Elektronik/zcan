@@ -24,283 +24,59 @@ Of course, specific objects have, in addition to their basic properties, "custom
 
 ## Translate Table For Legacy Devices:
 
-<table>
-  <tr>
-    <th>UID Word1</th>
-    <th>UID Word2 Min.</th>
-    <th>UID Word2 Max</th>
-    <th>Available Addresses</th>
-    <th> </th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x0000</th>
-    <th>0x27FF</th>
-    <th>10240</th>
-    <th class='left_align'>DCC Locomotives</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th> 0x2800</th>
-    <th>0x28FF</th>
-    <th>256</th>
-    <th class='left_align'>MM1/MM2 Locomotives</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x2900</th>
-    <th>0x2EFF</th>
-    <th>3072</th>
-    <th class='left_align'>Available [1]</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x2F00</th>
-    <th>0x2FFF</th>
-    <th>256</th>
-    <th class='left_align'>Multi-tractions</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x3000</th>
-    <th>0x31FF</th>
-    <th>512</th>
-    <th class='left_align'>DCC 'Basic' Accessory Decoder</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x3200</th>
-    <th>0x39FF</th>
-    <th>2058</th>
-    <th class='left_align'>DCC 'Extended' Accessory Decoder</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x3A00</th>
-    <th>0x3DFF</th>
-    <th>1024</th>
-    <th class='left_align'>MM1 Accessory Decoder</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x4000</th>
-    <th>0x43FF</th>
-    <th>1024</th>
-    <th class='left_align'>S88 Feedback</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x4400</th>
-    <th>0x45FF</th>
-    <th>1024</th>
-    <th class='left_align'>X-Net Decoder</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x4600</th>
-    <th>0x47FF</th>
-    <th>1024</th>
-    <th class='left_align'>X-Net Feedback</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x4800</th>
-    <th>0x4FFF</th>
-    <th>2048</th>
-    <th class='left_align'>Available [2]</th>
-  </tr>
-</table>
+| UID Word1 | UID Word2 Min. | UID Word2 Max | Available Addresses |                                  |
+|-----------|----------------|---------------|---------------------|----------------------------------|
+| 0x0000    | 0x0000         | 0x27FF        | 10240               | DCC Locomotives                  |
+| 0x0000    | 0x2800         | 0x28FF        | 256                 | MM1/MM2 Locomotives              |
+| 0x0000    | 0x2900         | 0x2EFF        | 3072                | Available [1]                    |
+| 0x0000    | 0x2F00         | 0x2FFF        | 256                 | Multi-tractions                  |
+| 0x0000    | 0x3000         | 0x31FF        | 512                 | DCC 'Basic' Accessory Decoder    |
+| 0x0000    | 0x3200         | 0x39FF        | 2058                | DCC 'Extended' Accessory Decoder |
+| 0x0000    | 0x3A00         | 0x3DFF        | 1024                | MM1 Accessory Decoder            |
+| 0x0000    | 0x4000         | 0x43FF        | 1024                | S88 Feedback                     |
+| 0x0000    | 0x4400         | 0x45FF        | 1024                | X-Net Decoder                    |
+| 0x0000    | 0x4600         | 0x47FF        | 1024                | X-Net Feedback                   |
+| 0x0000    | 0x4800         | 0x4FFF        | 2048                | Available [2]                    |
 
 ### ZIMO Device Generation 1
+| UID Word1 | UID Word2 Min. | UID Word2 Max | Available Addresses |                                          |
+|-----------|----------------|---------------|---------------------|------------------------------------------|
+| 0x0000    | 0x5000         | 0x503F        | 64                  | MX1                                      |
+| 0x0000    | 0x5040         | 0x507F        | 64                  | MX8 Module, Channel 1                    |
+| 0x0000    | 0x5080         | 0x50BF        | 64                  | MX9 Module, Channel 1                    |
+| 0x0000    | 0x50C0         | 0x50CF        | 16                  | CSA Module                               |
+| 0x0000    | 0x50D0         | 0x50DF        | 16                  | MX31                                     |
+| 0x0000    | 0x5100         | 0x513F        | 64                  | MX8 Module, Channel 2                    |
+| 0x0000    | 0x5140         | 0x517F        | 64                  | MX9 Module, Channel 2                    |
+| 0x0000    | 0x5800         | 0x5800        | 128                 | I2C eXtender, Differentiation see SubCmd |
+| 0x0000    | 0x5A00         | 0x5AFF        | 256                 | Block locations                          |
 
-<table>
-  <tr>
-    <th>UID Word1</th>
-    <th>UID Word2 Min.</th>
-    <th>UID Word2 Max</th>
-    <th>Available Addresses</th>
-    <th> </th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5000</th>
-    <th>0x503F</th>
-    <th>64</th>
-    <th class='left_align'>MX1</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5040</th>
-    <th>0x507F</th>
-    <th>64</th>
-    <th class='left_align'>MX8 Module, Channel 1</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5080</th>
-    <th>0x50BF</th>
-    <th>64</th>
-    <th class='left_align'>MX9 Module, Channel 1</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x50C0</th>
-    <th>0x50CF</th>
-    <th>16</th>
-    <th class='left_align'>CSA Module</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x50D0</th>
-    <th>0x50DF</th>
-    <th>16</th>
-    <th class='left_align'>MX31</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5100</th>
-    <th>0x513F</th>
-    <th>64</th>
-    <th class='left_align'>MX8 Module, Channel 2</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5140</th>
-    <th>0x517F</th>
-    <th>64</th>
-    <th class='left_align'>MX9 Module, Channel 2</th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x5800</th>
-    <th>0x5800</th>
-    <th>128</th>
-    <th class='left_align'>I2C eXtender, Differentiation see SubCmd</th>
-  </tr>
-  <tr>
-    <th></th>
-    <th>0x5A00</th>
-    <th>0x5AFF</th>
-    <th>256</th>
-    <th class='left_align'>Block locations</th>
-  </tr>
-</table>
 
 ### ZIMO System Database
 
-<table>
-  <tr>
-    <th>UID Word2 Min.</th>
-    <th>UID Word2 Max</th>
-    <th>Available Addresses</th>
-    <th> </th>
-  </tr>
-  <tr>
-    <th>0x6000</th>
-    <th>0x60FF</th>
-    <th>256</th>
-    <th class='left_align'>Panels / GBS / Signal boxes </th>
-  </tr>
-  <tr>
-    <th>0x6100</th>
-    <th>0x63FF</th>
-    <th>768</th>
-    <th class='left_align'>Routes</th>
-  </tr>
-  <tr>
-    <th>0x6400</th>
-    <th>0x65FF </th>
-    <th></th>
-    <th></th>
-  </tr>
-  <tr>
-    <th>0x6600</th>
-    <th>0x66FF</th>
-    <th>256</th>
-    <th class='left_align'>Sound Projects</th>
-  </tr>
-  <tr>
-    <th>0x6700</th>
-    <th>0x7FFF</th>
-    <th></th>
-    <th class='left_align'>Reserved</th>
-  </tr>
-</table>
+| UID Word2 Min. | UID Word2 Max                       | Available Addresses |                |
+|----------------|-------------------------------------|---------------------|----------------|
+| 0x6000         | 0x60FF  Panels / GBS / Signal boxes |
+| 0x6100         | 0x63FF                              | 768                 | Routes         |
+| 0x6400         | 0x65FF                              |                     |                |
+| 0x6600         | 0x66FF                              | 256                 | Sound Projects |
+| 0x6700         | 0x7FFF                              |                     | Reserved       |
+
 
 ### Mfx Addresses
 
-<table>
-  <tr>
-    <th>UID Word1</th>
-    <th>UID Word2 Min.</th>
-    <th>UID Word2 Max</th>
-    <th>Available Addresses</th>
-    <th> </th>
-  </tr>
-  <tr>
-    <th>0x0000</th>
-    <th>0x8000</th>
-    <th>0xBFFF</th>
-    <th>16384</th>
-    <th>Mfx Locomotives</th>
-  </tr>
-</table>
+| UID Word1 | UID Word2 Min. | UID Word2 Max | Available Addresses |                 |
+|-----------|----------------|---------------|---------------------|-----------------|
+| 0x0000    | 0x8000         | 0xBFFF        | 16384               | Mfx Locomotives |
 
 ### ZIMO CAN 2.xx devices (Also from non ZIMO manufacturers)
-
-<table>
-  <tr>
-    <th>UID Word2 Min.</th>
-    <th>UID Word2 Max</th>
-    <th>Available Addresses</th>
-    <th> </th>
-  </tr>
-  <tr>
-    <th>0xC000</th>
-    <th>0xC0FF</th>
-    <th>256</th>
-    <th class='left_align'>MX10 Central</th>
-  </tr>
-  <tr>
-    <th>0xC100</th>
-    <th>0xC1FF</th>
-    <th>256</th>
-    <th class='left_align'>MX10 Booster</th>
-  </tr>
-  <tr>
-    <th>0xC200</th>
-    <th>0xC2FF</th>
-    <th>256</th>
-    <th class='left_align'>Special equipment (IF, ....)</th>
-  </tr>
-  <tr>
-    <th>0xC300</th>
-    <th>0xC3FF</th>
-    <th>256</th>
-    <th class='left_align'>Driving consoles</th>
-  </tr>
-  <tr>
-    <th>0xC400</th>
-    <th>0xC4FF</th>
-    <th>256</th>
-    <th class='left_align'>MX32 Radio modules</th>
-  </tr>
-  <tr>
-    <th>0xD000</th>
-    <th>0xDFFF</th>
-    <th>4096</th>
-    <th class='left_align'>Module</th>
-  </tr>
-  <tr>
-    <th>0xE000</th>
-    <th>0xEFFF</th>
-    <th>4096</th>
-    <th class='left_align'>Object</th>
-  </tr>
-  <tr>
-    <th>0xF000</th>
-    <th>0xFFFF</th>
-    <th>4096</th>
-    <th class='left_align'>Files</th>
-  </tr>
-</table>
+| UID Word2 Min. | UID Word2 Max | Available Addresses |                              |
+|----------------|---------------|---------------------|------------------------------|
+| 0xC000         | 0xC0FF        | 256                 | MX10 Central                 |
+| 0xC100         | 0xC1FF        | 256                 | MX10 Booster                 |
+| 0xC200         | 0xC2FF        | 256                 | Special equipment (IF, ....) |
+| 0xC300         | 0xC3FF        | 256                 | Driving consoles             |
+| 0xC400         | 0xC4FF        | 256                 | MX32 Radio modules           |
+| 0xD000         | 0xDFFF        | 4096                | Module                       |
+| 0xE000         | 0xEFFF        | 4096                | Object                       |
+| 0xF000         | 0xFFFF        | 4096                | Files                        |

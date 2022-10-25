@@ -12,40 +12,16 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command _0x15_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Fx</th>
-    <th>Unused</th>
-    <th>Type</th>
-    <th>Data</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Fx     | Unused | Type  | Data   |
+|--------|--------|--------|-------|--------|
+| 16 Bit | 16 Bit | 8 Bit  | 8 Bit | 16 Bit |
+
 
 ## Sending
 
 When sending command _0x15_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Fx</th>
-    <th>0</th>
-    <th>Type</th>
-    <th>Data</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Fx     | 0     | Type  | Data   |
+|--------|--------|-------|-------|--------|
+| 16 Bit | 16 Bit | 8 Bit | 8 Bit | 16 Bit |
+

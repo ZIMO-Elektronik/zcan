@@ -22,29 +22,13 @@ With Cmd=0x00/M=0b01 the port power status of the device can be set. The current
 
 The object ports are binary coded and this combinations are allowed:
 
-<table>
-  <tr>
-    <th>Port</th>
-    <th>Output</th>
-  </tr>
-  <tr>
-    <th>0b00000001</th>
-    <th class='left_align'>Rail 1</th>
-  </tr>
-  <tr>
-    <th>0b00000010</th>
-    <th class='left_align'>Rail 2</th>
-  </tr>
-  <tr>
-    <th>0b0………. 00</th>
-    <th class='left_align'>Track 3 ... 7 (Further MX10 in booster mode)
-</th>
-  </tr>
-  <tr>
-    <th>0b10000000</th>
-    <th class='left_align'>Booster output, resp. track output 8 at MX9/StEin</th>
-  </tr>
-</table>
+| Port       | Output                                            |
+|------------|---------------------------------------------------|
+| 0b00000001 | Rail 1                                            |
+| 0b00000010 | Rail 2                                            |
+| 0b0………. 00 | Track 3 ... 7 (Further MX10 in booster mode)      |
+| 0b10000000 | Booster output, resp. track output 8 at MX9/StEin |
+
 
 _Therefore, to switch ALL outputs with one command, port 255 (=0xFF, =0b111111) must be used._
 
@@ -60,32 +44,16 @@ Applications (whether via PC interface or one of the internal bus systems) shoul
 
 When receiving command _0x00_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Device NID</th>
-    <th>Port</th>
-    <th>Mode state</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-  </tr>
-</table>
+| Device NID | Port  | Mode state |
+|------------|-------|------------|
+| 16 Bit     | 8 Bit | 8 Bit      |
+
 
 ## Sending
 
 When sending command _0x00_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Device NID</th>
-    <th>Port</th>
-    <th>Mode state</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-  </tr>
-</table>
+| Device NID | Port  | Mode state |
+|------------|-------|------------|
+| 16 Bit     | 8 Bit | 8 Bit      |
+

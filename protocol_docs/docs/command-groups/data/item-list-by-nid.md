@@ -12,20 +12,10 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command _0x02_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Index</th>
-    <th>Item state</th>
-    <th>Last tick (ms)</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Index  | Item state | Last tick (ms) |
+|--------|--------|------------|----------------|
+| 16 Bit | 16 Bit | 16 Bit     | 16 Bit         |
+
 
 By Mode = 0b00 a device can query that NId which is stored after the specified NId. This command is especially helpful for accessory modules/decoders. The answer (Mode = 0b11) contains the 'next' NId, the respective index and if available the last 'communication tick'. Similar to 'Item List by Index' [0x07.0x01] there are 2 possible answers:
 
@@ -42,16 +32,9 @@ MX10 will return 'yes' answers if it finds more data and empty memory locations 
 
 When sending command _0x02_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Search after value</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Search after value |
+|--------|--------------------|
+| 16 Bit | 16 Bit             |
 
 :::note
 

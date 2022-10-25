@@ -14,35 +14,9 @@ If a PC software/client has 'long' data-grams enabled, the MX10 sends its track 
 
 When receiving command _0x00_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Device NID</th>
-    <th>Port 1</th>
-    <th>Port 1 voltage</th>
-    <th>Port 1 amperage</th>
-    <th>Port 2</th>
-    <th>Port 2 voltage</th>
-    <th>Port 2 amperage</th>
-    <th>Amperage 32V</th>
-    <th>Amperage 12V</th>
-    <th>Voltage total</th>
-    <th>Temperature</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
-
+| Device NID | Port 1 | Port 1 voltage | Port 1 amperage | Port 2 | Port 2 voltage | Port 2 amperage | Amperage 32V | Amperage 12V | Voltage total | Temperature |
+|------------|--------|----------------|-----------------|--------|----------------|-----------------|--------------|--------------|---------------|-------------|
+| 16 Bit     | 16 Bit | 16 Bit         | 16 Bit          | 16 Bit | 16 Bit         | 16 Bit          | 16 Bit       | 16 Bit       | 16 Bit        | 16 Bit      |
 The 'Device NID' is the Network Id of the queried device, or the Network Id of the source of the Power Info message. This can be (currently 2020.05.18) the master MX10(ec), MX10 booster or StEin[e].
 
 :::info Recommendation

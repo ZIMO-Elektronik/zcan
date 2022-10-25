@@ -34,24 +34,16 @@ With this command, the connected modules should recognize that they are still co
 
 When sending command _0x00_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Mx10 NID</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| Mx10 NID |
+|----------|
+| 16 Bit   |
+
 
 ## Sending [0x0a, 0x07]
 
 When sending command _0x00_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>Mx10 NID</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| Mx10 NID |
+|----------|
+| 16 Bit   |
+

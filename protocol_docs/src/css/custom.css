@@ -53,3 +53,7 @@
 .left_align {
   text-align: left;
 }
+
+.theme-admonition {
+  margin-top: 10px;
+}

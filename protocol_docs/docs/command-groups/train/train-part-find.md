@@ -12,33 +12,19 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 When receiving command _0x02_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Train NID</th>
-    <th>Owner NID</th>
-    <th>State</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Train NID | Owner NID | State  |
+|--------|-----------|-----------|--------|
+| 16 Bit | 16 Bit    | 16 Bit    | 16 Bit |
+
 
 ## Sending
 
 When sending command _0x02_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    |
+|--------|
+| 16 Bit |
+
 
 :::note
 

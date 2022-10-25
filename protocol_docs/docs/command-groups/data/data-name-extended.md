@@ -12,142 +12,39 @@ import CommandAndGroup from '@site/src/components/CommandAndGroup';
 
 This command is only available on the PC interface (USB/LAN). This allows an app to transfer texts with up to 192 characters in one command. However, some entries are limited to 32 characters, or there are limitations in the GUI display.
 
-:::note
+:::warning
 
-Names and other strings are to be sent 0x00 terminated!
+Names and other strings needs to be sent terminated with 0x00
 
 :::
 
 When receiving command _0x21_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Sub ID</th>
-    <th>Value 1</th>
-    <th>Value 2</th>
-    <th>Name</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>32 Bit</th>
-    <th>32 Bit</th>
-    <th>191 Bytes</th>
-  </tr>
-</table>
+| NID    | Sub ID | Value1 | Value2 | Name      |
+|--------|--------|--------|--------|-----------|
+| 16 Bit | 16 Bit | 32 Bit | 32 Bit | 191 Bytes |
+
 
 The 'NID' indicates for which device the text is valid. If 'NID' is e.g.: the NID of a vehicle, the texts are linked to this vehicle. All other texts can also be transmitted with this command.
 
 ### Description table for value 1 / 2
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Sub ID</th>
-    <th>Value 1</th>
-    <th>Value 2</th>
-    <th>Usage</th>
-    <th>Max length</th>
-  </tr>
-  <tr>
-    <th>Vehicle</th>
-    <th>0</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Vehicle name</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th></th>
-    <th>1</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Railroad company</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>Accessories</th>
-    <th>Port</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Designation for connection</th>
-    <th></th>
-  </tr>
-  <tr>
-    <th>0x7F00</th>
-    <th>Vendor</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Manufacturer names</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F02</th>
-    <th>Decoder</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Decoder name/types</th>
-    <th>32 characters GUI <br/>
-        MX32 max. space <br/>
-        for 8 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F04</th>
-    <th>CfgName</th>
-    <th>Type
-        (8Bit),
-        CgfNum
-        (24Bit)</th>
-    <th>0</th>
-    <th>CV Designation</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F06</th>
-    <th>Cfg Db</th>
-    <th></th>
-    <th></th>
-    <th>Cfg Db</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F10</th>
-    <th>Icon</th>
-    <th></th>
-    <th></th>
-    <th>Icon</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F11</th>
-    <th>Icon</th>
-    <th></th>
-    <th></th>
-    <th>Icon</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F18</th>
-    <th>ZIMO
-        Partner</th>
-    <th></th>
-    <th></th>
-    <th>ZIMO
-        Partner</th>
-    <th>32 characters</th>
-  </tr>
-  <tr>
-    <th>0x7F20</th>
-    <th>Land</th>
-    <th></th>
-    <th></th>
-    <th>Land</th>
-    <th>32 characters</th>
-  </tr>
-</table>
+| NID         | Sub ID       | Value1                          | Value2 | Usage                      | Max length    |
+|-------------|--------------|---------------------------------|--------|----------------------------|---------------|
+| Vehicle     | 0            | 0                               | 0      | Vehicle name               | 32 characters |
+|             | 1            | 0                               | 0      | Railroad company           | 32 characters |
+| Accessories | Port         | 0                               | 0      | Designation for connection |               |
+| 0x7F00      | Vendor       | 0                               | 0      | Manufacturer names         | 32 characters |
+| 0x7F02      | Decoder      | 0                               | 0      | Decoder name/types         | 32 characters |
+| 0x7F04      | CfgName      | Type (8Bit)<br/> CgfNum (24Bit) | 0      | CV Designation             | 32 characters |
+| 0x7F06      | Cfg Db       |                                 |        | Cfg Db                     | 32 characters |
+| 0x7F10      | Icon         |                                 |        | Icon                       | 32 characters |
+| 0x7F11      | Icon         |                                 |        | Icon                       | 32 characters |
+| 0x7F18      | ZIMO Partner |                                 |        | ZIMO Partner               | 32 characters |
+| 0x7F20      | Land         |                                 |        | Land                       | 32 characters |
 
-:::tip
+
+:::info
 
 Value2 is intended for groups.
 
@@ -157,21 +54,7 @@ Value2 is intended for groups.
 
 When sending command _0x21_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Sub ID</th>
-    <th>0</th>
-    <th>0</th>
-    <th>Name</th>
-    <th>0</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>32 Bit</th>
-    <th>32 Bit</th>
-    <th>Name length * 8 Bit</th>
-    <th>8 Bit</th>
-  </tr>
-</table>
+| NID    | Sub ID | 0      | 0      | Name                | 0     |
+|--------|--------|--------|--------|---------------------|-------|
+| 16 Bit | 16 Bit | 32 Bit | 32 Bit | Name length * 8 Bit | 8 Bit |
+

@@ -14,18 +14,9 @@ With the 'Data Image Config' data-grams the images can be transferred for each v
 
 When receiving command _0x12_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Type</th>
-    <th>Image ID</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Type   | Image ID |
+|--------|--------|----------|
+| 16 Bit | 16 Bit | 16 Bit   |
 
 :::tip
 
@@ -35,50 +26,19 @@ Vehicle images can also be retrieved or specified by ImageCRC32, the conversion 
 
 ### Image Types
 
-<table>
-  <tr>
-    <th>Type</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <th>0x01</th>
-    <th>Vehicle image: Image ID</th>
-  </tr>
-  <tr>
-    <th>0x02</th>
-    <th>Vehicle image: Image CRC32</th>
-  </tr>
-  <tr>
-    <th>0x03</th>
-    <th>Vehicle speedometer: Image ID</th>
-  </tr>
-  <tr>
-    <th>0x04</th>
-    <th>🚧</th>
-  </tr>
-  <tr>
-    <th>0x10</th>
-    <th>Vehicle Instrument: Brake Bar</th>
-  </tr>
-  <tr>
-    <th>0x1f</th>
-    <th>Vehicle instrument</th>
-  </tr>
-</table>
+| Type | Description                   |
+|------|-------------------------------|
+| 0x01 | Vehicle image: Image ID       |
+| 0x02 | Vehicle image: Image CRC32    |
+| 0x03 | Vehicle speedometer: Image ID |
+| 0x04 | 🚧                            |
+| 0x10 | Vehicle Instrument: Brake Bar |
+| 0x1f | Vehicle instrument            |
 
 ## Sending
 
 When sending command _0x12_ the 'Data' section will look like this:
 
-<table>
-  <tr>
-    <th>NID</th>
-    <th>Type</th>
-    <th>Image ID</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-</table>
+| NID    | Type   | Image ID |
+|--------|--------|----------|
+| 16 Bit | 16 Bit | 16 Bit   |

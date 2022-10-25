@@ -24,38 +24,11 @@ If the PC wants to establish a connection, it must initialize the establishment 
 
 For the new CAN protocol the characters 'Z2' / '2Z' are used as telegram delimiter. In this case the CAN ID is transmitted field by field (Group, Direction, Command and NID).
 
-<table>
-  <tr>
-    <th>Header</th>
-    <th>Size (DLC)</th>
-    <th>Group</th>
-    <th>Cmd + Mode</th>
-    <th>NID</th>
-    <th>Data 0 ... 8</th>
-    <th>CRC16</th>
-    <th>Tail</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-    <th>16 Bit</th>
-    <th>8 x 8 Bit</th>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-  </tr>
-  <tr>
-    <th>0x5A32</th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th></th>
-    <th>0x325A</th>
-  </tr>
-</table>
+| Header | Size (DLC) | Group | Cmd + Mode | NID    | Data 0 ... 8 | CRC16  | Tail   |
+|--------|------------|-------|------------|--------|--------------|--------|--------|
+| 16 Bit | 8 Bit      | 8 Bit | 8 Bit      | 16 Bit | 8 x 8 Bit    | 16 Bit | 16 Bit |
+| 0x5A32 |            |       |            |        |              |        | 0x325A |
+
 
 CAN data-grams are essentially sent 1:1 within the frame defined above. However, since the USB (VCom) connection does not have a fixed limit of 8 data bytes, larger data-grams can be sent or received.
 
@@ -81,23 +54,9 @@ The ports can also be set to other values on the MX10, please refer to MX10 manu
 
 For the data-gram transmission in the Ethernet no delimiters are necessary ('Z2' ... '2Z') because this is covered by the Ethernet frame logic. As with the USB (VCom) interface, the data is transferred 1:1 in the Ethernet as on the CAN bus. But there are some additional Ethernet data-grams, which can transfer much more data to the system. MX10 can send more data in one data-gram to the PC. These LAN special commands are listed separately.
 
-<table>
-  <tr>
-    <th>Size (DLC)</th>
-    <th>Unused</th>
-    <th>Group</th>
-    <th>Cmd + Mode </th>
-    <th>NID</th>
-    <th>Data 0 ... x</th>
-  </tr>
-  <tr>
-    <th>16 Bit</th>
-    <th>16 Bit</th>
-    <th>8 Bit</th>
-    <th>8 Bit</th>
-    <th>16 Bit</th>
-    <th></th>
-  </tr>
-</table>
+| Size (DLC) | Unused | Group | Cmd + Mode | NID    | Data 0 ... x |
+|------------|--------|-------|------------|--------|--------------|
+| 16 Bit     | 16 Bit | 8 Bit | 8 Bit      | 16 Bit |              |
+
 
 Since an Ethernet frame typically comprises 1536 bytes, the length specification has increased to 16 bits compared to the VCom interface. bit compared to the VCom interface. Additionally, there is a currently unused 16 bit field. This is intended for later extensions.
