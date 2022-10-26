@@ -35,7 +35,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-tsdoc": "^0.2.14",
     "gulp": "^4.0.2",
-    "gulp-install": "^1.1.0",
     "gulp-spawn": "^1.0.0",
     "gulp-typedoc": "^3.0.2",
     "jest": "^27.5.1",
