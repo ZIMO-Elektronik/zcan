@@ -12,7 +12,7 @@ import {
   Manual,
   DirectionDefault,
   ShuntingFunction,
-  BidType,
+  BidiType,
 } from 'src/util/enums';
 
 export interface Train {
@@ -96,7 +96,7 @@ export interface ModulePowerInfoData {
 
 export interface BidiInfoData {
   nid: number;
-  type: BidType;
+  type: BidiType;
   data: number;
 }
 
