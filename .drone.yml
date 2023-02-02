@@ -39,7 +39,7 @@ steps:
       - PUBLISHED_VERSION=$(npm show @zimo/zcan version)
       - VERSION=$(npm pkg get version | tr -d '"')
       - |
-        if [ "$PUBLISHED_VERSION" == "$VERSION" ]; 
+        if [ "$PUBLISHED_VERSION" = "$VERSION" ];
         then
           echo "Variables are equal"
           rm .npmrc
