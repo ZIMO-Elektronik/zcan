@@ -1,0 +1,60 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: push-docker-image
+    image: plugins/docker
+    settings:
+      cache_from: "docker.nexus.consultis.sk/consultis/zcan-docs:latest"
+      registry: docker.nexus.consultis.sk
+      repo: docker.nexus.consultis.sk/consultis/zcan-docs
+      tags: latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+
+---
+kind: pipeline
+name: zcan_library
+
+steps:
+  - name: publish-zcan
+    image: node
+    environment:
+      npm_token:
+        from_secret: npm_token
+    commands:
+      # Creating .npmrc for private registry
+      - echo "npm_token" >> .npmrc
+      - npm config set registry "https://nexus.consultis.sk/repository/npm-private/"
+
+      # Checking the versions
+      - PUBLISHED_VERSION=$(npm show @zimo/zcan version)
+      - VERSION=$(npm pkg get version | tr -d '"')
+      - |
+        if [ "$PUBLISHED_VERSION" != "$VERSION" ]; 
+        then
+          echo "Variables are equal"
+          rm .npmrc
+          exit 0
+        fi
+
+      # Building and publishing the zcan library
+      - npm ci --registry https://registry.npmjs.org
+      - npm run build
+      - npm publish
+
+      - rm .npmrc
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
