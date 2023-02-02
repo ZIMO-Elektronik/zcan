@@ -13,8 +13,6 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
-    commands:
-      - env
 
 trigger:
   branch:
@@ -34,14 +32,14 @@ steps:
         from_secret: npm_token
     commands:
       # Creating .npmrc for private registry
-      - echo "npm_token" >> .npmrc
+      - echo "$npm_token" >> .npmrc
       - npm config set registry "https://nexus.consultis.sk/repository/npm-private/"
 
       # Checking the versions
       - PUBLISHED_VERSION=$(npm show @zimo/zcan version)
       - VERSION=$(npm pkg get version | tr -d '"')
       - |
-        if [ "$PUBLISHED_VERSION" != "$VERSION" ]; 
+        if [ "$PUBLISHED_VERSION" == "$VERSION" ]; 
         then
           echo "Variables are equal"
           rm .npmrc
