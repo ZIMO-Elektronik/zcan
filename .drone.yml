@@ -53,8 +53,29 @@ steps:
 
       - rm .npmrc
 
+  - name: teams-webhook
+    image: "kuperiu/drone-teams"
+    settings:
+      webhook: 
+        from_secret: mt_zimo_url
+
 trigger:
   branch:
   - master
   event:
   - push
+
+---
+kind: pipeline
+name: build_status
+
+steps:
+  - name: teams-webhook
+    image: "kuperiu/drone-teams"
+    settings:
+      webhook: 
+        from_secret: teams_webhook_url
+
+trigger:
+  status:
+  - failure
