@@ -4,6 +4,8 @@ name: default
 steps:
   - name: push-docker-image
     image: plugins/docker
+    environment:
+      DOCKER_BUILDKIT: 1
     settings:
       cache_from: "docker.nexus.consultis.sk/consultis/zcan-docs:latest"
       registry: docker.nexus.consultis.sk
