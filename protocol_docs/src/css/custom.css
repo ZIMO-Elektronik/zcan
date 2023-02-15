@@ -57,3 +57,20 @@
 .theme-admonition {
   margin-top: 10px;
 }
+
+.tables {
+  margin: 0;
+  padding: 3px;
+  /* padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0; */
+}
+
+.tablesDescriptionCol {
+  width: 30rem;
+}
+
+.tablesBitCol {
+  width: 5rem;
+}
