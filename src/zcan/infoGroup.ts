@@ -2,7 +2,7 @@ import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {BidiInfoData, BidiData} from '../@types/models';
-import {BidiType, Direction, ForwardOrReverse} from 'src/util/enums';
+import {BidiType, Direction, ForwardOrReverse} from '../util/enums';
 
 /**
  *
