@@ -63,7 +63,7 @@ export default class InfoGroup {
     });
   }
 
-  parseEastWest(data: number) {
+  private parseEastWest(data: number) {
     if ((data & 0x02) == 0x02) {
       return Direction.WEST;
     } else {
@@ -71,18 +71,18 @@ export default class InfoGroup {
     }
   }
 
-  parseDirChange(data: number) {
+  private parseDirChange(data: number) {
     return (data & 0x04) == 0x04;
   }
 
-  parseFwdRev(data: number) {
+  private parseFwdRev(data: number) {
     if ((data & 0x01) == 0) {
       return ForwardOrReverse.FORWARD;
     } else {
       return ForwardOrReverse.REVERSE;
     }
   }
-  parseDirectionConfirm(data: number) {
+  private parseDirectionConfirm(data: number) {
     return (data & 0x08) == 0x08;
   }
 }
