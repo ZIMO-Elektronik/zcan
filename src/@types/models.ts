@@ -98,7 +98,7 @@ export interface ModulePowerInfoData {
 export interface BidiInfoData {
   nid: number;
   type: BidiType;
-  data: BidiData;
+  data: BidiData | number;
 }
 
 export interface BidiData {

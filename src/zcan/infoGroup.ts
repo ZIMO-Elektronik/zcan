@@ -44,7 +44,7 @@ export default class InfoGroup {
     const type = buffer.readUInt16LE(2);
     const info = buffer.readUInt32LE(4);
 
-    const data: BidiData = {};
+    let data: BidiData | number = {};
     switch (type) {
       case BidiType.SPEED_REPORT:
         data.speed = info;
@@ -54,6 +54,9 @@ export default class InfoGroup {
         data.directionChange = this.parseDirChange(info);
         data.directionConfirm = this.parseDirectionConfirm(info);
         data.forwardOrReverse = this.parseFwdRev(info);
+        break;
+      default:
+        data = info;
     }
 
     this.onBidiInfoChange.next({
