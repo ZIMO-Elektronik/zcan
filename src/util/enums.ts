@@ -139,3 +139,9 @@ export enum BidiType {
   TRACK_VOLTAGE = 0x1000,
   ALARMS = 0x1100,
 }
+
+export enum ForwardOrReverse {
+  UNKNOWN = 0,
+  FORWARD = 1,
+  REVERSE = 2,
+}

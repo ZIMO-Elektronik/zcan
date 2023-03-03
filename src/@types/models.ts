@@ -13,6 +13,7 @@ import {
   DirectionDefault,
   ShuntingFunction,
   BidiType,
+  ForwardOrReverse,
 } from 'src/util/enums';
 
 export interface Train {
@@ -97,7 +98,15 @@ export interface ModulePowerInfoData {
 export interface BidiInfoData {
   nid: number;
   type: BidiType;
-  data: number;
+  data: BidiData;
+}
+
+export interface BidiData {
+  speed?: number;
+  direction?: Direction;
+  forwardOrReverse?: ForwardOrReverse;
+  directionChange?: boolean;
+  directionConfirm?: boolean;
 }
 
 export interface VehicleModeData {
