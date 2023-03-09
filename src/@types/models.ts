@@ -98,11 +98,10 @@ export interface ModulePowerInfoData {
 export interface BidiInfoData {
   nid: number;
   type: BidiType;
-  data: BidiData | number;
+  data: BidiDirectionData | number;
 }
 
-export interface BidiData {
-  speed?: number;
+export interface BidiDirectionData {
   direction?: Direction;
   forwardOrReverse?: ForwardOrReverse;
   directionChange?: boolean;

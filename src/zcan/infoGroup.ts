@@ -1,7 +1,7 @@
 import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
-import {BidiInfoData, BidiData} from '../@types/models';
+import {BidiInfoData, BidiDirectionData} from '../@types/models';
 import {BidiType, Direction, ForwardOrReverse} from '../util/enums';
 
 /**
@@ -44,11 +44,8 @@ export default class InfoGroup {
     const type = buffer.readUInt16LE(2);
     const info = buffer.readUInt32LE(4);
 
-    let data: BidiData | number = {};
+    let data: BidiDirectionData | number = {};
     switch (type) {
-      case BidiType.SPEED_REPORT:
-        data.speed = info;
-        break;
       case BidiType.DIRECTION:
         data.direction = this.parseEastWest(info);
         data.directionChange = this.parseDirChange(info);
