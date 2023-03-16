@@ -173,12 +173,13 @@ export default class DataGroup {
     const index = buffer.readUInt16LE(0);
     const deviceNID = buffer.readUInt16LE(2);
     const msSinceLastCommunication = buffer.readUInt16LE(4);
-
-    this.onListItemsByIndex.next({
-      index,
-      nid: deviceNID,
-      msSinceLastCommunication,
-    });
+    if (deviceNID) {
+      this.onListItemsByIndex.next({
+        index,
+        nid: deviceNID,
+        msSinceLastCommunication,
+      });
+    }
   }
 
   // 0x07.0x02
