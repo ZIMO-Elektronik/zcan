@@ -54,10 +54,12 @@ export default class LanNetworkGroup {
   }
 
   parsePortOpen(size: number, mode: number, nid: number, buffer: Buffer) {
-    this.mx10.mx10NID = nid;
-    this.mx10.connected = true;
+    if (this.onPortOpen.observed) {
+      this.mx10.mx10NID = nid;
+      this.mx10.connected = true;
 
-    this.onPortOpen.next(true);
+      this.onPortOpen.next(true);
+    }
   }
 
   // 0x1A.0x0e

@@ -154,13 +154,15 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const objectType = buffer.readUInt16LE(0);
-    const number = buffer.readUInt16LE(2);
+    if (this.onGroupCount.observed) {
+      const objectType = buffer.readUInt16LE(0);
+      const number = buffer.readUInt16LE(2);
 
-    this.onGroupCount.next({
-      objectType,
-      number,
-    });
+      this.onGroupCount.next({
+        objectType,
+        number,
+      });
+    }
   }
 
   // 0x07.0x01
@@ -170,15 +172,17 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const index = buffer.readUInt16LE(0);
-    const deviceNID = buffer.readUInt16LE(2);
-    const msSinceLastCommunication = buffer.readUInt16LE(4);
-    if (deviceNID) {
-      this.onListItemsByIndex.next({
-        index,
-        nid: deviceNID,
-        msSinceLastCommunication,
-      });
+    if (this.onListItemsByIndex.observed) {
+      const index = buffer.readUInt16LE(0);
+      const deviceNID = buffer.readUInt16LE(2);
+      const msSinceLastCommunication = buffer.readUInt16LE(4);
+      if (deviceNID) {
+        this.onListItemsByIndex.next({
+          index,
+          nid: deviceNID,
+          msSinceLastCommunication,
+        });
+      }
     }
   }
 
@@ -189,17 +193,19 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const index = buffer.readUInt16LE(2);
-    const itemState = buffer.readUInt16LE(4);
-    const lastTick = buffer.readUInt16LE(6);
+    if (this.onListItemsByNID.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const index = buffer.readUInt16LE(2);
+      const itemState = buffer.readUInt16LE(4);
+      const lastTick = buffer.readUInt16LE(6);
 
-    this.onListItemsByNID.next({
-      nid: NID,
-      index,
-      itemState,
-      lastTick,
-    });
+      this.onListItemsByNID.next({
+        nid: NID,
+        index,
+        itemState,
+        lastTick,
+      });
+    }
   }
 
   // 0x07.0x04
@@ -209,13 +215,15 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const state = buffer.readUInt16LE(2);
+    if (this.onRemoveLocomotive.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const state = buffer.readUInt16LE(2);
 
-    this.onRemoveLocomotive.next({
-      nid: NID,
-      state: state,
-    });
+      this.onRemoveLocomotive.next({
+        nid: NID,
+        state: state,
+      });
+    }
   }
 
   // 0x07.0x12
@@ -225,15 +233,17 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const type = buffer.readUInt16LE(2);
-    const imageId = buffer.readUInt16LE(4);
+    if (this.onItemImageConfig.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const type = buffer.readUInt16LE(2);
+      const imageId = buffer.readUInt16LE(4);
 
-    this.onItemImageConfig.next({
-      nid: NID,
-      type,
-      imageId,
-    });
+      this.onItemImageConfig.next({
+        nid: NID,
+        type,
+        imageId,
+      });
+    }
   }
 
   private parseItemFxInfo(
@@ -242,18 +252,20 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const fx = buffer.readUInt16LE(2);
-    // const base = buffer.readUInt8(4);
-    const type = buffer.readUInt8(5);
-    const data = buffer.readUInt16LE(6);
+    if (this.onItemFxInfo.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const fx = buffer.readUInt16LE(2);
+      // const base = buffer.readUInt8(4);
+      const type = buffer.readUInt8(5);
+      const data = buffer.readUInt16LE(6);
 
-    this.onItemFxInfo.next({
-      nid: NID,
-      function: fx,
-      type,
-      data,
-    });
+      this.onItemFxInfo.next({
+        nid: NID,
+        function: fx,
+        type,
+        data,
+      });
+    }
   }
 
   // 0x07.0x21
@@ -263,66 +275,68 @@ export default class DataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const subID = buffer.readUInt16LE(2);
-    const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
+    if (this.onDataNameExtended.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const subID = buffer.readUInt16LE(2);
+      const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
 
-    let value1: DataNameValue1 | undefined;
-    const value2 = buffer.readUInt32LE(8);
-    let type: NameType;
+      let value1: DataNameValue1 | undefined;
+      const value2 = buffer.readUInt32LE(8);
+      let type: NameType;
 
-    switch (NID) {
-      case 0x7f00:
-        type = NameType.MANUFACTURER;
-        break;
-      case 0x7f02:
-        type = NameType.DECODER;
-        break;
-      case 0x7f04:
-        type = NameType.DESIGNATION;
-        value1 = {
-          type: buffer.subarray(4).toString('ascii').trim(),
-          cfgNum: parseInt(buffer.subarray(5, 7).toString('ascii')),
-        };
-        break;
-      case 0x7f06:
-        type = NameType.CFGDB;
-        break;
-      case 0x7f10:
-        type = NameType.ICON;
-        break;
-      case 0x7f11:
-        type = NameType.ICON;
-        break;
-      case 0x7f18:
-        type = NameType.ZIMO_PARTNER;
-        break;
-      case 0x7f20:
-        type = NameType.LAND;
-        break;
-      case 0x7f21:
-        type = NameType.COMPANY_CV;
-        break;
-      case 0xc2:
-        type = NameType.CONNECTION;
-        break;
-      default:
-        if (subID == 1) {
+      switch (NID) {
+        case 0x7f00:
+          type = NameType.MANUFACTURER;
+          break;
+        case 0x7f02:
+          type = NameType.DECODER;
+          break;
+        case 0x7f04:
+          type = NameType.DESIGNATION;
+          value1 = {
+            type: buffer.subarray(4).toString('ascii').trim(),
+            cfgNum: parseInt(buffer.subarray(5, 7).toString('ascii')),
+          };
+          break;
+        case 0x7f06:
+          type = NameType.CFGDB;
+          break;
+        case 0x7f10:
+          type = NameType.ICON;
+          break;
+        case 0x7f11:
+          type = NameType.ICON;
+          break;
+        case 0x7f18:
+          type = NameType.ZIMO_PARTNER;
+          break;
+        case 0x7f20:
+          type = NameType.LAND;
+          break;
+        case 0x7f21:
           type = NameType.COMPANY_CV;
-        } else if (subID == 0) {
-          type = NameType.VEHICLE;
-        } else {
+          break;
+        case 0xc2:
           type = NameType.CONNECTION;
-        }
-    }
+          break;
+        default:
+          if (subID == 1) {
+            type = NameType.COMPANY_CV;
+          } else if (subID == 0) {
+            type = NameType.VEHICLE;
+          } else {
+            type = NameType.CONNECTION;
+          }
+      }
 
-    this.onDataNameExtended.next({
-      nid: NID,
-      type,
-      subID,
-      value1,
-      value2,
-      name,
-    });
+      this.onDataNameExtended.next({
+        nid: NID,
+        type,
+        subID,
+        value1,
+        value2,
+        name,
+      });
+    }
   }
 }

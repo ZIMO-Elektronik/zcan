@@ -76,44 +76,46 @@ export default class LanDataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
+    if (this.onDataValueExtended.observed) {
+      const NID = buffer.readUInt16LE(0);
 
-    const flagsBytes = buffer.readUInt32LE(4);
-    const trackMode = buffer.readUInt8(24);
-    const functionCount = buffer.readUInt8(25);
-    const speedAndDirection = buffer.readUInt16LE(44);
+      const flagsBytes = buffer.readUInt32LE(4);
+      const trackMode = buffer.readUInt8(24);
+      const functionCount = buffer.readUInt8(25);
+      const speedAndDirection = buffer.readUInt16LE(44);
 
-    const {speedStep, forward, eastWest, emergencyStop} =
-      parseSpeed(speedAndDirection);
-    const operatingMode = getOperatingMode(trackMode);
-    const flags = this.parseFlags(flagsBytes);
+      const {speedStep, forward, eastWest, emergencyStop} =
+        parseSpeed(speedAndDirection);
+      const operatingMode = getOperatingMode(trackMode);
+      const flags = this.parseFlags(flagsBytes);
 
-    let functions = buffer.readUInt32LE(46);
-    const functionsStates = [];
-    for (let i = 0; i < 31; i++) {
-      const active = (functions & 1) == 1;
-      functionsStates.push(active);
-      functions = functions >> 1;
+      let functions = buffer.readUInt32LE(46);
+      const functionsStates = [];
+      for (let i = 0; i < 31; i++) {
+        const active = (functions & 1) == 1;
+        functionsStates.push(active);
+        functions = functions >> 1;
+      }
+
+      const specialFunc = buffer.readUInt32LE(50);
+
+      const shuntingFunction = specialFunc & shuntingFunctionB;
+      const manualMode = (specialFunc & manualModeB) >> 4;
+
+      this.onDataValueExtended.next({
+        nid: NID,
+        flags,
+        functionCount,
+        speedStep,
+        forward,
+        eastWest,
+        emergencyStop,
+        operatingMode,
+        functionsStates,
+        shuntingFunction,
+        manualMode,
+      });
     }
-
-    const specialFunc = buffer.readUInt32LE(50);
-
-    const shuntingFunction = specialFunc & shuntingFunctionB;
-    const manualMode = (specialFunc & manualModeB) >> 4;
-
-    this.onDataValueExtended.next({
-      nid: NID,
-      flags,
-      functionCount,
-      speedStep,
-      forward,
-      eastWest,
-      emergencyStop,
-      operatingMode,
-      functionsStates,
-      shuntingFunction,
-      manualMode,
-    });
   }
 
   // 0x17.0x27
@@ -123,47 +125,49 @@ export default class LanDataGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const SubID = buffer.readUInt16LE(2);
-    const vehicleGroup = buffer.readUInt16LE(4);
+    if (this.onLocoGuiExtended.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const SubID = buffer.readUInt16LE(2);
+      const vehicleGroup = buffer.readUInt16LE(4);
 
-    const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
-    const imageId = buffer.readUInt16LE(38);
-    const tacho = buffer.readUInt16LE(40);
-    const speedFwd = buffer.readUInt16LE(42);
-    const speedRev = buffer.readUInt16LE(44);
-    const speedRange = buffer.readUInt16LE(46);
-    const driveType = buffer.readUInt16LE(48);
-    const era = buffer.readUInt16LE(50);
-    const countryCode = buffer.readUInt16LE(52);
+      const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
+      const imageId = buffer.readUInt16LE(38);
+      const tacho = buffer.readUInt16LE(40);
+      const speedFwd = buffer.readUInt16LE(42);
+      const speedRev = buffer.readUInt16LE(44);
+      const speedRange = buffer.readUInt16LE(46);
+      const driveType = buffer.readUInt16LE(48);
+      const era = buffer.readUInt16LE(50);
+      const countryCode = buffer.readUInt16LE(52);
 
-    // reading 64 bytes of functions
-    const functions = Array<TrainFunction>();
-    for (let i = 0; i < 33; i++) {
-      const icon = buffer.readUInt16LE(54 + i * 2);
-      functions.push({
-        mode: FunctionMode.switch,
-        active: false,
-        icon: String(icon).padStart(4, '0'),
+      // reading 64 bytes of functions
+      const functions = Array<TrainFunction>();
+      for (let i = 0; i < 33; i++) {
+        const icon = buffer.readUInt16LE(54 + i * 2);
+        functions.push({
+          mode: FunctionMode.switch,
+          active: false,
+          icon: String(icon).padStart(4, '0'),
+        });
+      }
+
+      this.onLocoGuiExtended.next({
+        nid: NID,
+        subId: SubID,
+        name: name,
+        group: vehicleGroup,
+        image: imageId == 0 ? undefined : imageId.toString(),
+        tacho: tacho.toString(),
+        speedFwd: speedFwd,
+        speedRev: speedRev,
+        speedRange: speedRange,
+        operatingMode: OperatingMode.UNKNOWN,
+        driveType: driveType,
+        era: this.parseEra(era),
+        countryCode: countryCode,
+        functions,
       });
     }
-
-    this.onLocoGuiExtended.next({
-      nid: NID,
-      subId: SubID,
-      name: name,
-      group: vehicleGroup,
-      image: imageId == 0 ? undefined : imageId.toString(),
-      tacho: tacho.toString(),
-      speedFwd: speedFwd,
-      speedRev: speedRev,
-      speedRange: speedRange,
-      operatingMode: OperatingMode.UNKNOWN,
-      driveType: driveType,
-      era: this.parseEra(era),
-      countryCode: countryCode,
-      functions,
-    });
   }
 
   private parseEra(eraString: number) {

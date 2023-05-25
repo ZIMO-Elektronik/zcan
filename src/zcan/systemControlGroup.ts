@@ -47,14 +47,16 @@ export default class SystemControlGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const deviceNID = buffer.readUInt16LE(0);
-    const port = buffer.readUInt8(2);
-    const modeState = buffer.readUInt8(3);
+    if (this.onSystemStateChange.observed) {
+      const deviceNID = buffer.readUInt16LE(0);
+      const port = buffer.readUInt8(2);
+      const modeState = buffer.readUInt8(3);
 
-    this.onSystemStateChange.next({
-      nid: deviceNID,
-      port,
-      mode: modeState,
-    });
+      this.onSystemStateChange.next({
+        nid: deviceNID,
+        port,
+        mode: modeState,
+      });
+    }
   }
 }

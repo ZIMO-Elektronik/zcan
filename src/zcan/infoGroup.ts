@@ -40,27 +40,29 @@ export default class InfoGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const type = buffer.readUInt16LE(2);
-    const info = buffer.readUInt32LE(4);
+    if (this.onBidiInfoChange.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const type = buffer.readUInt16LE(2);
+      const info = buffer.readUInt32LE(4);
 
-    let data: BidiDirectionData | number = {};
-    switch (type) {
-      case BidiType.DIRECTION:
-        data.direction = this.parseEastWest(info);
-        data.directionChange = this.parseDirChange(info);
-        data.directionConfirm = this.parseDirectionConfirm(info);
-        data.forwardOrReverse = this.parseFwdRev(info);
-        break;
-      default:
-        data = info;
+      let data: BidiDirectionData | number = {};
+      switch (type) {
+        case BidiType.DIRECTION:
+          data.direction = this.parseEastWest(info);
+          data.directionChange = this.parseDirChange(info);
+          data.directionConfirm = this.parseDirectionConfirm(info);
+          data.forwardOrReverse = this.parseFwdRev(info);
+          break;
+        default:
+          data = info;
+      }
+
+      this.onBidiInfoChange.next({
+        nid: NID,
+        type,
+        data,
+      });
     }
-
-    this.onBidiInfoChange.next({
-      nid: NID,
-      type,
-      data,
-    });
   }
 
   private parseEastWest(data: number) {

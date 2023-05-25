@@ -44,32 +44,34 @@ export default class TrackCfgGroup {
   }
 
   // 0x16.0x08
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   parseTseProgRead(size: number, mode: number, nid: number, buffer: Buffer) {
-    const SysNid = buffer.readUInt16LE(0);
-    const FahrzeugNID = buffer.readUInt16LE(2);
-    const cfgNum = buffer.readUInt32LE(4);
-    const valCV = buffer.readUInt16LE(8);
-
-    return {
-      SysNid,
-      FahrzeugNID,
-      cfgNum,
-      valCV,
-    };
+    // const SysNid = buffer.readUInt16LE(0);
+    // const FahrzeugNID = buffer.readUInt16LE(2);
+    // const cfgNum = buffer.readUInt32LE(4);
+    // const valCV = buffer.readUInt16LE(8);
+    //
+    // return {
+    //   SysNid,
+    //   FahrzeugNID,
+    //   cfgNum,
+    //   valCV,
+    // };
   }
 
   // 0x16.0x09
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   parseTseProgWrite(size: number, mode: number, nid: number, buffer: Buffer) {
-    const SysNId = buffer.readUInt16LE(0);
-    const FahrzeugNID = buffer.readUInt16LE(2);
-    const cfgNum = buffer.readUInt32LE(4);
-    const valCV = buffer.readUint8(8);
-
-    return {
-      SysNId,
-      FahrzeugNID,
-      cfgNum,
-      valCV,
-    };
+    // const SysNId = buffer.readUInt16LE(0);
+    // const FahrzeugNID = buffer.readUInt16LE(2);
+    // const cfgNum = buffer.readUInt32LE(4);
+    // const valCV = buffer.readUint8(8);
+    //
+    // return {
+    //   SysNId,
+    //   FahrzeugNID,
+    //   cfgNum,
+    //   valCV,
+    // };
   }
 }

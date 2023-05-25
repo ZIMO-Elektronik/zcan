@@ -117,21 +117,23 @@ export default class VehicleGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const mode1 = buffer.readUInt8(2);
-    const mode2 = buffer.readUInt8(3);
-    const mode3 = buffer.readUInt8(4);
+    if (this.onVehicleMode.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const mode1 = buffer.readUInt8(2);
+      const mode2 = buffer.readUInt8(3);
+      const mode3 = buffer.readUInt8(4);
 
-    const operatingMode = getOperatingMode(mode1);
-    const speedSteps = getSpeedSteps(mode1);
+      const operatingMode = getOperatingMode(mode1);
+      const speedSteps = getSpeedSteps(mode1);
 
-    this.onVehicleMode.next({
-      nid: NID,
-      speedSteps,
-      operatingMode,
-      mode2,
-      mode3,
-    });
+      this.onVehicleMode.next({
+        nid: NID,
+        speedSteps,
+        operatingMode,
+        mode2,
+        mode3,
+      });
+    }
   }
 
   // 0x02.0x02
@@ -141,21 +143,23 @@ export default class VehicleGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const speedAndDirection = buffer.readUInt16LE(2);
-    const divisor = buffer.readUint8(4);
+    if (this.onChangeSpeed.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const speedAndDirection = buffer.readUInt16LE(2);
+      const divisor = buffer.readUint8(4);
 
-    const {speedStep, forward, eastWest, emergencyStop} =
-      parseSpeed(speedAndDirection);
+      const {speedStep, forward, eastWest, emergencyStop} =
+        parseSpeed(speedAndDirection);
 
-    this.onChangeSpeed.next({
-      nid: NID,
-      divisor,
-      speedStep,
-      forward,
-      eastWest,
-      emergencyStop,
-    });
+      this.onChangeSpeed.next({
+        nid: NID,
+        divisor,
+        speedStep,
+        forward,
+        eastWest,
+        emergencyStop,
+      });
+    }
   }
 
   // 0x02.0x04
@@ -165,17 +169,19 @@ export default class VehicleGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const functionNumber = buffer.readUInt16LE(2);
-    const functionState = buffer.readUInt16LE(4);
+    if (this.onCallFunction.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const functionNumber = buffer.readUInt16LE(2);
+      const functionState = buffer.readUInt16LE(4);
 
-    const functionActive = functionState !== 0x00;
+      const functionActive = functionState !== 0x00;
 
-    this.onCallFunction.next({
-      nid: NID,
-      functionNumber,
-      functionState: functionActive,
-    });
+      this.onCallFunction.next({
+        nid: NID,
+        functionNumber,
+        functionState: functionActive,
+      });
+    }
   }
 
   // 0x02.0x05
@@ -185,14 +191,16 @@ export default class VehicleGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    const NID = buffer.readUInt16LE(0);
-    const specialFunctionMode = buffer.readUInt16LE(2);
-    const specialFunctionState = buffer.readUInt16LE(4);
+    if (this.onCallSpecialFunction.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const specialFunctionMode = buffer.readUInt16LE(2);
+      const specialFunctionState = buffer.readUInt16LE(4);
 
-    this.onCallSpecialFunction.next({
-      nid: NID,
-      specialFunctionMode,
-      specialFunctionState,
-    });
+      this.onCallSpecialFunction.next({
+        nid: NID,
+        specialFunctionMode,
+        specialFunctionState,
+      });
+    }
   }
 }
