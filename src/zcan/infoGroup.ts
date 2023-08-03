@@ -67,9 +67,9 @@ export default class InfoGroup {
 
   private parseEastWest(data: number) {
     if ((data & 0x02) == 0x02) {
-      return Direction.WEST;
-    } else {
       return Direction.EAST;
+    } else {
+      return Direction.WEST;
     }
   }
 
