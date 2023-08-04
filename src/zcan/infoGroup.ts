@@ -79,9 +79,9 @@ export default class InfoGroup {
 
   private parseFwdRev(data: number) {
     if ((data & 0x01) == 0) {
-      return ForwardOrReverse.FORWARD;
-    } else {
       return ForwardOrReverse.REVERSE;
+    } else {
+      return ForwardOrReverse.FORWARD;
     }
   }
   private parseDirectionConfirm(data: number) {
