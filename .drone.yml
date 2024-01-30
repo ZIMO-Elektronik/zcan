@@ -16,11 +16,13 @@ steps:
       password:
         from_secret: docker_password
     
-  - name: teams-webhook
-    image: 'kuperiu/drone-teams'
+  - name: notification-to-talk
+    image: malina01/notification-to-talk:latest
     settings:
-      webhook:
-        from_secret: teams_webhook_url
+      nextcloud_server_url: https://meet.consultis.sk
+      room_id: 3mgyqctp
+      bot_secret:
+        from_secret: NEXTCLOUD_BOT_SECRET
     when:
       status:
         - failure
@@ -64,11 +66,13 @@ steps:
 
       - rm .npmrc
 
-  - name: teams-webhook
-    image: 'kuperiu/drone-teams'
+  - name: notification-to-talk
+    image: malina01/notification-to-talk:latest
     settings:
-      webhook:
-        from_secret: teams_webhook_url
+      nextcloud_server_url: https://meet.consultis.sk
+      room_id: 3mgyqctp
+      bot_secret:
+        from_secret: NEXTCLOUD_BOT_SECRET
     when:
       status:
         - failure
