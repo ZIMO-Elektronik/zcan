@@ -54,6 +54,19 @@ export interface DataValueExtendedData {
   manualMode: Manual;
 }
 
+export interface LocoSpeedTabExtended {
+  srcid: number;
+  nid: number;
+  dbat6: number;
+  speedTab: SpeedTabData[];
+}
+
+export interface SpeedTabData {
+  id: number;
+  speedStep: number;
+  speed: number;
+}
+
 export interface GroupCountData {
   objectType: number;
   number: number;

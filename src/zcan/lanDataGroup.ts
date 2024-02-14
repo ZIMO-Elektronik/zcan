@@ -3,6 +3,8 @@ import MX10 from '../MX10';
 import {FunctionMode, getOperatingMode, OperatingMode} from '../util/enums';
 import {
   DataValueExtendedData,
+  LocoSpeedTabExtended,
+  SpeedTabData,
   Train,
   TrainFlags,
   TrainFunction,
@@ -19,6 +21,7 @@ import {manualModeB, shuntingFunctionB} from '../internal/bites';
 export default class LanDataGroup {
   public readonly onLocoGuiExtended = new Subject<Train>();
   public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
+  public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
   private mx10: MX10;
 
@@ -52,6 +55,20 @@ export default class LanDataGroup {
     );
   }
 
+  locoSpeedTapExtended(NID: number) {
+    this.mx10.sendData(
+      0x17,
+      0x19,
+      [
+        {value: this.mx10.mx10NID, length: 2},
+        {value: NID, length: 2},
+        {value: 0, length: 1},
+        {value: 0, length: 1},
+      ],
+      0b00,
+    );
+  }
+
   parse(
     size: number,
     command: number,
@@ -65,6 +82,9 @@ export default class LanDataGroup {
         break;
       case 0x27:
         this.parseLocoGuiExtended(size, mode, nid, buffer);
+        break;
+      case 0x19:
+        this.parseLocoSpeedTapExtended(size, mode, nid, buffer);
         break;
     }
   }
@@ -166,6 +186,44 @@ export default class LanDataGroup {
         era: this.parseEra(era),
         countryCode: countryCode,
         functions,
+      });
+    }
+  }
+
+  // 0x17.0x19
+  private parseLocoSpeedTapExtended(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onLocoSpeedTabExtended.observed) {
+      const SrcID = buffer.readUInt16LE(0);
+      const NID = buffer.readUInt16LE(2);
+      const DBat6 = buffer.readUInt8(5);
+      // const speedStep0 = buffer.readUInt16LE(6);
+      // const speed0 = buffer.readUInt16LE(8);
+      // const speedStep1 = buffer.readUInt16LE(10);
+      // const speed1 = buffer.readUInt16LE(12);
+      // const speedStep2 = buffer.readUInt16LE(14);
+      // const speed2 = buffer.readUInt16LE(16);
+
+      const locoSpeedTab = Array<SpeedTabData>();
+      for (let i = 0; i < 3; i++) {
+        const speedStep = buffer.readUInt16LE(6 + i * 4);
+        const speed = buffer.readUInt16LE(8 + i * 4);
+        locoSpeedTab.push({
+          id: i + 1,
+          speedStep: speedStep,
+          speed: speed,
+        });
+      }
+
+      this.onLocoSpeedTabExtended.next({
+        srcid: SrcID,
+        nid: NID,
+        dbat6: DBat6,
+        speedTab: locoSpeedTab,
       });
     }
   }
