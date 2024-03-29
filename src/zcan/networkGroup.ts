@@ -61,7 +61,9 @@ export default class NetworkGroup {
       this.mx10.reconnectLogic();
 
       //Return Ping ACK
-      this.ping(0b011);
+      if (!this.mx10.connected) {
+        this.ping(0b11);
+      }
     } else {
       //Error
 
