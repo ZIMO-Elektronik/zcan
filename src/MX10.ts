@@ -84,7 +84,7 @@ export default class MX10 {
     this.debugCommunication = debugCommunication;
     this.reconnectionTime = connectionTimeout * 4;
 
-    const pingIntervalMs = 60 * 1000;
+    const pingIntervalMs = 2 * 1000;
     interval(pingIntervalMs).subscribe(() => {
       if (this.connected) {
         this.network.ping();
@@ -143,6 +143,7 @@ export default class MX10 {
           console.log('Reconnecting...');
           this.network.portClose();
           this.lanNetwork.portOpen();
+          this.network.ping(0b00);
         }
       }, this.reconnectionTime);
     }

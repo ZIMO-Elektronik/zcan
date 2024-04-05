@@ -13,7 +13,7 @@ export default class NetworkGroup {
     this.mx10 = mx10;
   }
 
-  ping(mode = 0b01) {
+  ping(mode = 0b10) {
     this.mx10.sendData(
       0x0a,
       0x00,
@@ -59,11 +59,6 @@ export default class NetworkGroup {
       // const uuid = buffer.readUInt32LE(0);
 
       this.mx10.reconnectLogic();
-
-      //Return Ping ACK
-      if (!this.mx10.connected) {
-        this.ping(0b11);
-      }
     } else {
       //Error
 
