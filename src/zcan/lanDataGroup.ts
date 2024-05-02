@@ -164,10 +164,12 @@ export default class LanDataGroup {
       const functions = Array<TrainFunction>();
       for (let i = 0; i < 33; i++) {
         const icon = buffer.readUInt16LE(54 + i * 2);
+        const iconString =
+          icon === 0 ? String(i).padStart(2, '0') : String(icon);
         functions.push({
           mode: FunctionMode.switch,
           active: false,
-          icon: String(icon).padStart(4, '0'),
+          icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
         });
       }
 
