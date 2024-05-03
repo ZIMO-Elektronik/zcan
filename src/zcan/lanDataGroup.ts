@@ -84,7 +84,7 @@ export default class LanDataGroup {
         this.parseLocoGuiExtended(size, mode, nid, buffer);
         break;
       case 0x19:
-        this.parseLocoSpeedTapExtended(size, mode, nid, buffer);
+        this.parseLocoSpeedTabExtended(size, mode, nid, buffer);
         break;
     }
   }
@@ -193,7 +193,7 @@ export default class LanDataGroup {
   }
 
   // 0x17.0x19
-  private parseLocoSpeedTapExtended(
+  private parseLocoSpeedTabExtended(
     size: number,
     mode: number,
     nid: number,
@@ -209,9 +209,11 @@ export default class LanDataGroup {
       // const speed1 = buffer.readUInt16LE(12);
       // const speedStep2 = buffer.readUInt16LE(14);
       // const speed2 = buffer.readUInt16LE(16);
+      // const speedStep3 = buffer.readUInt16LE(18);
+      // const speed3 = buffer.readUInt16LE(20);
 
       const locoSpeedTab = Array<SpeedTabData>();
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         const speedStep = buffer.readUInt16LE(6 + i * 4);
         const speed = buffer.readUInt16LE(8 + i * 4);
         locoSpeedTab.push({
