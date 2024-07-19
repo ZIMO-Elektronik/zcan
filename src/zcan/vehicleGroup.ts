@@ -87,6 +87,18 @@ export default class VehicleGroup {
     ]);
   }
 
+  activeMode() {
+    this.mx10.sendData(
+      0x02,
+      0x10,
+      [
+        {value: this.mx10.mx10NID, length: 2},
+        {value: 0x10, length: 2},
+      ],
+      0b01,
+    );
+  }
+
   parse(
     size: number,
     command: number,
