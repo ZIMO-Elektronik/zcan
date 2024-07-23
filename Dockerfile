@@ -1,4 +1,4 @@
-FROM node:16 as setup
+FROM node:20 as setup
 
 WORKDIR /app/protocol_docs
 COPY protocol_docs/package*.json ./
