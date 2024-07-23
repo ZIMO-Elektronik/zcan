@@ -39,7 +39,7 @@ name: zcan_library
 
 steps:
   - name: publish-zcan
-    image: node
+    image: node:20
     environment:
       npm_token:
         from_secret: npm_token
