@@ -32,7 +32,8 @@ describe('Vehicle group tests - 0x02', () => {
 
     expect(data.nid).toBe(211);
     // testing on device ZimoApp
-    expect(data.ctrlDevice).toBe(0);
+    mx10.vehicle.changeSpeed(testNID, 15, true);
+    expect(data.ctrlDevice).toBe(mx10.myNID);
   });
 
   it('0x01 - retrieve operating mode', async () => {

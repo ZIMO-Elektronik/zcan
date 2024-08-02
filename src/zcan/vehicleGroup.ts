@@ -89,6 +89,16 @@ export default class VehicleGroup {
     ]);
   }
 
+  //0x02.0x00
+  vehicleState(vehicleAddress: number) {
+    return this.mx10.sendData(
+      0x02,
+      0x00,
+      [{value: vehicleAddress, length: 2}],
+      0b00,
+    );
+  }
+
   // 0x02.0x10
   activeModeTrain(vehicleAddress: number) {
     return this.mx10.sendData(
