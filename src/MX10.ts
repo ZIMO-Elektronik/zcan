@@ -84,7 +84,11 @@ export default class MX10 {
     this.debugCommunication = debugCommunication;
     this.reconnectionTime = connectionTimeout * 4;
 
-    const pingIntervalMs = 2 * 1000;
+    const pingIntervalMs = 1000;
+
+    if (this.connected) {
+      this.network.ping();
+    }
     interval(pingIntervalMs).subscribe(() => {
       if (this.connected) {
         this.network.ping();
