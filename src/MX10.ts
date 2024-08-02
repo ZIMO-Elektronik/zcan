@@ -222,7 +222,8 @@ export default class MX10 {
             break;
 
           default:
-            throw new Error(`ELEMENT LENGTH NOT DEFINED, ${element}`);
+            // eslint-disable-next-line no-console
+            console.warn(`ELEMENT LENGTH NOT DEFINED, ${element}`);
         }
       }
     });
