@@ -121,6 +121,13 @@ export interface BidiDirectionData {
   directionConfirm?: boolean;
 }
 
+export interface VehicleStateData {
+  nid: number;
+  // stateFlags: StateFlags;
+  ctrlTick: number;
+  ctrlDevice: number;
+}
+
 export interface VehicleModeData {
   nid: number;
   speedSteps: number | undefined;

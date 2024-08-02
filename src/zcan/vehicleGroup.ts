@@ -4,6 +4,7 @@ import {Subject} from 'rxjs';
 import {
   CallFunctionData,
   CallSpecialFunctionData,
+  VehicleStateData,
   VehicleModeData,
   VehicleSpeedData,
 } from '../@types/models';
@@ -28,6 +29,7 @@ import {
 export default class VehicleGroup {
   private mx10: MX10;
 
+  public readonly onVehicleState = new Subject<VehicleStateData>();
   public readonly onVehicleMode = new Subject<VehicleModeData>();
   public readonly onChangeSpeed = new Subject<VehicleSpeedData>();
   public readonly onCallFunction = new Subject<CallFunctionData>();
@@ -87,12 +89,25 @@ export default class VehicleGroup {
     ]);
   }
 
-  activeMode() {
-    this.mx10.sendData(
+  // 0x02.0x10
+  activeModeTrain(vehicleAddress: number) {
+    return this.mx10.sendData(
       0x02,
       0x10,
       [
-        {value: this.mx10.mx10NID, length: 2},
+        {value: vehicleAddress, length: 2},
+        {value: 0x01, length: 2},
+      ],
+      0b01,
+    );
+  }
+
+  activeModeTakeOver(vehicleAddress: number) {
+    return this.mx10.sendData(
+      0x02,
+      0x10,
+      [
+        {value: vehicleAddress, length: 2},
         {value: 0x10, length: 2},
       ],
       0b01,
@@ -107,6 +122,9 @@ export default class VehicleGroup {
     buffer: Buffer,
   ) {
     switch (command) {
+      case 0x00:
+        this.parseVehicleState(size, mode, nid, buffer);
+        break;
       case 0x01:
         this.parseVehicleMode(size, mode, nid, buffer);
         break;
@@ -119,6 +137,27 @@ export default class VehicleGroup {
       case 0x05:
         this.parseVehicleSpecialFunction(size, mode, nid, buffer);
         break;
+    }
+  }
+
+  // 0x02.0x00
+  private parseVehicleState(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onVehicleState.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const stateFlags = buffer.readUInt16LE(2); // TODO: add
+      const ctrlTick = buffer.readUInt16LE(4);
+      const ctrlDevice = buffer.readUInt16LE(6);
+
+      this.onVehicleState.next({
+        nid: NID,
+        ctrlTick,
+        ctrlDevice,
+      });
     }
   }
 

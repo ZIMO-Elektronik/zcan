@@ -13,7 +13,7 @@ import {
 
 describe('Vehicle group tests - 0x02', () => {
   const mx10 = createMX10();
-  const testNID = 3;
+  const testNID = 211;
 
   beforeAll(async () => {
     await initConnection(mx10);
@@ -25,6 +25,14 @@ describe('Vehicle group tests - 0x02', () => {
     delay(1000).then(() => {
       mx10.closeSocket();
     });
+  });
+
+  it('0x00 - retrieve operating state', async () => {
+    const data = await firstValueFrom(mx10.vehicle.onVehicleState);
+
+    expect(data.nid).toBe(211);
+    // testing on device ZimoApp
+    expect(data.ctrlDevice).toBe(0);
   });
 
   it('0x01 - retrieve operating mode', async () => {
