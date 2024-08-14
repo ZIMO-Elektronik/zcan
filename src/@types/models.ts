@@ -34,6 +34,11 @@ export interface Train {
   functions: TrainFunction[];
 }
 
+export interface LocoGuiMXExtended {
+  nid: number;
+  functions: TrainFunction[];
+}
+
 export interface TrainFunction {
   mode: FunctionMode;
   icon?: string;

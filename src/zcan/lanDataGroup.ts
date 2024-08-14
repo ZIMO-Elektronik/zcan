@@ -3,6 +3,7 @@ import MX10 from '../MX10';
 import {FunctionMode, getOperatingMode, OperatingMode} from '../util/enums';
 import {
   DataValueExtendedData,
+  LocoGuiMXExtended,
   LocoSpeedTabExtended,
   SpeedTabData,
   Train,
@@ -20,6 +21,7 @@ import {manualModeB, shuntingFunctionB} from '../internal/bites';
  */
 export default class LanDataGroup {
   public readonly onLocoGuiExtended = new Subject<Train>();
+  public readonly onLocoGuiMXExtended = new Subject<LocoGuiMXExtended>();
   public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
   public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
@@ -33,6 +35,19 @@ export default class LanDataGroup {
     this.mx10.sendData(
       0x17,
       0x27,
+      [
+        {value: this.mx10.mx10NID, length: 2},
+        {value: NID, length: 2},
+        {value: 0, length: 2},
+      ],
+      0b00,
+    );
+  }
+
+  locoGuiMXExtended(NID: number) {
+    this.mx10.sendData(
+      0x17,
+      0x28,
       [
         {value: this.mx10.mx10NID, length: 2},
         {value: NID, length: 2},
@@ -82,6 +97,9 @@ export default class LanDataGroup {
         break;
       case 0x27:
         this.parseLocoGuiExtended(size, mode, nid, buffer);
+        break;
+      case 0x28:
+        this.parseLocoGuiMXExtended(size, mode, nid, buffer);
         break;
       case 0x19:
         this.parseLocoSpeedTabExtended(size, mode, nid, buffer);
@@ -172,7 +190,6 @@ export default class LanDataGroup {
           icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
         });
       }
-
       this.onLocoGuiExtended.next({
         nid: NID,
         subId: SubID,
@@ -187,6 +204,63 @@ export default class LanDataGroup {
         driveType: driveType,
         era: this.parseEra(era),
         countryCode: countryCode,
+        functions,
+      });
+    }
+  }
+
+  // 0x17.0x28
+  private parseLocoGuiMXExtended(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onLocoGuiMXExtended.observed) {
+      const NID = buffer.readUInt16LE(0);
+
+      // TODO: after documentation
+      // const SubID = buffer.readUInt16LE(2);
+      // const vehicleGroup = buffer.readUInt16LE(4);
+
+      // const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
+      // const imageId = buffer.readUInt16LE(38);
+      // const tacho = buffer.readUInt16LE(40);
+      // const speedFwd = buffer.readUInt16LE(42);
+      // const speedRev = buffer.readUInt16LE(44);
+      // const speedRange = buffer.readUInt16LE(46);
+      // const driveType = buffer.readUInt16LE(48);
+      // const era = buffer.readUInt16LE(50);
+      // const countryCode = buffer.readUInt16LE(52);
+
+      // reading 64 bytes of functions
+      const functions = Array<TrainFunction>();
+      for (let i = 0; i < 33; i++) {
+        const icon = buffer.readUInt16LE(68 + i * 2);
+        const iconString =
+          icon === 0 ? String(i).padStart(2, '0') : String(icon);
+        functions.push({
+          mode: FunctionMode.switch,
+          active: false,
+          icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
+        });
+      }
+
+      //TODO: implement rest
+      this.onLocoGuiMXExtended.next({
+        nid: NID,
+        // subId: SubID,
+        // name: name,
+        // group: vehicleGroup,
+        // image: imageId == 0 ? undefined : imageId.toString(),
+        // tacho: tacho.toString(),
+        // speedFwd: speedFwd,
+        // speedRev: speedRev,
+        // speedRange: speedRange,
+        // operatingMode: OperatingMode.UNKNOWN,
+        // driveType: driveType,
+        // era: this.parseEra(era),
+        // countryCode: countryCode,
         functions,
       });
     }
