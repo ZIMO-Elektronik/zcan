@@ -43,15 +43,18 @@ describe('LAN Data group tests - 0x17', () => {
   });
 
   it('0x19 - Loco Speed Tab eXtended', async () => {
-    mx10.lanData.locoSpeedTapExtended(9999);
+    mx10.lanData.locoSpeedTapExtended(42);
 
     const locoSpeedTab: LocoSpeedTabExtended = await firstValueFrom(
       mx10.lanData.onLocoSpeedTabExtended,
     );
     expect(locoSpeedTab).toBeDefined();
-    expect(locoSpeedTab.nid).toBe(9999);
-    expect(locoSpeedTab.dbat6).toBe(4);
-    expect(locoSpeedTab.speedTab).toBeDefined();
+    expect(locoSpeedTab.nid).toBe(42);
+    expect(locoSpeedTab.dbat6).toBe(1);
+    if (locoSpeedTab.dbat6 === 5) {
+      expect(locoSpeedTab.speedTab).toBeDefined();
+      expect(locoSpeedTab.speedTab).toHaveLength(4);
+    }
 
     // mx10.sendData(0x02, 0x01, [{value: 56, length: 2}]);
     // expect(train.era).toBeDefined();

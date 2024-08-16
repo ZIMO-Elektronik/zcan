@@ -63,7 +63,7 @@ export interface LocoSpeedTabExtended {
   srcid: number;
   nid: number;
   dbat6: number;
-  speedTab: SpeedTabData[];
+  speedTab: SpeedTabData[] | undefined;
 }
 
 export interface SpeedTabData {

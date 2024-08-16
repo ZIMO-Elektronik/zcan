@@ -274,6 +274,9 @@ export default class LanDataGroup {
     buffer: Buffer,
   ) {
     if (this.onLocoSpeedTabExtended.observed) {
+      const setDBat6 = 5;
+      const bufferLengthOfSpeedTab = 24;
+
       const SrcID = buffer.readUInt16LE(0);
       const NID = buffer.readUInt16LE(2);
       const DBat6 = buffer.readUInt8(5);
@@ -285,17 +288,34 @@ export default class LanDataGroup {
       // const speed2 = buffer.readUInt16LE(16);
       // const speedStep3 = buffer.readUInt16LE(18);
       // const speed3 = buffer.readUInt16LE(20);
+      // const speedStep4 = buffer.readUInt16LE(22);
+      // const speed4 = buffer.readUInt16LE(24);
 
-      const locoSpeedTab = Array<SpeedTabData>();
-      for (let i = 0; i < 4; i++) {
-        const speedStep = buffer.readUInt16LE(6 + i * 4);
-        const speed = buffer.readUInt16LE(8 + i * 4);
-        locoSpeedTab.push({
-          id: i + 1,
-          speedStep: speedStep,
-          speed: speed,
-        });
+      let locoSpeedTab: Array<SpeedTabData> | undefined = undefined;
+
+      if (DBat6 !== setDBat6) {
+        locoSpeedTab = undefined;
+      } else {
+        locoSpeedTab = [];
+
+        for (let i = 0; i < 4; i++) {
+          const offset = 6 + i * 4;
+          if (bufferLengthOfSpeedTab >= offset + 2) {
+            const speedStep = buffer.readUInt16LE(offset);
+            const speed = buffer.readUInt16LE(offset + 2);
+            locoSpeedTab.push({
+              id: i + 1,
+              speedStep: speedStep,
+              speed: speed,
+            });
+          } else {
+            console.warn(`Train with id:${NID} has wrong speedStepTab buffer`);
+            break;
+          }
+        }
       }
+
+      console.log(locoSpeedTab);
 
       this.onLocoSpeedTabExtended.next({
         srcid: SrcID,
