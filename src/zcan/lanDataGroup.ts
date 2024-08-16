@@ -315,8 +315,6 @@ export default class LanDataGroup {
         }
       }
 
-      console.log(locoSpeedTab);
-
       this.onLocoSpeedTabExtended.next({
         srcid: SrcID,
         nid: NID,
