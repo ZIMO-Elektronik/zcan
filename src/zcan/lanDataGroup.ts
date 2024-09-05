@@ -116,7 +116,7 @@ export default class LanDataGroup {
   ) {
     if (this.onDataValueExtended.observed) {
       const NID = buffer.readUInt16LE(0);
-
+      const deletedFlag = buffer.readUInt8(4);
       const flagsBytes = buffer.readUInt32LE(4);
       const trackMode = buffer.readUInt8(24);
       const functionCount = buffer.readUInt8(25);
@@ -140,6 +140,8 @@ export default class LanDataGroup {
       const shuntingFunction = specialFunc & shuntingFunctionB;
       const manualMode = (specialFunc & manualModeB) >> 4;
 
+      const deleted = this.parseDeleted(deletedFlag);
+
       this.onDataValueExtended.next({
         nid: NID,
         flags,
@@ -152,6 +154,7 @@ export default class LanDataGroup {
         functionsStates,
         shuntingFunction,
         manualMode,
+        deleted,
       });
     }
   }
@@ -349,5 +352,9 @@ export default class LanDataGroup {
     return {
       deleted: flagsNumber >> 31 === 1,
     };
+  }
+
+  private parseDeleted(parseDeletedFlag: number) {
+    return parseDeletedFlag === 1;
   }
 }

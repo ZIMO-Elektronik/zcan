@@ -57,6 +57,7 @@ export interface DataValueExtendedData {
   flags: TrainFlags;
   shuntingFunction: ShuntingFunction;
   manualMode: Manual;
+  deleted: boolean;
 }
 
 export interface LocoSpeedTabExtended {
