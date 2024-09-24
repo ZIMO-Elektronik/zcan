@@ -12,5 +12,5 @@ export function createMX10(debug?: boolean) {
 }
 
 export function initConnection(mx10: MX10) {
-  return mx10.initSocket(createSocket, '192.168.55.145');
+  return mx10.initSocket(createSocket, '192.168.1.145');
 }

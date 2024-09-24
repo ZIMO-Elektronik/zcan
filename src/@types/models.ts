@@ -194,3 +194,22 @@ export interface ItemFxInfo {
   type: FxInfoType;
   data: number;
 }
+
+export interface TseInfoExtended {
+  nid: number;
+  cfgNum: number;
+  cvState: number;
+  cvCode: number;
+}
+
+export interface TseProgReadExtended {
+  nid: number;
+  cfgNum: number;
+  cvValue: number;
+}
+
+export interface TseProgWriteExtended {
+  nid: number;
+  cfgNum: number;
+  cvValue: number;
+}
