@@ -17,7 +17,17 @@ jobs:
       should_skip: ${{ steps.step1.outputs.should_skip }}
     steps:
       - id: step1
-        run: echo "should_skip=no" >> $GITHUB_OUTPUT
+      - run: |
+          PUBLISHED_VERSION=$(npm show zcan version)
+          VERSION=$(npm pkg get version | tr -d '"')
+
+          if [ "$PUBLISHED_VERSION" = "$VERSION" ];
+          then
+            echo "Version didn't change, skipping"
+            echo "should_skip=yes" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip=no" >> $GITHUB_OUTPUT
+          fi
 
   build:
     runs-on: ubuntu-latest
