@@ -11,19 +11,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check:
+  publish:
     runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.step1.outputs.should_skip }}
-    steps:
-      - id: step1
-        run: echo "should_skip=no" >> $GITHUB_OUTPUT
-
-  build:
-    runs-on: ubuntu-latest
-    needs:
-      - check
-    if:  ${{needs.check.outputs.should_skip == 'no'}}
 
     steps:
       - uses: actions/checkout@v4.1.6
@@ -32,10 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.11.0'
-          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
       - run: npm run build
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
