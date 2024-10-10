@@ -9,7 +9,7 @@ const config = {
   title: 'ZCAN',
   tagline: 'ZIMO CAN Bus Documentation',
   url: 'https://your-docusaurus-test-site.com',
-  baseUrl: '/',
+  baseUrl: '/zcan',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
