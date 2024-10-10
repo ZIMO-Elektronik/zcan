@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - id: check
         run: |
-          PUBLISHED_VERSION=$(npm show zcan version)
+          PUBLISHED_VERSION=$(npm show @zimo-elektronik/zcan version)
           VERSION=$(npm pkg get version | tr -d '"')
 
           if [ "$PUBLISHED_VERSION" = "$VERSION" ];

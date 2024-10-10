@@ -1,5 +1,5 @@
 {
-  "name": "zcan",
+  "name": "@zimo-elektronik/zcan",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
