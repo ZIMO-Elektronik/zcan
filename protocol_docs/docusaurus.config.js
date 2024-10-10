@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github')
-const darkCodeTheme = require('prism-react-renderer/themes/dracula')
+const lightCodeTheme = require('prism-react-renderer/themes/github');
+const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -81,7 +81,7 @@ const config = {
             position: 'right',
             label: 'API',
             target: '_blank',
-            prependBaseUrlToHref: true
+            prependBaseUrlToHref: true,
           },
           {
             type: 'doc',
@@ -90,8 +90,8 @@ const config = {
             label: 'Protocol',
           },
           {
-            href: 'https://git.consultis.sk/Consultis/zcan',
-            label: 'Git',
+            href: 'https://github.com/ZIMO-Elektronik/zcan',
+            label: 'GitHub',
             position: 'right',
           },
         ],
@@ -106,6 +106,6 @@ const config = {
         darkTheme: darkCodeTheme,
       },
     }),
-}
+};
 
-module.exports = config
+module.exports = config;

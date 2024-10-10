@@ -312,6 +312,7 @@ export default class LanDataGroup {
               speed: speed,
             });
           } else {
+            // eslint-disable-next-line no-console
             console.warn(`Train with id:${NID} has wrong speedStepTab buffer`);
             break;
           }

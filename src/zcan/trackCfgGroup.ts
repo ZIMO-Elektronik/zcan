@@ -61,7 +61,7 @@ export default class TrackCfgGroup {
   // 0x16.0x02
   parseTseInfo(size: number, mode: number, nid: number, buffer: Buffer) {
     if (this.onTseInfoExtended.observed) {
-      const sysNid = buffer.readUInt16LE(0);
+      // const sysNid = buffer.readUInt16LE(0);
       const NID = buffer.readUInt16LE(2);
       const cfgNum = buffer.readUInt32LE(4);
       const cvState = buffer.readUint8(8);
@@ -79,7 +79,7 @@ export default class TrackCfgGroup {
   // 0x16.0x08
   parseTseProgRead(size: number, mode: number, nid: number, buffer: Buffer) {
     if (this.onTseProgReadExtended.observed) {
-      const sysNid = buffer.readUInt16LE(0);
+      // const sysNid = buffer.readUInt16LE(0);
       const NID = buffer.readUInt16LE(2);
       const cfgNum = buffer.readUInt32LE(4);
       const cvValue = buffer.readUInt16LE(8);

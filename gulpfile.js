@@ -10,7 +10,7 @@ const docsPath = './protocol_docs/';
 gulp.task('protocol-docs', () => {
   const isWin = process.platform === 'win32';
   const cmd = isWin ? '.cmd' : '';
-  return spawn('node_modules/.bin/docusaurus' + cmd, ['build'], {
+  return spawn('node_modules\\.bin\\docusaurus' + cmd, ['build'], {
     cwd: docsPath,
     stdio: 'inherit',
   });

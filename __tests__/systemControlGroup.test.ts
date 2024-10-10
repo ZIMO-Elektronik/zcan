@@ -1,15 +1,14 @@
-import {afterAll, beforeAll, describe, expect, jest} from "@jest/globals";
-import {createMX10, initConnection} from "./util";
-import {SystemStateData, SystemStateMode} from "../src";
-import {delay} from "../src/internal/utils";
-import DoneCallback = jest.DoneCallback;
+import {afterAll, beforeAll, describe, expect, jest} from '@jest/globals';
+import {createMX10, initConnection} from './util';
+import {SystemStateData, SystemStateMode} from '../src';
+import {delay} from '../src/internal/utils';
 
 describe('System Control Group group tests - 0x00', () => {
   const mx10 = createMX10();
 
   beforeAll(async () => {
-    await initConnection(mx10)
-  })
+    await initConnection(mx10);
+  });
 
   afterAll(() => {
     mx10.systemControl.systemState(SystemStateMode.NORMAL);
@@ -17,14 +16,13 @@ describe('System Control Group group tests - 0x00', () => {
     delay(1000).then(() => {
       mx10.closeSocket();
     });
-  })
+  });
 
-
-  test.each<any>([
+  test.each<{mode: number}>([
     {mode: SystemStateMode.SSPe},
     {mode: SystemStateMode.OFF},
     {mode: SystemStateMode.SSP0},
-  ])("0x00 - System state test", ({mode}, done: DoneCallback) => {
+  ])('0x00 - System state test', ({mode}, done) => {
     mx10.systemControl.systemState(mode);
 
     const callback = jest.fn((data: SystemStateData) => {
@@ -40,5 +38,5 @@ describe('System Control Group group tests - 0x00', () => {
     });
 
     const sub = mx10.systemControl.onSystemStateChange.subscribe(callback);
-  })
-})
+  });
+});

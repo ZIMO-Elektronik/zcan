@@ -1,6 +1,4 @@
 import {createSocket} from 'dgram';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import MX10 from '../../src';
 
 export function createMX10(debug?: boolean) {

@@ -144,6 +144,7 @@ export default class MX10 {
     if (this.interval === undefined) {
       this.interval = setInterval(() => {
         if (!this.connected) {
+          // eslint-disable-next-line no-console
           console.log('Reconnecting...');
           this.network.portClose();
           this.lanNetwork.portOpen();
