@@ -17,7 +17,7 @@ jobs:
       should_skip: ${{ steps.step1.outputs.should_skip }}
     steps:
       - id: step1
-      - run: |
+        run: |
           PUBLISHED_VERSION=$(npm show zcan version)
           VERSION=$(npm pkg get version | tr -d '"')
 
