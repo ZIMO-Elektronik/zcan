@@ -4,13 +4,16 @@ import gulp from 'gulp';
 import typedoc from 'gulp-typedoc';
 import {spawn} from 'child_process';
 import {deleteAsync} from 'del';
+import {resolve} from 'node:path';
 
 const docsPath = './protocol_docs/';
 
 gulp.task('protocol-docs', () => {
   const isWin = process.platform === 'win32';
   const cmd = isWin ? '.cmd' : '';
-  return spawn('node_modules\\.bin\\docusaurus' + cmd, ['build'], {
+  let path = resolve(docsPath, 'node_modules', '.bin', 'docusaurus' + cmd);
+
+  return spawn(path, ['build'], {
     cwd: docsPath,
     stdio: 'inherit',
   });
