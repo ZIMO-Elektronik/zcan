@@ -14,7 +14,7 @@ jobs:
   version-check:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "::set-output name=should_skip::no"
+      - run: echo "should_skip=no" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
