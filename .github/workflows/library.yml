@@ -14,9 +14,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      should_skip: ${{ steps.step1.outputs.should_skip }}
+      should_skip: ${{ steps.check.outputs.should_skip }}
     steps:
-      - id: step1
+      - uses: actions/checkout@v4.1.6
+        with:
+          fetch-depth: 0
+      - id: check
         run: |
           PUBLISHED_VERSION=$(npm show zcan version)
           VERSION=$(npm pkg get version | tr -d '"')
