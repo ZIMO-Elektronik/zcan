@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          PUBLISHED_VERSION=$(npm show zcan version)
-          VERSION=$(npm pkg get version | tr -d '"')
-
-          if [ "$PUBLISHED_VERSION" = "$VERSION" ];
-          then
-            echo "Version didn't change, skipping"
-            echo "::set-output name=should_skip::yes"
-          else
+#          PUBLISHED_VERSION=$(npm show zcan version)
+#          VERSION=$(npm pkg get version | tr -d '"')
+#
+#          if [ "$PUBLISHED_VERSION" = "$VERSION" ];
+#          then
+#            echo "Version didn't change, skipping"
+#            echo "::set-output name=should_skip::yes"
+#          else
             echo "::set-output name=should_skip::no"
-          fi
+#          fi
 
   build:
     runs-on: ubuntu-latest
