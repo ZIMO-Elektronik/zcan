@@ -11,16 +11,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  version-check:
+  check:
     runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.step1.outputs.should_skip }}
     steps:
-      - run: echo "should_skip=no" >> $GITHUB_OUTPUT
+      - id: step1
+        run: echo "should_skip=no" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
     needs:
-      - version-check
-    if: needs.version-check.outputs.should_skip == 'no'
+      - check
+    if:  ${{needs.check.outputs.should_skip == 'no'}}
 
     steps:
       - uses: actions/checkout@v4.1.6
