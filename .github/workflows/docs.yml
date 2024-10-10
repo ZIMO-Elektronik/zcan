@@ -16,8 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4.1.6
@@ -26,19 +30,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.11.0'
+
       - run: npm ci --ignore-scripts
       - run: cd protocol_docs && npm ci --ignore-scripts
       - run: npm run docs
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
