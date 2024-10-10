@@ -24,6 +24,9 @@ jobs:
     needs:
       - check
     if:  ${{needs.check.outputs.should_skip == 'no'}}
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4.1.6
