@@ -221,6 +221,8 @@ export default class LanDataGroup {
   ) {
     if (this.onLocoGuiMXExtended.observed) {
       const NID = buffer.readUInt16LE(0);
+      const name = ExtendedASCII.byte2str(buffer.subarray(12, 38));
+      const imageId = buffer.readUInt16LE(44);
 
       // TODO: after documentation
       // const SubID = buffer.readUInt16LE(2);
@@ -253,9 +255,9 @@ export default class LanDataGroup {
       this.onLocoGuiMXExtended.next({
         nid: NID,
         // subId: SubID,
-        // name: name,
+        name: name,
         // group: vehicleGroup,
-        // image: imageId == 0 ? undefined : imageId.toString(),
+        image: imageId == 0 ? undefined : imageId.toString(),
         // tacho: tacho.toString(),
         // speedFwd: speedFwd,
         // speedRev: speedRev,
