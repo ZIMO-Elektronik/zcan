@@ -15,6 +15,7 @@ import {
   BidiType,
   ForwardOrReverse,
 } from 'src/util/enums';
+import {ZcanDataArray} from './communication';
 
 export interface Train {
   nid: number;
@@ -38,6 +39,7 @@ export interface LocoGuiMXExtended {
   nid: number;
   name: string;
   image?: string;
+  destructuredBuffer: ZcanDataArray;
   functions: TrainFunction[];
 }
 

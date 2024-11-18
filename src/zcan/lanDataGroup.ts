@@ -14,6 +14,7 @@ import {Subject} from 'rxjs';
 import {parseSpeed} from '../internal/speedUtils';
 import ExtendedASCII from '../util/extended-ascii';
 import {manualModeB, shuntingFunctionB} from '../internal/bites';
+import {ZcanDataArray} from 'src/@types/communication';
 
 /**
  *
@@ -82,6 +83,10 @@ export default class LanDataGroup {
       ],
       0b00,
     );
+  }
+
+  async mxUpdateFnIcons(destructuredBuffer: ZcanDataArray) {
+    this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
   }
 
   parse(
@@ -266,6 +271,7 @@ export default class LanDataGroup {
         // driveType: driveType,
         // era: this.parseEra(era),
         // countryCode: countryCode,
+        destructuredBuffer: this.destructureBuffer(buffer),
         functions,
       });
     }
@@ -359,5 +365,16 @@ export default class LanDataGroup {
 
   private parseDeleted(parseDeletedFlag: number) {
     return parseDeletedFlag === 1;
+  }
+
+  private destructureBuffer(buffer: Buffer): ZcanDataArray {
+    const values = [];
+    for (let i = 0; i < buffer.length; i += 2) {
+      values.push({
+        value: buffer.readUInt16LE(i),
+        length: 2,
+      });
+    }
+    return values;
   }
 }
