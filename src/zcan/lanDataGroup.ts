@@ -85,7 +85,7 @@ export default class LanDataGroup {
     );
   }
 
-  async mxUpdateFnIcons(destructuredBuffer: ZcanDataArray) {
+  mxUpdateFnIcons(destructuredBuffer: ZcanDataArray) {
     this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
   }
 
