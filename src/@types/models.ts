@@ -217,3 +217,7 @@ export interface TseProgWriteExtended {
   cfgNum: number;
   cvValue: number;
 }
+
+export interface PingResponseExtended {
+  connected: boolean;
+}
