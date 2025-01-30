@@ -76,8 +76,8 @@ export default class NetworkGroup {
             connected: this.mx10.connected,
           });
           // eslint-disable-next-line no-console
-          console.log('No ping for 5 seconds, disconnected');
-        }, 5000);
+          console.log('No ping for 2 seconds, disconnected');
+        }, 2000);
       } else {
         throw new Error(
           'LENGTH ERROR: readCmdGrp_0x0A-0x0A, read length as: ' +
