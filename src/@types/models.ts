@@ -221,3 +221,15 @@ export interface TseProgWriteExtended {
 export interface PingResponseExtended {
   connected: boolean;
 }
+
+export interface LocoStateData {
+  nid: number;
+  type: number;
+  ownerNid: number;
+  trainNid: number;
+  lastControlledTime: number;
+  railComData: number;
+  functionsStates: boolean[];
+  sentDCCData: number;
+  receivedRailcomData: number;
+}

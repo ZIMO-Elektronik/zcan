@@ -15,6 +15,7 @@ import FileTransferGroup from './fileTransferGroup';
 import LanZimoProgrammableScriptGroup from './lanZimoProgrammableScriptGroup';
 import LanInfoGroup from './lanInfoGroup';
 import LanDataGroup from './lanDataGroup';
+import LanLocoStateGroup from './lanLocoStateGroup';
 
 export {
   LanNetworkGroup,
@@ -34,4 +35,5 @@ export {
   LanZimoProgrammableScriptGroup,
   LanInfoGroup,
   LanDataGroup,
+  LanLocoStateGroup,
 };

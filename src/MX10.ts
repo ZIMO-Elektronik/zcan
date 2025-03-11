@@ -12,6 +12,7 @@ import {
   LanDataGroup,
   LanInfoGroup,
   LanNetworkGroup,
+  LanLocoStateGroup,
   LanZimoProgrammableScriptGroup,
   NetworkGroup,
   PropertyConfigGroup,
@@ -56,6 +57,7 @@ export default class MX10 {
   readonly fileTransfer = new FileTransferGroup(this);
   readonly lanInfo = new LanInfoGroup(this);
   readonly lanData = new LanDataGroup(this);
+  readonly lanLocoState = new LanLocoStateGroup(this);
   readonly lanNetwork = new LanNetworkGroup(this);
   readonly lanZimoProgrammableScript = new LanZimoProgrammableScriptGroup(this);
 
@@ -307,6 +309,9 @@ export default class MX10 {
         break;
       case 0x0f:
         this.fileTransfer.parse(size, command, mode, nid, buffer);
+        break;
+      case 0x12:
+        this.lanLocoState.parse(size, command, mode, nid, buffer);
         break;
       case 0x17:
         this.lanData.parse(size, command, mode, nid, buffer);
