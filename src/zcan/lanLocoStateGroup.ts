@@ -45,14 +45,16 @@ export default class LanLocoStateGroup {
       const trainNid = buffer.readUInt16LE(6);
       const lastControlledTime = buffer.readUInt32LE(8);
       const railComData = buffer.readUInt32LE(12);
-      // const functionState = buffer.readBigUint64LE(16);
 
-      let functions = buffer.readBigUInt64LE(16);
+      const partOneFunctions = buffer.readUInt32LE(16);
+      const partTwoFunctions = buffer.readUInt32LE(20);
+      let functions = partTwoFunctions * 2 ** 32 + partOneFunctions;
+
       const functionsStates = [];
       for (let i = 0; i < 63; i++) {
-        const active = (functions & 1n) === 1n;
+        const active = (functions & 1) === 1;
+        functions >>>= 1;
         functionsStates.push(active);
-        functions = functions >> 1n;
       }
 
       const sentDCCData = buffer.readUInt32LE(24);
@@ -62,6 +64,7 @@ export default class LanLocoStateGroup {
         nid: NID,
         type,
         ownerNid,
+        // trainNid is if its part of Loco
         trainNid,
         lastControlledTime,
         railComData,
