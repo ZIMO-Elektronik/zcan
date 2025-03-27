@@ -22,8 +22,8 @@ export default class LanNetworkGroup {
       0x1a,
       0x06,
       [
-        {value: 1, length: 4},
-        {value: 214748364, length: 4},
+        {value: 4294967295, length: 4},
+        {value: 1514238064, length: 4},
         {value: 'ZIMO APP', length: 20},
       ],
       0b01,
