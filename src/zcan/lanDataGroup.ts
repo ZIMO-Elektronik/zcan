@@ -188,7 +188,7 @@ export default class LanDataGroup {
 
       // reading 64 bytes of functions
       const functions = Array<TrainFunction>();
-      for (let i = 0; i < 33; i++) {
+      for (let i = 0; i < 32; i++) {
         const icon = buffer.readUInt16LE(54 + i * 2);
         const iconString =
           icon === 0 ? String(i).padStart(2, '0') : String(icon);
@@ -245,7 +245,7 @@ export default class LanDataGroup {
 
       // reading 64 bytes of functions
       const functions = Array<TrainFunction>();
-      for (let i = 0; i < 33; i++) {
+      for (let i = 0; i < 32; i++) {
         const icon = buffer.readUInt16LE(68 + i * 2);
         const iconString =
           icon === 0 ? String(i).padStart(2, '0') : String(icon);
