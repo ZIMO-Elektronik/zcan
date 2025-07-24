@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "license": "MIT",
   "repository": "https://github.com/ZIMO-Elektronik/zcan",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "scripts": {
     "start": "node dist/main.js",
     "start:dev": "nodemon --ext js,ts,json,env --exec \"node --experimental-specifier-resolution=node --loader ts-node/esm\" src/main.ts",
@@ -14,7 +14,7 @@
     "test": "jest --forceExit",
     "test:coverage": "npm run test -- --coverage",
     "test:ci": "npm run test -- --colors --coverage --ci",
-    "test:selected": "jest --forceExit --runTestsByPath D:\\Projects\\zcan\\__tests__\\vehicleGroup.test.ts",
+    "test:selected": "jest --forceExit --runTestsByPath D:\\Projects\\zcan\\__tests__\\accessoriesGroup.test.ts",
     "lint": "eslint --ext=.ts,.js .",
     "format": "prettier \"./**\" --write --ignore-unknown",
     "format:check": "prettier \"./**\" --ignore-unknown --check",

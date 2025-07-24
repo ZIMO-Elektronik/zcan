@@ -14,6 +14,7 @@ import {
   ShuntingFunction,
   BidiType,
   ForwardOrReverse,
+  AccessoryMode,
 } from 'src/util/enums';
 import {ZcanDataArray} from './communication';
 
@@ -232,4 +233,14 @@ export interface LocoStateData {
   functionsStates: boolean[];
   sentDCCData: number;
   receivedRailcomData: number;
+}
+
+export interface AccessoryModeData {
+  nid: number;
+  mode: AccessoryMode;
+}
+export interface AccessoryPortData {
+  nid: number;
+  mode: number;
+  port: number;
 }

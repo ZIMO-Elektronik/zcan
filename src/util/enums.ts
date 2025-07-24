@@ -145,3 +145,15 @@ export enum ForwardOrReverse {
   FORWARD = 1,
   REVERSE = 2,
 }
+
+export enum AccessoryMode {
+  UNKNOWN = 0,
+  PAIRED = 1,
+  SINGLE = 2,
+}
+
+export enum AccessoryPortState {
+  ON = 'on',
+  OFF = 'off',
+  UNKNOWN = 'unknown',
+}
