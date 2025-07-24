@@ -84,7 +84,7 @@ export default class AccessoryCommandGroup {
     if (this.onAccessoryPort.observed) {
       const deviceNID = buffer.readUInt16LE(0);
       const type = buffer.readUInt16LE(2);
-      const port = buffer.readUInt32LE(4);
+      const port = buffer.readUInt8(4); // only 1.st byte represents state of pins
 
       if (deviceNID) {
         this.onAccessoryPort.next({
