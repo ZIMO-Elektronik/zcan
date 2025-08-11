@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {Subject} from 'rxjs';
 import MX10 from '../MX10';
-import {AccessoryModeData, AccessoryPortData} from '../@types/models';
+import {
+  AccessoryModeData,
+  AccessoryPinData,
+  AccessoryPortData,
+} from '../@types/models';
 import {AccessoryMode} from '../util/enums';
 
 /**
@@ -11,6 +15,7 @@ import {AccessoryMode} from '../util/enums';
 export default class AccessoryCommandGroup {
   public readonly onAccessoryMode = new Subject<AccessoryModeData>();
   public readonly onAccessoryPort = new Subject<AccessoryPortData>();
+  public readonly onAccessoryPin = new Subject<AccessoryPinData>();
 
   private mx10: MX10;
 
@@ -33,6 +38,18 @@ export default class AccessoryCommandGroup {
       0b00,
     );
   }
+  accessoryPortByPin(nid: number, pin: number, state: number) {
+    this.mx10.sendData(
+      0x01,
+      0x04,
+      [
+        {value: nid, length: 2},
+        {value: pin, length: 1},
+        {value: state, length: 1},
+      ],
+      0b00,
+    );
+  }
 
   parse(
     size: number,
@@ -47,6 +64,9 @@ export default class AccessoryCommandGroup {
         break;
       case 0x02:
         this.parseAccessoryPort(size, mode, nid, buffer);
+        break;
+      case 0x04:
+        this.parseAccessoryPin(size, mode, nid, buffer);
         break;
       default:
         // eslint-disable-next-line no-console
@@ -91,6 +111,22 @@ export default class AccessoryCommandGroup {
           nid: deviceNID,
           mode,
           port,
+        });
+      }
+    }
+  }
+
+  parseAccessoryPin(size: number, mode: number, nid: number, buffer: Buffer) {
+    if (this.onAccessoryPin.observed) {
+      const deviceNID = buffer.readUInt16LE(0);
+      const pin = buffer.readUInt8(2);
+      const state = buffer.readUInt8(3);
+
+      if (deviceNID) {
+        this.onAccessoryPin.next({
+          nid: deviceNID,
+          pin,
+          state,
         });
       }
     }
