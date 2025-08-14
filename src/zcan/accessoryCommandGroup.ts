@@ -47,7 +47,7 @@ export default class AccessoryCommandGroup {
         {value: pin, length: 1},
         {value: state, length: 1},
       ],
-      0b00,
+      0b01,
     );
   }
 
