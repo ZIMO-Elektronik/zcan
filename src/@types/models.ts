@@ -241,7 +241,7 @@ export interface AccessoryModeData {
 }
 export interface AccessoryPortData {
   nid: number;
-  mode: number;
+  type: number;
   port: number;
 }
 export interface AccessoryPinData {

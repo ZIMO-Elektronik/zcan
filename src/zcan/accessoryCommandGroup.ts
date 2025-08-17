@@ -109,7 +109,7 @@ export default class AccessoryCommandGroup {
       if (deviceNID) {
         this.onAccessoryPort.next({
           nid: deviceNID,
-          mode,
+          type,
           port,
         });
       }
