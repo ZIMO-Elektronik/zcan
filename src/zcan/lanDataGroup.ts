@@ -218,7 +218,7 @@ export default class LanDataGroup {
       const val1 = buffer.readUInt32LE(4);
       const val2 = buffer.readUInt32LE(8);
       const val3 = buffer.readUInt32LE(12);
-      const name = ExtendedASCII.byte2str(buffer.subarray(16, 203));
+      const name = ExtendedASCII.byte2str(buffer.subarray(16, 63));
 
       this.onDataNameExtended.next({
         nid: NID,
