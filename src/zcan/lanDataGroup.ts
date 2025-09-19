@@ -2,6 +2,7 @@
 import MX10 from '../MX10';
 import {FunctionMode, getOperatingMode, OperatingMode} from '../util/enums';
 import {
+  DataNameExtendedData,
   DataValueExtendedData,
   LocoGuiMXExtended,
   LocoSpeedTabExtended,
@@ -24,12 +25,62 @@ export default class LanDataGroup {
   public readonly onLocoGuiExtended = new Subject<Train>();
   public readonly onLocoGuiMXExtended = new Subject<LocoGuiMXExtended>();
   public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
+  public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
   public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
   private mx10: MX10;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
+  }
+
+  dataValueExtended(NID: number) {
+    this.mx10.sendData(
+      0x17,
+      0x08,
+      [
+        {value: this.mx10.mx10NID, length: 2},
+        {value: NID, length: 2},
+        {value: 1, length: 2},
+      ],
+      0b00,
+    );
+  }
+
+  dataNameExtended(NID: number) {
+    this.mx10.sendData(
+      0x17,
+      0x10,
+      [
+        {value: NID, length: 2},
+        {value: 0, length: 2},
+      ],
+      0b00,
+    );
+  }
+
+  renameDataExtended(
+    NID: number,
+    type: number,
+    val1: number,
+    val2: number,
+    val3: number,
+    name: string,
+  ) {
+    this.mx10.sendData(
+      0x17,
+      0x10,
+      [
+        {value: NID, length: 2},
+        {value: type, length: 2},
+        {value: val1, length: 4},
+        {value: val2, length: 4},
+        {value: val3, length: 4},
+        {value: name, length: name.length},
+        {value: 0, length: 1},
+      ],
+      0b01,
+    );
   }
 
   locoGuiExtended(NID: number) {
@@ -53,19 +104,6 @@ export default class LanDataGroup {
         {value: this.mx10.mx10NID, length: 2},
         {value: NID, length: 2},
         {value: 0, length: 2},
-      ],
-      0b00,
-    );
-  }
-
-  dataValueExtended(NID: number) {
-    this.mx10.sendData(
-      0x17,
-      0x08,
-      [
-        {value: this.mx10.mx10NID, length: 2},
-        {value: NID, length: 2},
-        {value: 1, length: 2},
       ],
       0b00,
     );
@@ -99,6 +137,9 @@ export default class LanDataGroup {
     switch (command) {
       case 0x08:
         this.parseDataValueExtended(size, mode, nid, buffer);
+        break;
+      case 0x10:
+        this.parseDataNameExtended(size, mode, nid, buffer);
         break;
       case 0x27:
         this.parseLocoGuiExtended(size, mode, nid, buffer);
@@ -160,6 +201,28 @@ export default class LanDataGroup {
         shuntingFunction,
         manualMode,
         deleted,
+      });
+    }
+  }
+
+  // 0x17.0x10
+  private parseDataNameExtended(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onDataNameExtended.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const type = buffer.readUInt16LE(2);
+      const val1 = buffer.readUInt32LE(4);
+      const val2 = buffer.readUInt32LE(8);
+      const val3 = buffer.readUInt32LE(12);
+      const name = ExtendedASCII.byte2str(buffer.subarray(16, 203));
+
+      this.onDataNameExtended.next({
+        nid: NID,
+        name,
       });
     }
   }

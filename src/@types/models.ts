@@ -65,6 +65,11 @@ export interface DataValueExtendedData {
   deleted: boolean;
 }
 
+export interface DataNameExtendedData {
+  nid: number;
+  name: string;
+}
+
 export interface LocoSpeedTabExtended {
   srcid: number;
   nid: number;
