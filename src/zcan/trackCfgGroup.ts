@@ -14,6 +14,7 @@ export default class TrackCfgGroup {
   public readonly onTseInfoExtended = new Subject<TseInfoExtended>();
   public readonly onTseProgReadExtended = new Subject<TseProgReadExtended>();
   public readonly onTseProgWriteExtended = new Subject<TseProgWriteExtended>();
+  public readonly onTseProgWrite16Extended = new Subject<TseProgWriteExtended>();
 
   private mx10: MX10;
 
@@ -38,6 +39,15 @@ export default class TrackCfgGroup {
     ]);
   }
 
+  tseProgWrite16(NID: number, CV: number, value: number) {
+    this.mx10.sendData(0x16, 0x0d, [
+      {value: this.mx10.mx10NID, length: 2},
+      {value: NID, length: 2},
+      {value: CV, length: 4},
+      {value: value, length: 2},
+    ]);
+  }
+
   parse(
     size: number,
     command: number,
@@ -55,6 +65,9 @@ export default class TrackCfgGroup {
       case 0x09:
         this.parseTseProgWrite(size, mode, nid, buffer);
         break;
+      case 0x0d:
+          this.parseTseProgWrite16(size, mode, nid, buffer);
+          break;
     }
   }
 
@@ -106,4 +119,19 @@ export default class TrackCfgGroup {
       });
     }
   }
+
+    // 0x16.0x0d
+    parseTseProgWrite16(size: number, mode: number, nid: number, buffer: Buffer) {
+      if (this.onTseProgWriteExtended.observed) {
+        const NID = buffer.readUInt16LE(0);
+        const cfgNum = buffer.readUInt32LE(2);
+        const cvValue = buffer.readUint16LE(6);
+  
+        this.onTseProgWrite16Extended.next({
+          nid: NID,
+          cfgNum,
+          cvValue,
+        });
+      }
+    }
 }
