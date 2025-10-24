@@ -327,7 +327,7 @@ export default class MX10 {
         break;
       default:
         // eslint-disable-next-line no-console
-        console.warn('Unknown group: ' + Number(group).toString(16));
+        // console.warn('Unknown group: ' + Number(group).toString(16));
     }
   }
 
