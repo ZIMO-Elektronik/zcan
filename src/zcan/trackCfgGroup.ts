@@ -122,7 +122,7 @@ export default class TrackCfgGroup {
 
     // 0x16.0x0d
     parseTseProgWrite16(size: number, mode: number, nid: number, buffer: Buffer) {
-      if (this.onTseProgWriteExtended.observed) {
+      if (this.onTseProgWrite16Extended.observed) {
         const NID = buffer.readUInt16LE(0);
         const cfgNum = buffer.readUInt32LE(2);
         const cvValue = buffer.readUint16LE(6);
