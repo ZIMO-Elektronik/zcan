@@ -43,7 +43,7 @@ export default class TrackCfgGroup {
     this.mx10.sendData(0x16, 0x0d, [
       {value: this.mx10.mx10NID, length: 2},
       {value: NID, length: 2},
-      {value: CV, length: 4},
+      {value: CV, length: 2},
       {value: value, length: 2},
     ]);
   }
@@ -124,8 +124,8 @@ export default class TrackCfgGroup {
     parseTseProgWrite16(size: number, mode: number, nid: number, buffer: Buffer) {
       if (this.onTseProgWrite16Extended.observed) {
         const NID = buffer.readUInt16LE(0);
-        const cfgNum = buffer.readUInt32LE(2);
-        const cvValue = buffer.readUint16LE(6);
+        const cfgNum = buffer.readUint16LE(2);
+        const cvValue = buffer.readUint16LE(4);
   
         this.onTseProgWrite16Extended.next({
           nid: NID,
