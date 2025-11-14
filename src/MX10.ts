@@ -129,6 +129,7 @@ export default class MX10 {
       if (!this.connected) {
         this.closeSocket();
         // throw new Error('mx10.connection.timeout');
+        throw new Error('mx10.connection.not_connected');
       }
     }
   }
