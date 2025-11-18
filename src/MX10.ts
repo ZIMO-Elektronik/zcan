@@ -62,6 +62,7 @@ export default class MX10 {
   readonly lanZimoProgrammableScript = new LanZimoProgrammableScriptGroup(this);
 
   readonly errors = new Subject<string>();
+  readonly log = new Subject<string>();
 
   private mx10Socket: Socket | null = null;
   private incomingPort = 14521;
@@ -345,13 +346,12 @@ export default class MX10 {
       const data = JSON.stringify(Array.apply([], [...raw_data]));
       const f = (obj: unknown) => Number(obj).toString(16);
       const arrow = '|' + (out ? '→' : '←');
+      const msg = `${arrow} g=${f(group)} c=${f(cmd)} m=${f(mode)} n=${f(nid)} l=${f(size,)} : ${data}`;
 
       // eslint-disable-next-line no-console
-      console.debug(
-        `${arrow} g=${f(group)} c=${f(cmd)} m=${f(mode)} n=${f(nid)} l=${f(
-          size,
-        )} : ${data}`,
-      );
+      console.debug(msg);
+
+      this.log.next(msg);
     }
   }
 }
