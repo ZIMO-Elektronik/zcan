@@ -7,12 +7,13 @@ import {
   DataNameExtended,
   DataNameValue1,
   GroupCountData,
-  ItemFxInfo,
+  ItemFxMode,
+  ItemFxConfig,
   ItemImageData,
   ItemListByIndexData,
   ItemListByNidData,
 } from '../@types/models';
-import {FxInfoType, ImageType, NameType} from '../util/enums';
+import {FxConfigType, FxModeType, ImageType, NameType} from '../util/enums';
 import ExtendedASCII from '../util/extended-ascii';
 
 /**
@@ -25,7 +26,8 @@ export default class DataGroup {
   public readonly onListItemsByNID = new Subject<ItemListByNidData>();
   public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
   public readonly onItemImageConfig = new Subject<ItemImageData>();
-  public readonly onItemFxInfo = new Subject<ItemFxInfo>();
+  public readonly onItemFxMode = new Subject<ItemFxMode>();
+  public readonly onItemFxConfig = new Subject<ItemFxConfig>();
   public readonly onDataNameExtended = new Subject<DataNameExtended>();
 
   private mx10: MX10;
@@ -86,12 +88,23 @@ export default class DataGroup {
     ]);
   }
 
-  itemFxInfo(nid: number, fx: number, type: FxInfoType, data: number) {
+  itemFxMode(nid: number, group: number, mode: number[]) {
+    this.mx10.sendData(0x07, 0x14, [
+      {value: nid, length: 2},
+      {value: group, length: 1},
+      {value: 0, length: 1},
+      {value: mode[0] | (mode[1]<<2) | (mode[2]<<4) | (mode[3]<<6), length: 1},
+      {value: mode[4] | (mode[5]<<2) | (mode[6]<<4) | (mode[7]<<6), length: 1},
+      {value: mode[8] | (mode[9]<<2) | (mode[10]<<4) | (mode[11]<<6), length: 1},
+      {value: mode[12] | (mode[13]<<2) | (mode[14]<<4) | (mode[15]<<6), length: 1},
+    ]);
+  }
+
+  itemFxConfig(nid: number, fx: number, item: FxConfigType, data: number) {
     this.mx10.sendData(0x07, 0x15, [
       {value: nid, length: 2},
       {value: fx, length: 2},
-      {value: 0, length: 1},
-      {value: type, length: 1},
+      {value: item, length: 2},
       {value: data, length: 2},
     ]);
   }
@@ -132,8 +145,11 @@ export default class DataGroup {
       case 0x12:
         this.parseItemImageConfig(size, mode, nid, buffer);
         break;
+      case 0x14:
+        this.parseItemFxMode(size, mode, nid, buffer);
+          break;
       case 0x15:
-        this.parseItemFxInfo(size, mode, nid, buffer);
+        this.parseItemFxConfig(size, mode, nid, buffer);
         break;
       case 0x1f:
         this.parseDataClear(size, mode, nid, buffer);
@@ -246,25 +262,54 @@ export default class DataGroup {
     }
   }
 
-  private parseItemFxInfo(
+  // 0x07.0x14
+  private parseItemFxMode(
     size: number,
     mode: number,
     nid: number,
     buffer: Buffer,
   ) {
-    if (this.onItemFxInfo.observed) {
+    if (this.onItemFxMode.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const group = buffer.readUInt8(2);
+      const modes = buffer.readUInt32LE(4);
+
+      let mode: FxModeType[] = [];
+      for(let i=0; i<32; i+=2) {
+        mode.push((modes>>i)&0b11);
+      }
+
+      const msg: ItemFxMode = {
+        nid: NID,
+        group,
+        mode,
+      };
+      this.mx10.log.next('parseItemFxMode: ' + JSON.stringify(msg));
+      this.onItemFxMode.next(msg);
+    }
+  }
+
+  // 0x07.0x15
+  private parseItemFxConfig(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onItemFxConfig.observed) {
       const NID = buffer.readUInt16LE(0);
       const fx = buffer.readUInt16LE(2);
-      // const base = buffer.readUInt8(4);
-      const type = buffer.readUInt8(5);
+      const item = buffer.readUInt16LE(4);
       const data = buffer.readUInt16LE(6);
 
-      this.onItemFxInfo.next({
+      const msg: ItemFxConfig = {
         nid: NID,
         function: fx,
-        type,
+        item,
         data,
-      });
+      };
+      this.mx10.log.next('parseItemFxMode: ' + JSON.stringify(msg));
+      this.onItemFxConfig.next(msg);
     }
   }
 

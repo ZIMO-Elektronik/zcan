@@ -101,8 +101,21 @@ export enum ImageType {
   VEHICLE_INSTRUMENT = 0x1f,
 }
 
-export enum FxInfoType {
+export enum FxModeType {
+  TOGGLE = 0b00,
+  MOMENT = 0b01,
+  TIMEOUT = 0b10,
+  EXTENDED = 0b11,
+}
+
+export enum FxConfigType {
+  REDIRECT_ADDR = 0x01,
+  MODE = 0x02,
+  FREE = 0x03,
+  TIME_VALUE_1 = 0x04,
+  TIME_VALUE_2 = 0x05,
   ICON = 0x10,
+  SOUND = 0x11,
 }
 
 export enum SpecialFunctionMode {

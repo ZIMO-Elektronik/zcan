@@ -7,7 +7,7 @@ import {
   SystemStateMode,
   TrackMode,
   ImageType,
-  FxInfoType,
+  FxConfigType,
   SpecialFunctionMode,
   Manual,
   DirectionDefault,
@@ -15,6 +15,7 @@ import {
   BidiType,
   ForwardOrReverse,
   AccessoryMode,
+  FxModeType,
 } from 'src/util/enums';
 import {ZcanDataArray} from './communication';
 
@@ -198,10 +199,16 @@ export interface ItemImageData {
   imageId: number;
 }
 
-export interface ItemFxInfo {
+export interface ItemFxMode {
+  nid: number;
+  group: number;
+  mode: FxModeType[];
+}
+
+export interface ItemFxConfig {
   nid: number;
   function: number;
-  type: FxInfoType;
+  item: FxConfigType;
   data: number;
 }
 
