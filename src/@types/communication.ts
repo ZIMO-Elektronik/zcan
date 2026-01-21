@@ -1,5 +1,14 @@
 import {BindOptions, RemoteInfo, SocketOptions} from 'dgram';
 import {Buffer} from 'buffer';
+import {MsgMode} from 'src/util/enums';
+import {delay, Subject, Subscription} from 'rxjs';
+
+export type Header = {
+  group: number,
+  cmd: number,
+  mode: MsgMode,
+  nid: number,
+}
 
 export type ZcanData = {
   length: number;
@@ -7,6 +16,88 @@ export type ZcanData = {
 };
 
 export type ZcanDataArray = ZcanData[];
+
+export class Message
+{
+  header: Header;
+  data: ZcanDataArray;
+
+  constructor(header: Header, data: ZcanDataArray = [])
+  {
+    this.header = header;
+    this.data = data;
+  }
+
+  push(data: ZcanData): void
+  {
+    this.data.push(data);
+  }
+}
+
+export class Query<T extends Message>
+{
+  header: Header;
+  subject: Subject<T>;
+  rx: Subscription | undefined = undefined;
+  tx: (header: Header) => void = () => {};
+  private result: T | undefined = undefined;
+  match: (msg: T) => boolean = () => {return true};
+  private mutex: boolean = false;
+
+  constructor(header: Header, subject: Subject<T> , match: (msg: T) => boolean = (() => {return true;}))
+  {
+    this.header = header;
+    this.subject = subject;
+    this.match = match;
+  }
+
+  lock(millis: number = 500): boolean
+  {
+    let centis = millis / 10;
+    while(this.mutex)
+    {
+      delay(10);
+      if(!centis--)
+        return false;
+    }
+    this.mutex = true;
+    return true;
+  }
+
+  unlock()
+  {
+    this.mutex = false;
+  }
+
+  run(retries: number = 5): T | undefined
+  {
+    if(this.tx === undefined)
+      return undefined;
+
+    this.rx = this.subject.subscribe((msg: T) =>
+    {
+      if(msg.header.nid !== this.header.nid)
+        return;
+      if(!this.match(msg))
+        return;
+      this.result = (new Message(this.header, msg.data) as T);
+      this.rx?.unsubscribe();
+    });
+
+    let tick = 2 * retries;
+
+    while(this.result === undefined)
+    {
+      if(tick % 2 === 0)
+        this.tx(this.header);
+      if(!tick--)
+        return undefined;
+      delay(5);
+    }
+    return this.result;
+  }
+}
+
 
 export type NIDGenerator = () => Promise<number>;
 

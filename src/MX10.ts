@@ -2,7 +2,7 @@
 
 import {Buffer} from 'buffer';
 import {interval, Subject} from 'rxjs';
-
+import {Message} from './@types/communication';
 import {
   AccessoryCommandGroup,
   DataGroup,
@@ -169,6 +169,11 @@ export default class MX10 {
       this.mx10Socket = null;
       this.connected = false;
     }
+  }
+
+  sendMsg(msg: Message) {
+    const buffer = this.formatData(msg.header.group, msg.header.cmd, msg.header.mode, msg.header.nid, msg.data);
+    this.send(buffer, false);
   }
 
   sendData(

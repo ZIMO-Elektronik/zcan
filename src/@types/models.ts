@@ -16,8 +16,12 @@ import {
   ForwardOrReverse,
   AccessoryMode,
   FxModeType,
+  ModInfoType,
+  MsgMode,
 } from 'src/util/enums';
-import {ZcanDataArray} from './communication';
+import {Header, Message, ZcanDataArray} from './communication';
+import { delay, Subject, Subscription } from 'rxjs';
+
 
 export interface Train {
   nid: number;
@@ -131,6 +135,35 @@ export interface BidiInfoData {
   data: BidiDirectionData | number;
 }
 
+export class ModInfoData extends Message
+{
+  public static readonly rx = new Subject<ModInfoData>();
+
+  public static header(mode: MsgMode, nid: number): Header
+  {
+    return {group: 0x08, cmd: 0x08, mode: MsgMode.REQ, nid};
+  }
+
+  constructor(header: Header, type: ModInfoType, data: ZcanDataArray = [])
+  {
+    super(header);
+    super.push({value: type, length: 2});
+    if(data.length)
+      this.data.concat(data);
+  }
+
+  type(): ModInfoType | undefined
+  {
+    return ((this.data[0].value as unknown) as ModInfoType);
+
+    // if((typeof this.data[0].value === 'string'))
+    //   return undefined;
+    // if(this.data[0].value === 0)
+    //   return undefined;
+    // return this.data[0].value;
+  }
+}
+
 export interface BidiDirectionData {
   direction?: Direction;
   forwardOrReverse?: ForwardOrReverse;
@@ -204,6 +237,33 @@ export interface ItemFxMode {
   group: number;
   mode: FxModeType[];
 }
+
+// export class ItemFxMode extends Message
+// {
+//   constructor(header: Header, group: number, mode: FxModeType[] = [])
+//   {
+//     super(header);
+//     super.push({value: group, length: 1});
+//     super.push({value: 0, length: 1});
+//     super.push({value: mode, length: 4});
+//   }
+
+//   group(): number
+//   {
+//     return ((this.data[0].value as unknown) as number);
+//   }
+
+//   mode(): FxModeType[]
+//   {
+//     return ((this.data[2].value as unknown) as FxModeType[]);
+//   }
+
+//   setMode(index: number, mode: FxModeType)
+//   {
+//     const tutti = this.mode();
+//     tutti[index] = mode;
+//   }
+// }
 
 export interface ItemFxConfig {
   nid: number;

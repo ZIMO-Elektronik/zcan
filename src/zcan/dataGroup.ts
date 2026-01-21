@@ -1,7 +1,8 @@
 // 0x07
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
-import {delay, Subject, Subscription} from 'rxjs';
+import {delay, Subject} from 'rxjs';
+import {Message, Query} from '../@types/communication';
 import {
   RemoveLocomotiveData,
   DataNameExtended,
@@ -13,7 +14,7 @@ import {
   ItemListByIndexData,
   ItemListByNidData,
 } from '../@types/models';
-import {FxConfigType, FxModeType, ImageType, NameType} from '../util/enums';
+import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../util/enums';
 import ExtendedASCII from '../util/extended-ascii';
 
 /**
@@ -31,7 +32,7 @@ export default class DataGroup {
   public readonly onDataNameExtended = new Subject<DataNameExtended>();
 
   private mx10: MX10;
-  private fxModeRequest: {msg: ItemFxMode, rcv: Subscription} | undefined;
+  // private fxModeRequest: Query<ItemFxMode> | undefined = undefined;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
@@ -290,33 +291,28 @@ export default class DataGroup {
     }
   }
 
-  setItemFxMode(trainNid: number, fxId: number, mode: FxModeType)
-  {
-    let wait = 50;
-    while(this.fxModeRequest !== undefined)
-    {
-      delay(10);
-      if(!wait--)
-        return;
-    }
+  // setItemFxMode(nid: number, fxId: number, mode: FxModeType)
+  // {
+  //   if(!this.fxModeRequest?.lock())
+  //     return;
 
-    const group = fxId / 16;
-    this.fxModeRequest = {msg: {nid: trainNid, group: group, mode: []},
-      rcv: this.onItemFxMode.subscribe((data: ItemFxMode) => {
-        if(this.fxModeRequest === undefined)
-          return;
-        if(data.nid !== this.fxModeRequest.msg.nid)
-          return;
-        if(data.group !== this.fxModeRequest.msg.group)
-          return;
-        this.fxModeRequest.msg.mode = data.mode;
-        this.fxModeRequest.rcv.unsubscribe();
-    })};
-
-    this.fxModeRequest.msg.mode[fxId] = mode;
-    this.itemFxMode(trainNid, group, this.fxModeRequest.msg.mode);
-    this.fxModeRequest = undefined;
-  }
+  //   const group = fxId/16;
+  //   this.fxModeRequest = new Query({group: 0x08, cmd: 0x08, mode: MsgMode.REQ, nid}, this.onItemFxMode);
+  //   this.fxModeRequest.tx = ((header) => {
+  //     const msg = new ItemFxMode(header, group);
+  //     this.mx10.sendMsg(msg);
+  //   });
+  //   this.fxModeRequest.match = ((msg) => {
+  //     return (msg.group() === group);
+  //   })
+  //   const msg = this.fxModeRequest.run();
+  //   if(msg === undefined)
+  //     return;
+  //   msg.setMode(fxId%16, mode);
+  //   msg.header.mode = MsgMode.REQ;
+  //   this.mx10.sendMsg(msg);
+  //   this.fxModeRequest = undefined;
+  // }
 
   // 0x07.0x15
   private parseItemFxConfig(

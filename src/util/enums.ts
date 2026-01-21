@@ -1,3 +1,11 @@
+
+export enum MsgMode {
+  REQ = 0b00,
+  CMD = 0b01,
+  EVT = 0b10,
+  ACK = 0b11,
+}
+
 export enum OperatingMode {
   UNKNOWN = '',
   DCC = 'DCC',
@@ -157,6 +165,24 @@ export enum ForwardOrReverse {
   UNKNOWN = 0,
   FORWARD = 1,
   REVERSE = 2,
+}
+
+export enum ModInfoType {
+  HW_VERSION = 1,
+  SW_VERSION = 2,
+  SW_BUILD_DATE = 3,
+  SW_BUILD_TIME = 4,
+  RTC_DATE = 5,
+  RTC_TIME = 6,
+  MIWI_HW_VERSION = 8,
+  MIWI_SW_VERSION = 9,
+  MIWI_CHANNEL = 10,
+  MOD_NUMBER = 20,
+  STEIN_CFGNUM_SECTIONS = 0x201,
+  STEIN_CFGNUM_TURNOUTS = 0x202,
+  STEIN_CFGNUM_SIGNALS = 0x203,
+  STEIN_EXTENSION_SLOT1 = 0x210,
+  STEIN_EXTENSION_SLOT2 = 0x220,
 }
 
 export enum AccessoryMode {

@@ -1,8 +1,9 @@
 import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
-import {BidiInfoData, BidiDirectionData} from '../@types/models';
-import {BidiType, Direction, ForwardOrReverse} from '../util/enums';
+import {Message, Query} from '../@types/communication';
+import {BidiInfoData, BidiDirectionData, ModInfoData} from '../@types/models';
+import {BidiType, Direction, ForwardOrReverse, ModInfoType, MsgMode} from '../util/enums';
 
 /**
  *
@@ -12,9 +13,30 @@ export default class InfoGroup {
   private mx10: MX10;
 
   public readonly onBidiInfoChange = new Subject<BidiInfoData>();
+  public readonly onModuleInfoChange = new Subject<ModInfoData>();
+
+  private modInfoQ: Query<ModInfoData> | undefined = undefined;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
+  }
+
+  getModuleInfo(nid: number, type: ModInfoType | number): ModInfoData | undefined
+  {
+    if(!this.modInfoQ?.lock())
+      return;
+
+    this.modInfoQ = new Query(ModInfoData.header(MsgMode.REQ, nid), this.onModuleInfoChange);
+    this.modInfoQ.tx = ((header) => {
+      const msg = new Message(header);
+      msg.push({value: nid, length: 2});
+      msg.push({value: type, length: 2});
+      this.mx10.sendMsg(msg);
+    });
+    this.modInfoQ.match = ((msg) => {
+      return (msg.type() === type);
+    })
+    return this.modInfoQ.run();
   }
 
   parse(
@@ -28,9 +50,27 @@ export default class InfoGroup {
       case 0x05:
         this.parseBidiInfo(size, mode, nid, buffer);
         break;
+      case 0x08:
+        this.parseModuleInfo(size, mode, nid, buffer);
+        break;
       default:
         // eslint-disable-next-line no-console
         console.log('command not parsed: ' + command.toString());
+    }
+  }
+
+  private parseModuleInfo(
+    size: number,
+    mode: number,
+    nid: number,
+    buffer: Buffer,
+  ) {
+    if (this.onModuleInfoChange.observed) {
+      const NID = buffer.readUInt16LE(0);
+      const type = buffer.readUInt16LE(2);
+      const info = buffer.readUInt32LE(4);
+      const msg = new ModInfoData(ModInfoData.header(mode, NID), type, [{value: info, length: 4}]);
+      this.onModuleInfoChange.next(msg);
     }
   }
 
