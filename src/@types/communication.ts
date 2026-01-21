@@ -76,9 +76,9 @@ export class Query<T extends Message>
 
     this.rx = this.subject.subscribe((msg: T) =>
     {
-      if(msg.header.nid !== this.header.nid)
-        return;
       if(!this.match(msg))
+        return;
+      if(msg.header.nid !== this.header.nid)
         return;
       this.result = (new Message(this.header, msg.data) as T);
       this.rx?.unsubscribe();

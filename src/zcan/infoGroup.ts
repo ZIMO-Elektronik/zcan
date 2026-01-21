@@ -23,6 +23,7 @@ export default class InfoGroup {
 
   getModuleInfo(nid: number, type: ModInfoType | number): ModInfoData | undefined
   {
+    this.mx10.log.next('mx10.getModuleInfo: ' + nid + ', ' + type);
     if(!this.modInfoQ?.lock())
       return;
 
@@ -31,9 +32,11 @@ export default class InfoGroup {
       const msg = new Message(header);
       msg.push({value: nid, length: 2});
       msg.push({value: type, length: 2});
+      this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
       this.mx10.sendMsg(msg);
     });
     this.modInfoQ.match = ((msg) => {
+      this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
       return (msg.type() === type);
     })
     return this.modInfoQ.run();
