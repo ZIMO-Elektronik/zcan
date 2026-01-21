@@ -1,7 +1,7 @@
 // 0x07
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
-import {Subject} from 'rxjs';
+import {delay, Subject, Subscription} from 'rxjs';
 import {
   RemoveLocomotiveData,
   DataNameExtended,
@@ -31,6 +31,7 @@ export default class DataGroup {
   public readonly onDataNameExtended = new Subject<DataNameExtended>();
 
   private mx10: MX10;
+  private fxModeRequest: {msg: ItemFxMode, rcv: Subscription} | undefined;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
@@ -274,7 +275,7 @@ export default class DataGroup {
       const group = buffer.readUInt8(2);
       const modes = buffer.readUInt32LE(4);
 
-      let mode: FxModeType[] = [];
+      const mode: FxModeType[] = [];
       for(let i=0; i<32; i+=2) {
         mode.push((modes>>i)&0b11);
       }
@@ -287,6 +288,34 @@ export default class DataGroup {
       this.mx10.log.next('parseItemFxMode: ' + JSON.stringify(msg));
       this.onItemFxMode.next(msg);
     }
+  }
+
+  setItemFxMode(trainNid: number, fxId: number, mode: FxModeType)
+  {
+    let wait = 50;
+    while(this.fxModeRequest !== undefined)
+    {
+      delay(10);
+      if(!wait--)
+        return;
+    }
+
+    const group = fxId / 16;
+    this.fxModeRequest = {msg: {nid: trainNid, group: group, mode: []},
+      rcv: this.onItemFxMode.subscribe((data: ItemFxMode) => {
+        if(this.fxModeRequest === undefined)
+          return;
+        if(data.nid !== this.fxModeRequest.msg.nid)
+          return;
+        if(data.group !== this.fxModeRequest.msg.group)
+          return;
+        this.fxModeRequest.msg.mode = data.mode;
+        this.fxModeRequest.rcv.unsubscribe();
+    })};
+
+    this.fxModeRequest.msg.mode[fxId] = mode;
+    this.itemFxMode(trainNid, group, this.fxModeRequest.msg.mode);
+    this.fxModeRequest = undefined;
   }
 
   // 0x07.0x15
