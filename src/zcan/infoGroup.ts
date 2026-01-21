@@ -24,9 +24,9 @@ export default class InfoGroup {
   getModuleInfo(nid: number, type: ModInfoType | number): ModInfoData | undefined
   {
     this.mx10.log.next('mx10.getModuleInfo: ' + nid + ', ' + type);
-    if(!this.modInfoQ?.lock())
+    if(this.modInfoQ !== undefined && !this.modInfoQ.lock())
       return;
-    this.mx10.log.next("mx10.getModuleInfo: couldn't acquire lock");
+    this.mx10.log.next("mx10.getModuleInfo: lock aquired");
 
     this.modInfoQ = new Query(ModInfoData.header(MsgMode.REQ, nid), this.onModuleInfoChange);
     this.mx10.log.next("mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
@@ -42,7 +42,11 @@ export default class InfoGroup {
       return (msg.type() === type);
     })
     this.mx10.log.next("running mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
-    return this.modInfoQ.run();
+    const rv = this.modInfoQ.run();
+    this.mx10.log.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
+    this.modInfoQ.unlock();
+    this.modInfoQ = undefined;
+    return rv;
   }
 
   parse(

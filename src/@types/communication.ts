@@ -53,7 +53,7 @@ export class Query<T extends Message>
 
   lock(millis: number = 500): boolean
   {
-    let centis = millis / 10;
+    let centis = Math.abs(millis) / 10;
     while(this.mutex)
     {
       delay(10);
@@ -84,14 +84,16 @@ export class Query<T extends Message>
       this.rx?.unsubscribe();
     });
 
-    let tick = 2 * retries;
+    let tick = 2 * Math.abs(retries);
 
     while(this.result === undefined)
     {
       if(tick % 2 === 0)
         this.tx(this.header);
-      if(!tick--)
+      if(!tick--) {
+        this.rx?.unsubscribe();
         return undefined;
+      }
       delay(5);
     }
     return this.result;
