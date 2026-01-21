@@ -26,8 +26,10 @@ export default class InfoGroup {
     this.mx10.log.next('mx10.getModuleInfo: ' + nid + ', ' + type);
     if(!this.modInfoQ?.lock())
       return;
+    this.mx10.log.next("mx10.getModuleInfo: couldn't acquire lock");
 
     this.modInfoQ = new Query(ModInfoData.header(MsgMode.REQ, nid), this.onModuleInfoChange);
+    this.mx10.log.next("mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
     this.modInfoQ.tx = ((header) => {
       const msg = new Message(header);
       msg.push({value: nid, length: 2});
@@ -39,6 +41,7 @@ export default class InfoGroup {
       this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
       return (msg.type() === type);
     })
+    this.mx10.log.next("running mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
     return this.modInfoQ.run();
   }
 
