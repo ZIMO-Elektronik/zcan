@@ -77,14 +77,12 @@ export default class InfoGroup {
     nid: number,
     buffer: Buffer,
   ) {
-    // const msgMode: MsgMode = mode as MsgMode;
-    // this.mx10.log.next('parseModuleInfo: ' + msgMode);
     if (this.onModuleInfoChange.observed) {
       const NID = buffer.readUInt16LE(0);
       const type = buffer.readUInt16LE(2);
       const info = buffer.readUInt32LE(4);
       const msg = new ModInfoData(ModInfoData.header(mode, NID), type, [{value: info, length: 4}]);
-      this.mx10.log.next('onModuleInfoChange <- ' + JSON.stringify(msg));
+      // this.mx10.log.next('onModuleInfoChange <- ' + JSON.stringify(msg));
       this.onModuleInfoChange.next(msg);
     }
   }

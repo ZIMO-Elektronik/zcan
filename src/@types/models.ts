@@ -148,8 +148,9 @@ export class ModInfoData extends Message
   {
     super(header);
     super.push({value: type, length: 2});
+    // data.forEach((data) => super.push(data));
     if(data.length)
-      this.data.concat(data);
+      this.data = this.data.concat(data);
   }
 
   type(): ModInfoType | undefined
@@ -161,6 +162,13 @@ export class ModInfoData extends Message
     // if(this.data[0].value === 0)
     //   return undefined;
     // return this.data[0].value;
+  }
+
+  info(): number | undefined
+  {
+    if(this.data.length > 1)
+      return (this.data[2].value as number);
+    return undefined;
   }
 }
 
@@ -240,7 +248,7 @@ export interface ItemFxMode {
 
 // export class ItemFxMode extends Message
 // {
-//   constructor(header: Header, group: number, mode: FxModeType[] = [])
+//   constructor(header: Header, group: number, mode: number)
 //   {
 //     super(header);
 //     super.push({value: group, length: 1});
@@ -255,7 +263,11 @@ export interface ItemFxMode {
 
 //   mode(): FxModeType[]
 //   {
-//     return ((this.data[2].value as unknown) as FxModeType[]);
+//     const rv: FxModeType[] = [];
+//     for(let i=0; i<32; i+=2) {
+//       rv.push(((this.data[2].value as number) >> i) & 0b11);
+//     }
+//     return rv;
 //   }
 
 //   setMode(index: number, mode: FxModeType)
