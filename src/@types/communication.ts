@@ -1,7 +1,8 @@
 import {BindOptions, RemoteInfo, SocketOptions} from 'dgram';
 import {Buffer} from 'buffer';
-import {MsgMode} from 'src/util/enums';
-import {delay, Subject, Subscription} from 'rxjs';
+import {MsgMode} from '../util/enums';
+import {delay} from '../internal/utils';
+import {Subject, Subscription} from 'rxjs';
 
 export type Header = {
   group: number,
@@ -43,6 +44,7 @@ export class Query<T extends Message>
   private result: T | undefined = undefined;
   match: (msg: T) => boolean = () => {return true};
   private mutex: boolean = false;
+  log: (msg: string) => void = () => {};
 
   constructor(header: Header, subject: Subject<T> , match: (msg: T) => boolean = (() => {return true;}))
   {
@@ -51,17 +53,17 @@ export class Query<T extends Message>
     this.match = match;
   }
 
-  lock(millis: number = 500): boolean
+  async lock(millis: number = 500): Promise<boolean>
   {
-    let centis = Math.abs(millis) / 10;
-    while(this.mutex)
-    {
-      delay(10);
-      if(!centis--)
-        return false;
-    }
-    this.mutex = true;
-    return true;
+      let centis = Math.abs(millis) / 10;
+      while(this.mutex && centis)
+      {
+        await delay(10);
+        if(!centis--)
+          return false;
+      }
+      this.mutex = true;
+      return true;
   }
 
   unlock()
@@ -69,32 +71,43 @@ export class Query<T extends Message>
     this.mutex = false;
   }
 
-  run(retries: number = 5): T | undefined
+  subscribe()
   {
-    if(this.tx === undefined)
-      return undefined;
-
     this.rx = this.subject.subscribe((msg: T) =>
     {
-      if(!this.match(msg))
+      if(msg.header.mode !== MsgMode.ACK)
         return;
       if(msg.header.nid !== this.header.nid)
         return;
-      this.result = (new Message(this.header, msg.data) as T);
+      this.log('query.run.rx: ' + JSON.stringify(msg));
+      if(!this.match(msg))
+        return;
+      this.result = msg;
       this.rx?.unsubscribe();
     });
+  }
+
+  async run(retries: number = 5): Promise<T | undefined>
+  {
+    if(this.tx === undefined)
+      return undefined;
+    if(this.rx === undefined)
+      this.subscribe();
 
     let tick = 2 * Math.abs(retries);
 
     while(this.result === undefined)
     {
-      if(tick % 2 === 0)
+      if(tick % 2)
+        await delay(5);
+      else
         this.tx(this.header);
+
       if(!tick--) {
+        this.log('query.run.failed :(');
         this.rx?.unsubscribe();
         return undefined;
       }
-      delay(5);
     }
     return this.result;
   }

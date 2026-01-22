@@ -21,15 +21,17 @@ export default class InfoGroup {
     this.mx10 = mx10;
   }
 
-  getModuleInfo(nid: number, type: ModInfoType | number): ModInfoData | undefined
+  async getModuleInfo(nid: number, type: ModInfoType | number): Promise<ModInfoData | undefined>
   {
-    this.mx10.log.next('mx10.getModuleInfo: ' + nid + ', ' + type);
-    if(this.modInfoQ !== undefined && !this.modInfoQ.lock())
-      return;
-    this.mx10.log.next("mx10.getModuleInfo: lock aquired");
+    if(this.modInfoQ !== undefined && !await this.modInfoQ.lock()) {
+      this.mx10.log.next("mx10.getModuleInfo: failed to acquire lock");
+      return undefined;
+    }
 
     this.modInfoQ = new Query(ModInfoData.header(MsgMode.REQ, nid), this.onModuleInfoChange);
-    this.mx10.log.next("mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
+    this.modInfoQ.log = ((msg) => {
+      this.mx10.log.next(msg);
+    });
     this.modInfoQ.tx = ((header) => {
       const msg = new Message(header);
       msg.push({value: nid, length: 2});
@@ -41,8 +43,8 @@ export default class InfoGroup {
       this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
       return (msg.type() === type);
     })
-    this.mx10.log.next("running mx10.getModuleInfo.query: " + JSON.stringify(this.modInfoQ));
-    const rv = this.modInfoQ.run();
+    // this.modInfoQ.subscribe();
+    const rv = await this.modInfoQ.run();
     this.mx10.log.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
     this.modInfoQ.unlock();
     this.modInfoQ = undefined;
@@ -75,11 +77,14 @@ export default class InfoGroup {
     nid: number,
     buffer: Buffer,
   ) {
+    // const msgMode: MsgMode = mode as MsgMode;
+    // this.mx10.log.next('parseModuleInfo: ' + msgMode);
     if (this.onModuleInfoChange.observed) {
       const NID = buffer.readUInt16LE(0);
       const type = buffer.readUInt16LE(2);
       const info = buffer.readUInt32LE(4);
       const msg = new ModInfoData(ModInfoData.header(mode, NID), type, [{value: info, length: 4}]);
+      this.mx10.log.next('onModuleInfoChange <- ' + JSON.stringify(msg));
       this.onModuleInfoChange.next(msg);
     }
   }

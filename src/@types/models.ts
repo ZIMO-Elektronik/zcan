@@ -18,7 +18,7 @@ import {
   FxModeType,
   ModInfoType,
   MsgMode,
-} from 'src/util/enums';
+} from '../util/enums';
 import {Header, Message, ZcanDataArray} from './communication';
 import { delay, Subject, Subscription } from 'rxjs';
 
@@ -141,7 +141,7 @@ export class ModInfoData extends Message
 
   public static header(mode: MsgMode, nid: number): Header
   {
-    return {group: 0x08, cmd: 0x08, mode: MsgMode.REQ, nid};
+    return {group: 0x08, cmd: 0x08, mode: mode, nid};
   }
 
   constructor(header: Header, type: ModInfoType, data: ZcanDataArray = [])
