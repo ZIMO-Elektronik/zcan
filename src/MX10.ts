@@ -172,7 +172,8 @@ export default class MX10 {
   }
 
   sendMsg(msg: Message) {
-    const buffer = this.formatData(msg.header.group, msg.header.cmd, msg.header.mode, msg.header.nid, msg.data);
+    const buffer = msg.udp(this.myNID);
+    this.log.next("mx10.sendMsg: " + JSON.stringify(buffer));
     this.send(buffer, false);
   }
 
@@ -185,6 +186,7 @@ export default class MX10 {
     force = false,
   ) {
     const buffer = this.formatData(group, cmd, mode, nid, data);
+    //this.log.next("mx10.sendData: " + JSON.stringify(buffer));
     this.send(buffer, force);
   }
 

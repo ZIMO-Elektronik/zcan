@@ -1,8 +1,8 @@
 import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
-import {Message, Query} from '../@types/communication';
-import {BidiInfoData, BidiDirectionData, ModInfoData} from '../@types/models';
+import {Query} from '../@types/communication';
+import {BidiInfoData, BidiDirectionData, MsgModInfo} from '../@types/models';
 import {BidiType, Direction, ForwardOrReverse, ModInfoType, MsgMode} from '../util/enums';
 
 /**
@@ -13,29 +13,27 @@ export default class InfoGroup {
   private mx10: MX10;
 
   public readonly onBidiInfoChange = new Subject<BidiInfoData>();
-  public readonly onModuleInfoChange = new Subject<ModInfoData>();
+  public readonly onModuleInfoChange = new Subject<MsgModInfo>();
 
-  private modInfoQ: Query<ModInfoData> | undefined = undefined;
+  private modInfoQ: Query<MsgModInfo> | undefined = undefined;
 
   constructor(mx10: MX10) {
     this.mx10 = mx10;
   }
 
-  async getModuleInfo(nid: number, type: ModInfoType | number): Promise<ModInfoData | undefined>
+  async getModuleInfo(nid: number, type: ModInfoType | number): Promise<MsgModInfo | undefined>
   {
     if(this.modInfoQ !== undefined && !await this.modInfoQ.lock()) {
       this.mx10.log.next("mx10.getModuleInfo: failed to acquire lock");
       return undefined;
     }
 
-    this.modInfoQ = new Query(ModInfoData.header(MsgMode.REQ, nid), this.onModuleInfoChange);
+    this.modInfoQ = new Query(MsgModInfo.header(MsgMode.REQ, nid), this.onModuleInfoChange);
     this.modInfoQ.log = ((msg) => {
       this.mx10.log.next(msg);
     });
     this.modInfoQ.tx = ((header) => {
-      const msg = new Message(header);
-      msg.push({value: nid, length: 2});
-      msg.push({value: type, length: 2});
+      const msg = new MsgModInfo(header, type);
       this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
       this.mx10.sendMsg(msg);
     });
@@ -81,7 +79,7 @@ export default class InfoGroup {
       const NID = buffer.readUInt16LE(0);
       const type = buffer.readUInt16LE(2);
       const info = buffer.readUInt32LE(4);
-      const msg = new ModInfoData(ModInfoData.header(mode, NID), type, [{value: info, length: 4}]);
+      const msg = new MsgModInfo(MsgModInfo.header(mode, NID), type, [{value: info, length: 4}]);
       // this.mx10.log.next('onModuleInfoChange <- ' + JSON.stringify(msg));
       this.onModuleInfoChange.next(msg);
     }

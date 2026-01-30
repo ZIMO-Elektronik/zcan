@@ -20,7 +20,7 @@ import {
   MsgMode,
 } from '../util/enums';
 import {Header, Message, ZcanDataArray} from './communication';
-import { delay, Subject, Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 
 
 export interface Train {
@@ -135,10 +135,8 @@ export interface BidiInfoData {
   data: BidiDirectionData | number;
 }
 
-export class ModInfoData extends Message
+export class MsgModInfo extends Message
 {
-  public static readonly rx = new Subject<ModInfoData>();
-
   public static header(mode: MsgMode, nid: number): Header
   {
     return {group: 0x08, cmd: 0x08, mode: mode, nid};
@@ -156,19 +154,75 @@ export class ModInfoData extends Message
   type(): ModInfoType | undefined
   {
     return ((this.data[0].value as unknown) as ModInfoType);
-
-    // if((typeof this.data[0].value === 'string'))
-    //   return undefined;
-    // if(this.data[0].value === 0)
-    //   return undefined;
-    // return this.data[0].value;
   }
 
   info(): number | undefined
   {
     if(this.data.length > 1)
-      return (this.data[2].value as number);
+      return (this.data[1].value as number);
     return undefined;
+  }
+}
+
+export class MsgCvRead extends Message
+{
+  public static header(mode: MsgMode, nid: number): Header
+  {
+    return {group: 0x16, cmd: 0x08, mode: mode, nid: nid};
+  }
+
+  constructor(header: Header, trainNid: number, cvNum: number, cvVal: number | undefined = undefined)
+  {
+    super(header);
+    super.push({value: trainNid, length: 2});
+    super.push({value: cvNum, length: 4});
+    if(cvVal !== undefined)
+      super.push({value: cvVal, length: 2});
+  }
+
+  cvVal(): number | undefined
+  {
+    if(this.data.length > 2) {
+      return (this.data[2].value as number);
+    }
+    return undefined;
+  }
+
+  cvNum(): number
+  {
+    return (this.data[1].value as number);
+  }
+
+  trainNid(): number
+  {
+    return (this.data[0].value as number);
+  }
+}
+
+export class MsgCvWrite extends MsgCvRead
+{
+  public static header(mode: MsgMode, nid: number): Header
+  {
+    return {group: 0x16, cmd: 0x09, mode: mode, nid: nid};
+  }
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor(header: Header, trainNid: number, cvNum: number, cvVal: number)
+  {
+    super(header, trainNid, cvNum, cvVal);
+    this.data[2].length = 1;  // ;-)
+  }
+}
+
+export class MsgCvWrite16 extends MsgCvRead
+{
+  public static header(mode: MsgMode, nid: number): Header
+  {
+    return {group: 0x16, cmd: 0x0d, mode: mode, nid: nid};
+  }
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor(header: Header, trainNid: number, cvNum: number, cvVal: number)
+  {
+    super(header, trainNid, cvNum, cvVal);
   }
 }
 
