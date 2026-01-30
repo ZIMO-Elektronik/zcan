@@ -1,10 +1,12 @@
 import {
+  MsgCvRead,
   TseInfoExtended,
-  TseProgReadExtended,
   TseProgWriteExtended,
-} from 'src/@types/models';
+} from '../@types/models';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
+import {Query} from '../docs_entrypoint';
+import {MsgMode} from '../util/enums';
 
 /**
  *
@@ -12,7 +14,7 @@ import {Subject} from 'rxjs';
  */
 export default class TrackCfgGroup {
   public readonly onTseInfoExtended = new Subject<TseInfoExtended>();
-  public readonly onTseProgReadExtended = new Subject<TseProgReadExtended>();
+  public readonly onTseProgReadExtended = new Subject<MsgCvRead>();
   public readonly onTseProgWriteExtended = new Subject<TseProgWriteExtended>();
   public readonly onTseProgWrite16Extended = new Subject<TseProgWriteExtended>();
 
@@ -21,6 +23,8 @@ export default class TrackCfgGroup {
   constructor(mx10: MX10) {
     this.mx10 = mx10;
   }
+
+  private getCvQ: Query<MsgCvRead> | undefined = undefined;
 
   tseProgRead(NID: number, CV: number) {
     this.mx10.sendData(0x16, 0x08, [
@@ -46,6 +50,33 @@ export default class TrackCfgGroup {
       {value: CV, length: 2},
       {value: value, length: 2},
     ]);
+  }
+
+  async getCv(nid: number, cvNum: number): Promise<MsgCvRead | undefined>
+  {
+    if(this.getCvQ !== undefined && !await this.getCvQ.lock()) {
+      this.mx10.log.next("mx10.getCv: failed to acquire lock");
+      return undefined;
+    }
+
+    this.getCvQ = new Query(MsgCvRead.header(MsgMode.REQ, nid), this.onTseProgReadExtended);
+    this.getCvQ.log = ((msg) => {
+      this.mx10.log.next(msg);
+    });
+    this.getCvQ.tx = ((header) => {
+      const msg = new MsgCvRead(header, cvNum);
+      // this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
+      this.mx10.sendMsg(msg);
+    });
+    this.getCvQ.match = ((msg) => {
+      // this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
+      return (msg.number() === cvNum);
+    })
+    const rv = await this.getCvQ.run();
+    // this.mx10.log.next("mx10.getCv.rv: " + JSON.stringify(rv));
+    this.getCvQ.unlock();
+    this.getCvQ = undefined;
+    return rv;
   }
 
   parse(
@@ -97,11 +128,9 @@ export default class TrackCfgGroup {
       const cfgNum = buffer.readUInt32LE(4);
       const cvValue = buffer.readUInt16LE(8);
 
-      this.onTseProgReadExtended.next({
-        nid: NID,
-        cfgNum,
-        cvValue,
-      });
+      this.onTseProgReadExtended.next(
+        new MsgCvRead(MsgCvRead.header(mode, nid), cfgNum, cvValue)
+      );
     }
   }
 
@@ -130,7 +159,7 @@ export default class TrackCfgGroup {
         const NID = buffer.readUInt16LE(0);
         const cfgNum = buffer.readUint16LE(2);
         const cvValue = buffer.readUint16LE(4);
-  
+
         this.onTseProgWrite16Extended.next({
           nid: NID,
           cfgNum,

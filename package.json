@@ -21,7 +21,7 @@
     "docs": "gulp documentation"
   },
   "dependencies": {
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "tslib": "^2.7.0"
   },
   "devDependencies": {

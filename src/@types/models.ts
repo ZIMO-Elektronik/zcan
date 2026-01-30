@@ -20,7 +20,7 @@ import {
   MsgMode,
 } from '../util/enums';
 import {Header, Message, ZcanDataArray} from './communication';
-import { delay, Subject, Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 
 
 export interface Train {
@@ -169,6 +169,35 @@ export class ModInfoData extends Message
     if(this.data.length > 1)
       return (this.data[2].value as number);
     return undefined;
+  }
+}
+
+export class MsgCvRead extends Message
+{
+  public static readonly rx = new Subject<MsgCvRead>();
+
+  public static header(mode: MsgMode, nid: number): Header
+  {
+    return {group: 0x16, cmd: 0x08, mode: mode, nid: nid};
+  }
+
+  constructor(header: Header, cvNum: number, value: number | undefined = undefined)
+  {
+    super(header);
+    super.push({value: cvNum, length: 4});
+  }
+
+  value(): number | undefined
+  {
+    if(this.data.length > 1) {
+      return (this.data[1].value as number);
+    }
+    return undefined;
+  }
+
+  number(): number
+  {
+    return (this.data[0].value as number);
   }
 }
 
