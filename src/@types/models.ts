@@ -223,6 +223,7 @@ export class MsgCvWrite16 extends MsgCvRead
   constructor(header: Header, trainNid: number, cvNum: number, cvVal: number)
   {
     super(header, trainNid, cvNum, cvVal);
+    this.data[1].length = 2;
   }
 }
 
