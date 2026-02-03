@@ -5,11 +5,11 @@
   "types": "dist/index.d.ts",
   "license": "MIT",
   "repository": "https://github.com/ZIMO-Elektronik/zcan",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "scripts": {
     "start": "node dist/main.js",
     "start:dev": "nodemon --ext js,ts,json,env --exec \"node --experimental-specifier-resolution=node --loader ts-node/esm\" src/main.ts",
-    "build": "tsc --project tsconfig.build.json",
+    "build": "./node_modules/typescript/bin/tsc --project tsconfig.build.json",
     "build:clean": "rm -rf tsconfig.build.tsbuildinfo && rm -rf ./dist",
     "test": "jest --forceExit",
     "test:coverage": "npm run test -- --coverage",
@@ -21,7 +21,7 @@
     "docs": "gulp documentation"
   },
   "dependencies": {
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "tslib": "^2.7.0"
   },
   "devDependencies": {
