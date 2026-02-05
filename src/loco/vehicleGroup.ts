@@ -137,7 +137,7 @@ export default class VehicleGroup
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
-		// this.mx10.log.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
+		this.mx10.log.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
 		switch (command) {
 			case 0x00: this.parseVehicleState(size, mode, nid, buffer); break;
 			case 0x01: this.parseVehicleMode(size, mode, nid, buffer); break;
@@ -170,6 +170,7 @@ export default class VehicleGroup
 		if (this.onVehicleMode.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const vMode = [buffer.readUInt8(2), buffer.readUInt8(3), buffer.readUInt8(4)];
+			this.mx10.log.next("parseVehicleMode: " + NID + " = " + JSON.stringify(vMode));
 			this.onVehicleMode.next(new MsgVehicleMode(MsgVehicleMode.header(mode, NID), vMode));
 		}
 	}
