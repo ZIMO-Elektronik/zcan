@@ -33,6 +33,19 @@ export * from './file/fileTransferGroup';
 export * from './info/infoGroup';
 export * from './info/lanInfoGroup';
 export * from './info/infoMsg';
+export * from './loco/vehicleGroup';
+export * from './loco/vehicleMsg';
+export * from './network/networkGroup';
+export * from './network/lanNetworkGroup';
+export * from './script/scriptGroup';
+export * from './script/lanScriptGroup';
+export * from './system/systemControlGroup';
+export * from './track/trackGroup';
+export * from './track/trackMsg';
+export * from './train/trainControlGroup';
+export * from './misc/lanLocoStateGroup';
+export * from './misc/propertyConfigGroup';
+export * from './misc/railwayControlGroup';
 
 export {
   LanNetworkGroup,

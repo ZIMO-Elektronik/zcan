@@ -87,20 +87,9 @@ export default class VehicleGroup
 		return rv;
 	}
 
-	changeSpeed(
-		vehicleAddress: number,
-		speedStep: number,
-		forward: boolean,
-		eastWest?: Direction,
-		emergencyStop?: boolean,
-	) {
-		const speedAndDirection = combineSpeedAndDirection(
-			speedStep,
-			forward,
-			eastWest,
-			emergencyStop,
-		);
-
+	changeSpeed(vehicleAddress: number, speedStep: number, forward: boolean, eastWest?: Direction, emergencyStop?: boolean)
+	{
+		const speedAndDirection = combineSpeedAndDirection(speedStep, forward, eastWest, emergencyStop);
 		this.mx10.sendData(0x02, 0x02, [
 			{value: vehicleAddress, length: 2},
 			{value: speedAndDirection, length: 2},
@@ -108,11 +97,8 @@ export default class VehicleGroup
 		]);
 	}
 
-	callFunction(
-		vehicleAddress: number,
-		functionId: number,
-		functionStatus: boolean,
-	) {
+	callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
+	{
 		this.mx10.sendData(0x02, 0x04, [
 			{value: vehicleAddress, length: 2},
 			{value: functionId, length: 2},
@@ -120,11 +106,8 @@ export default class VehicleGroup
 		]);
 	}
 
-	changeSpecialFunction(
-		vehicleAddress: number,
-		specialFunctionMode: SpecialFunctionMode,
-		specialFunctionStatus: Manual | ShuntingFunction | DirectionDefault,
-	) {
+	changeSpecialFunction(vehicleAddress: number, specialFunctionMode: SpecialFunctionMode,
+		specialFunctionStatus: Manual | ShuntingFunction | DirectionDefault) {
 		this.mx10.sendData(0x02, 0x05, [
 			{value: vehicleAddress, length: 2},
 			{value: specialFunctionMode, length: 2},
@@ -134,73 +117,39 @@ export default class VehicleGroup
 
 	//0x02.0x00
 	vehicleState(vehicleAddress: number) {
-		return this.mx10.sendData(
-			0x02,
-			0x00,
-			[{value: vehicleAddress, length: 2}],
-			0b00,
-		);
+		return this.mx10.sendData(0x02, 0x00, [{value: vehicleAddress, length: 2}], 0b00);
 	}
 
 	// 0x02.0x10
 	activeModeTrain(vehicleAddress: number) {
-		return this.mx10.sendData(
-			0x02,
-			0x10,
-			[
-				{value: vehicleAddress, length: 2},
-				{value: 0x01, length: 2},
-			],
-			0b01,
-		);
+		return this.mx10.sendData(0x02, 0x10, [
+			{value: vehicleAddress, length: 2},
+			{value: 0x01, length: 2},
+		], 0b01);
 	}
 
 	activeModeTakeOver(vehicleAddress: number) {
-		return this.mx10.sendData(
-			0x02,
-			0x10,
-			[
-				{value: vehicleAddress, length: 2},
-				{value: 0x10, length: 2},
-			],
-			0b01,
-		);
+		return this.mx10.sendData(0x02, 0x10, [
+			{value: vehicleAddress, length: 2},
+			{value: 0x10, length: 2},
+		], 0b01);
 	}
 
-	parse(
-		size: number,
-		command: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
-		this.mx10.log.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
+	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
+	{
+		// this.mx10.log.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
 		switch (command) {
-			case 0x00:
-				this.parseVehicleState(size, mode, nid, buffer);
-				break;
-			case 0x01:
-				this.parseVehicleMode(size, mode, nid, buffer);
-				break;
-			case 0x02:
-				this.parseVehicleSpeed(size, mode, nid, buffer);
-				break;
-			case 0x04:
-				this.parseVehicleFunction(size, mode, nid, buffer);
-				break;
-			case 0x05:
-				this.parseVehicleSpecialFunction(size, mode, nid, buffer);
-				break;
+			case 0x00: this.parseVehicleState(size, mode, nid, buffer); break;
+			case 0x01: this.parseVehicleMode(size, mode, nid, buffer); break;
+			case 0x02: this.parseVehicleSpeed(size, mode, nid, buffer); break;
+			case 0x04: this.parseVehicleFunction(size, mode, nid, buffer); break;
+			case 0x05: this.parseVehicleSpecialFunction(size, mode, nid, buffer); break;
 		}
 	}
 
 	// 0x02.0x00
-	private parseVehicleState(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseVehicleState( size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onVehicleState.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const stateFlags = buffer.readUInt16LE(2); // TODO: add
@@ -216,12 +165,8 @@ export default class VehicleGroup
 	}
 
 	// 0x02.0x01
-	private parseVehicleMode(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseVehicleMode(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onVehicleMode.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const vMode = [buffer.readUInt8(2), buffer.readUInt8(3), buffer.readUInt8(4)];
@@ -230,12 +175,8 @@ export default class VehicleGroup
 	}
 
 	// 0x02.0x02
-	private parseVehicleSpeed(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseVehicleSpeed(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onChangeSpeed.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const speedAndDirection = buffer.readUInt16LE(2);
@@ -256,12 +197,8 @@ export default class VehicleGroup
 	}
 
 	// 0x02.0x04
-	private parseVehicleFunction(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseVehicleFunction(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onCallFunction.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const functionNumber = buffer.readUInt16LE(2);
@@ -278,12 +215,8 @@ export default class VehicleGroup
 	}
 
 	// 0x02.0x05
-	private parseVehicleSpecialFunction(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseVehicleSpecialFunction(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onCallSpecialFunction.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const specialFunctionMode = buffer.readUInt16LE(2);
