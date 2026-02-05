@@ -1,0 +1,36 @@
+import {Direction} from "../common/enums";
+import {directACKBites, directionBites, eastWestBites_, emergencyStopB, speedBites____, speedStepBites} from "../common/bites";
+
+export const combineSpeedAndDirection = (speed: number, forward: boolean, eastWest = Direction.UNDEFINED, emergencyStop = false) => {
+	const direction = Number(!forward);
+	const stop = Number(emergencyStop);
+
+	return speed | (direction << 10) | (eastWest << 12) | (stop << 15);
+};
+
+export const parseSpeed = (speedAndDirection: number) => {
+	const speedStep = speedAndDirection & speedBites____;
+	const direction = (speedAndDirection & directionBites) === directionBites;
+	const directionACK = (speedAndDirection & directACKBites) === directACKBites;
+	const sideways = (speedAndDirection & eastWestBites_) >> 12;
+	const emergencyStop = (speedAndDirection & emergencyStopB) === emergencyStopB;
+
+	const forward = !direction && !directionACK;
+
+	return {
+		speedStep,
+		forward,
+		eastWest: sideways,
+		emergencyStop
+	};
+}
+
+export const getSpeedSteps = (val: number) => {
+	const steps = val & speedStepBites;
+
+	if (steps == 0 || steps >= 6) {
+		return undefined;
+	}
+
+	return steps;
+}

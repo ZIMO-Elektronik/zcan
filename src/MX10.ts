@@ -2,7 +2,7 @@
 
 import {Buffer} from 'buffer';
 import {interval, Subject} from 'rxjs';
-import {Message} from './@types/communication';
+import {Message} from './common/communication';
 import {
   AccessoryCommandGroup,
   DataGroup,
@@ -22,15 +22,15 @@ import {
   TrainControlGroup,
   VehicleGroup,
   ZimoProgrammableScriptGroup,
-} from './zcan';
+} from './';
 import {
   CreateSocketFunction,
   NIDGenerator,
   Socket,
   ZcanDataArray,
-} from './@types/communication';
-import {delay} from './internal/utils';
-import ExtendedASCII from './util/extended-ascii';
+} from './common/communication';
+import {delay} from './common/utils';
+import ExtendedASCII from './common/extendedAscii';
 
 /**
  *

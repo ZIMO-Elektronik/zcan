@@ -18,7 +18,7 @@ export {
   TrainControlGroup,
   VehicleGroup,
   ZimoProgrammableScriptGroup,
-} from './zcan';
+} from './index';
 
 export {
   Direction as Direction,
@@ -26,9 +26,9 @@ export {
   FunctionMode,
   OperatingMode,
   SystemStateMode,
-} from './util/enums';
+} from './common/enums';
 
-export * from './@types/models';
-export * from './@types/communication';
+export * from './common/models';
+export * from './common/communication';
 
 export {Subject, Observable} from 'rxjs';

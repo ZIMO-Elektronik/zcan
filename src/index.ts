@@ -1,8 +1,56 @@
 import MX10 from './MX10';
 
-export default MX10;
-export * from './util/enums';
-export * from './@types/models';
-export * from './@types/communication';
+import LanNetworkGroup from './network/lanNetworkGroup';
+import NetworkGroup from './network/networkGroup';
+import VehicleGroup from './loco/vehicleGroup';
+import SystemControlGroup from './system/systemControlGroup';
+import AccessoryCommandGroup from './accessory/accessoryCommandGroup';
+import TrainControlGroup from './train/trainControlGroup';
+import TrackCfgGroup from './track/trackGroup';
+import DataGroup from './data/dataGroup';
+import InfoGroup from './info/infoGroup';
+import PropertyConfigGroup from './misc/propertyConfigGroup';
+import RailwayControlGroup from './misc/railwayControlGroup';
+import ZimoProgrammableScriptGroup from './script/scriptGroup';
+import FileControlGroup from './file/fileControlGroup';
+import FileTransferGroup from './file/fileTransferGroup';
+import LanZimoProgrammableScriptGroup from './script/lanScriptGroup';
+import LanInfoGroup from './info/lanInfoGroup';
+import LanDataGroup from './data/lanDataGroup';
+import LanLocoStateGroup from './misc/lanLocoStateGroup';
 
+export default MX10;
+export * from './common/enums';
+export * from './common/models';
+export * from './common/communication';
 export * from 'rxjs';
+export * from './accessory/accessoryCommandGroup';
+export * from './data/dataGroup';
+export * from './data/lanDataGroup';
+export * from './data/dataMsg';
+export * from './file/fileControlGroup';
+export * from './file/fileTransferGroup';
+export * from './info/infoGroup';
+export * from './info/lanInfoGroup';
+export * from './info/infoMsg';
+
+export {
+  LanNetworkGroup,
+  NetworkGroup,
+  VehicleGroup,
+  SystemControlGroup,
+  AccessoryCommandGroup,
+  TrainControlGroup,
+  TrackCfgGroup,
+  DataGroup,
+  InfoGroup,
+  PropertyConfigGroup,
+  RailwayControlGroup,
+  ZimoProgrammableScriptGroup,
+  FileControlGroup,
+  FileTransferGroup,
+  LanZimoProgrammableScriptGroup,
+  LanInfoGroup,
+  LanDataGroup,
+  LanLocoStateGroup,
+};
