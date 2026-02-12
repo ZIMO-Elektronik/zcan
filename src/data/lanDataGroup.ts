@@ -1,6 +1,6 @@
 // 0x17
 import MX10 from '../MX10';
-import {FunctionMode, getOperatingMode, OperatingMode} from '../common/enums';
+import {FunctionMode, getOperatingMode, MsgMode} from '../common/enums';
 import {
 	DataNameExtendedData,
 	DataValueExtendedData,
@@ -15,7 +15,8 @@ import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
 import {manualModeB, shuntingFunctionB} from '../common/bites';
-import {ZcanDataArray} from '../common/communication';
+import {Query, ZcanDataArray} from '../common/communication';
+import { MsgLocoGui, MsgLocoGuiMx } from './dataMsg';
 
 /**
  *
@@ -23,11 +24,14 @@ import {ZcanDataArray} from '../common/communication';
  */
 export default class LanDataGroup
 {
-	public readonly onLocoGuiExtended = new Subject<Train>();
-	public readonly onLocoGuiMXExtended = new Subject<LocoGuiMXExtended>();
+	public readonly onLocoGuiExtended = new Subject<MsgLocoGui>();
+	public readonly onLocoGuiMxExtended = new Subject<MsgLocoGuiMx>();
 	public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
+
+	private locoGuiQ: Query<MsgLocoGui> | undefined = undefined;
+	private locoGuiMxQ: Query<MsgLocoGuiMx> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -37,105 +41,109 @@ export default class LanDataGroup
 	}
 
 	dataValueExtended(NID: number) {
-		this.mx10.sendData(
-			0x17,
-			0x08,
-			[
-				{value: this.mx10.mx10NID, length: 2},
-				{value: NID, length: 2},
-				{value: 1, length: 2},
-			],
-			0b00,
-		);
+		this.mx10.sendData(0x17, 0x08, [
+			{value: this.mx10.mx10NID, length: 2},
+			{value: NID, length: 2},
+			{value: 1, length: 2},
+		], 0b00);
 	}
 
 	dataNameExtended(NID: number) {
-		this.mx10.sendData(
-			0x17,
-			0x10,
-			[
-				{value: NID, length: 2},
-				{value: 0, length: 2},
-			],
-			0b00,
-		);
+		this.mx10.sendData(0x17, 0x10, [
+			{value: NID, length: 2},
+			{value: 0, length: 2},
+		], 0b00);
 	}
 
-	renameDataExtended(
-		NID: number,
-		type: number,
-		val1: number,
-		val2: number,
-		val3: number,
-		name: string,
-	) {
-		this.mx10.sendData(
-			0x17,
-			0x10,
-			[
-				{value: NID, length: 2},
-				{value: type, length: 2},
-				{value: val1, length: 4},
-				{value: val2, length: 4},
-				{value: val3, length: 4},
-				{value: name, length: name.length},
-				{value: 0, length: 1},
-			],
-			0b01,
-		);
+	renameDataExtended(NID: number, type: number, val1: number, val2: number, val3: number, name: string) {
+		this.mx10.sendData(0x17, 0x10, [
+			{value: NID, length: 2},
+			{value: type, length: 2},
+			{value: val1, length: 4},
+			{value: val2, length: 4},
+			{value: val3, length: 4},
+			{value: name, length: name.length},
+			{value: 0, length: 1},
+		], 0b01);
 	}
 
 	locoGuiExtended(NID: number) {
-		this.mx10.sendData(
-			0x17,
-			0x27,
-			[
-				{value: this.mx10.mx10NID, length: 2},
-				{value: NID, length: 2},
-				{value: 0, length: 2},
-			],
-			0b00,
-		);
+		this.mx10.sendData(0x17, 0x27, [
+			{value: this.mx10.mx10NID, length: 2},
+			{value: NID, length: 2},
+			{value: 0, length: 2},
+		], 0b00);
+	}
+
+	async getLocoGui(nid: number) {
+		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
+			this.mx10.log.next("mx10.getLocoGui: failed to acquire lock");
+			return undefined;
+		}
+		this.locoGuiQ = new Query(MsgLocoGui.header(MsgMode.REQ, nid), this.onLocoGuiExtended);
+		this.locoGuiQ.log = ((msg) => {this.mx10.log.next(msg)});
+		this.locoGuiQ.tx = ((header) => {
+			const msg = new MsgLocoGui(header, 0);
+			// this.mx10.log.next('getGui query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.locoGuiQ.match = ((msg) => {
+			// this.mx10.log.next('getGui query rx: ' + JSON.stringify(msg));
+			return (msg.locoNid() === nid);
+		})
+		const rv = await this.locoGuiQ.run();
+		// this.mx10.log.next("mx10.getLocoGui.rv: " + JSON.stringify(rv));
+		this.locoGuiQ.unlock();
+		this.locoGuiQ = undefined;
+		return rv;
+	}
+
+	async setLocoGui(train: Train) {
+		if(this.locoGuiMxQ !== undefined && !await this.locoGuiMxQ.lock()) {
+			this.mx10.log.next("mx10.setLocoGui: failed to acquire lock");
+			return undefined;
+		}
+		const msg = MsgLocoGuiMx.fromTrain(MsgMode.CMD, train);
+		this.locoGuiMxQ = new Query(msg.header, this.onLocoGuiMxExtended);
+		this.locoGuiMxQ.log = ((msg) => {this.mx10.log.next(msg)});
+		this.locoGuiMxQ.tx = ((header) => {
+			// this.mx10.log.next('setGui query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.locoGuiMxQ.match = ((msg) => {
+			this.mx10.log.next('setGui query rx: ' + JSON.stringify(msg));
+			return (msg.locoNid() === train.nid);
+		})
+		const rv = await this.locoGuiMxQ.run();
+		// this.mx10.log.next("mx10.setLocoGui.rv: " + JSON.stringify(rv));
+		this.locoGuiMxQ.unlock();
+		this.locoGuiMxQ = undefined;
+		return rv;
 	}
 
 	locoGuiMXExtended(NID: number) {
-		this.mx10.sendData(
-			0x17,
-			0x28,
-			[
-				{value: this.mx10.mx10NID, length: 2},
-				{value: NID, length: 2},
-				{value: 0, length: 2},
-			],
-			0b00,
-		);
+		this.mx10.sendData(0x17, 0x28, [
+			{value: this.mx10.mx10NID, length: 2},
+			{value: NID, length: 2},
+			{value: 0, length: 2},
+		], 0b00);
 	}
 
 	locoSpeedTapExtended(NID: number) {
-		this.mx10.sendData(
-			0x17,
-			0x19,
-			[
-				{value: this.mx10.mx10NID, length: 2},
-				{value: NID, length: 2},
-				{value: 0, length: 1},
-				{value: 0, length: 1},
-			],
-			0b00,
-		);
+		this.mx10.sendData(0x17, 0x19, [
+			{value: this.mx10.mx10NID, length: 2},
+			{value: NID, length: 2},
+			{value: 0, length: 1},
+			{value: 0, length: 1},
+		], 0b00);
 	}
 
 	mxUpdateFnIcons(destructuredBuffer: ZcanDataArray) {
 		this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
 	}
 
-	parse(
-		size: number,
-		command: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
+	{
 		switch (command) {
 			case 0x08:
 				this.parseDataValueExtended(size, mode, nid, buffer);
@@ -156,12 +164,7 @@ export default class LanDataGroup
 	}
 
 	// 0x17.0x08
-	private parseDataValueExtended(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseDataValueExtended(size: number, mode: number, nid: number, buffer: Buffer) {
 		if (this.onDataValueExtended.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const deletedFlag = buffer.readUInt8(4);
@@ -169,9 +172,7 @@ export default class LanDataGroup
 			const trackMode = buffer.readUInt8(24);
 			const functionCount = buffer.readUInt8(25);
 			const speedAndDirection = buffer.readUInt16LE(44);
-
-			const {speedStep, forward, eastWest, emergencyStop} =
-				parseSpeed(speedAndDirection);
+			const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
 			const operatingMode = getOperatingMode(trackMode);
 			const flags = this.parseFlags(flagsBytes);
 
@@ -184,10 +185,8 @@ export default class LanDataGroup
 			}
 
 			const specialFunc = buffer.readUInt32LE(50);
-
 			const shuntingFunction = specialFunc & shuntingFunctionB;
 			const manualMode = (specialFunc & manualModeB) >> 4;
-
 			const deleted = this.parseDeleted(deletedFlag);
 
 			this.onDataValueExtended.next({
@@ -208,12 +207,7 @@ export default class LanDataGroup
 	}
 
 	// 0x17.0x10
-	private parseDataNameExtended(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseDataNameExtended(size: number, mode: number, nid: number, buffer: Buffer) {
 		if (this.onDataNameExtended.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const type = buffer.readUInt16LE(2);
@@ -221,138 +215,101 @@ export default class LanDataGroup
 			const val2 = buffer.readUInt32LE(8);
 			const val3 = buffer.readUInt32LE(12);
 			const name = ExtendedASCII.byte2str(buffer.subarray(16, 63));
-
-			this.onDataNameExtended.next({
-				nid: NID,
-				name,
-			});
+			this.onDataNameExtended.next({nid: NID, name});
 		}
 	}
 
 	// 0x17.0x27
-	private parseLocoGuiExtended(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
-		if (this.onLocoGuiExtended.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const SubID = buffer.readUInt16LE(2);
-			const vehicleGroup = buffer.readUInt16LE(4);
-
-			const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
-			const imageId = buffer.readUInt16LE(38);
-			const tacho = buffer.readUInt16LE(40);
-			const speedFwd = buffer.readUInt16LE(42);
-			const speedRev = buffer.readUInt16LE(44);
-			const speedRange = buffer.readUInt16LE(46);
-			const driveType = buffer.readUInt16LE(48);
-			const era = buffer.readUInt16LE(50);
-			const countryCode = buffer.readUInt16LE(52);
-
-			// reading 64 bytes of functions
-			const functions = Array<TrainFunction>();
-			for (let i = 0; i < 32; i++) {
-				const icon = buffer.readUInt16LE(54 + i * 2);
-				const iconString =
-					icon === 0 ? String(i).padStart(2, '0') : String(icon);
-				functions.push({
-					mode: FunctionMode.switch,
-					active: false,
-					icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-				});
-			}
-			this.onLocoGuiExtended.next({
-				nid: NID,
-				subId: SubID,
-				name: name,
-				group: vehicleGroup,
-				image: imageId == 0 ? undefined : imageId.toString(),
-				tacho: tacho.toString(),
-				speedFwd: speedFwd,
-				speedRev: speedRev,
-				speedRange: speedRange,
-				operatingMode: OperatingMode.UNKNOWN,
-				driveType: driveType,
-				era: this.parseEra(era),
-				countryCode: countryCode,
-				functions,
-			});
+	private parseLocoGuiExtended(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onLocoGuiExtended.observed || mode === MsgMode.REQ)
+			return;
+		try {
+			this.mx10.log.next("parseLocoGuiExtended: nid = " + nid + ", buffer = " + JSON.stringify(buffer)
+				+ ", length = " + buffer.length);
+			const msg = MsgLocoGui.fromBuffer(mode, buffer);
+			this.mx10.log.next("parseLocoGuiExtended: msg = " + JSON.stringify(msg));
+			// this.mx10.log.next("parseLocoGuiExtended: train = " + JSON.stringify(msg.toTrain()));
+			this.onLocoGuiExtended.next(msg);
+		} catch(err: any) {
+			this.mx10.log.next("parseLocoGuiExtended: " + err.message);
 		}
 	}
 
 	// 0x17.0x28
-	private parseLocoGuiMXExtended(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
-		if (this.onLocoGuiMXExtended.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const name = ExtendedASCII.byte2str(buffer.subarray(12, 38));
-			const imageId = buffer.readUInt16LE(44);
+	private parseLocoGuiMXExtended(size: number, mode: number, nid: number, buffer: Buffer) {
+		if (!this.onLocoGuiMxExtended.observed)
+			return;
 
-			// TODO: after documentation
-			// const SubID = buffer.readUInt16LE(2);
-			// const vehicleGroup = buffer.readUInt16LE(4);
-
-			// const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
-			// const imageId = buffer.readUInt16LE(38);
-			// const tacho = buffer.readUInt16LE(40);
-			// const speedFwd = buffer.readUInt16LE(42);
-			// const speedRev = buffer.readUInt16LE(44);
-			// const speedRange = buffer.readUInt16LE(46);
-			// const driveType = buffer.readUInt16LE(48);
-			// const era = buffer.readUInt16LE(50);
-			// const countryCode = buffer.readUInt16LE(52);
-
-			// reading 64 bytes of functions
-			const functions = Array<TrainFunction>();
-			for (let i = 0; i < 32; i++) {
-				const icon = buffer.readUInt16LE(68 + i * 2);
-				const iconString =
-					icon === 0 ? String(i).padStart(2, '0') : String(icon);
-				functions.push({
-					mode: FunctionMode.switch,
-					active: false,
-					icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-				});
-			}
-
-			//TODO: implement rest
-			this.onLocoGuiMXExtended.next({
-				nid: NID,
-				// subId: SubID,
-				name: name,
-				// group: vehicleGroup,
-				image: imageId == 0 ? undefined : imageId.toString(),
-				// tacho: tacho.toString(),
-				// speedFwd: speedFwd,
-				// speedRev: speedRev,
-				// speedRange: speedRange,
-				// operatingMode: OperatingMode.UNKNOWN,
-				// driveType: driveType,
-				// era: this.parseEra(era),
-				// countryCode: countryCode,
-				destructuredBuffer: this.destructureBuffer(buffer),
-				functions,
-			});
+		try {
+			this.mx10.log.next("parseLocoGuiMxExtended: nid = " + nid + ", buffer = " + JSON.stringify(buffer)
+				+ ", length = " + buffer.length);
+			
+			const msg = MsgLocoGuiMx.fromBuffer(mode, buffer);
+			// this.mx10.log.next("parseLocoGuiMxExtended: msg = " + JSON.stringify(msg));
+			// this.mx10.log.next("parseLocoGuiExtended: train = " + JSON.stringify(msg.toTrain()));
+			this.onLocoGuiMxExtended.next(msg);
+		} catch(err: any) {
+			this.mx10.log.next("parseLocoGuiMxExtended: " + err.message);
 		}
+		return;
+
+		// const NID = buffer.readUInt16LE(0);
+		// const name = ExtendedASCII.byte2str(buffer.subarray(12, 38));
+		// const imageId = buffer.readUInt16LE(44);
+
+		// // TODO: after documentation
+		// // const SubID = buffer.readUInt16LE(2);
+		// // const vehicleGroup = buffer.readUInt16LE(4);
+
+		// // const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
+		// // const imageId = buffer.readUInt16LE(38);
+		// // const tacho = buffer.readUInt16LE(40);
+		// // const speedFwd = buffer.readUInt16LE(42);
+		// // const speedRev = buffer.readUInt16LE(44);
+		// // const speedRange = buffer.readUInt16LE(46);
+		// // const driveType = buffer.readUInt16LE(48);
+		// // const era = buffer.readUInt16LE(50);
+		// // const countryCode = buffer.readUInt16LE(52);
+
+		// // reading 64 bytes of functions
+		// const functions = Array<TrainFunction>();
+		// for (let i = 0; i < 32; i++) {
+		// 	const icon = buffer.readUInt16LE(68 + i * 2);
+		// 	const iconString =
+		// 		icon === 0 ? String(i).padStart(2, '0') : String(icon);
+		// 	functions.push({
+		// 		mode: FunctionMode.switch,
+		// 		active: false,
+		// 		icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
+		// 	});
+		// }
+
+		// //TODO: implement rest
+		// this.onLocoGuiMXExtended.next({
+		// 	nid: NID,
+		// 	// subId: SubID,
+		// 	name: name,
+		// 	// group: vehicleGroup,
+		// 	image: imageId == 0 ? undefined : imageId.toString(),
+		// 	// tacho: tacho.toString(),
+		// 	// speedFwd: speedFwd,
+		// 	// speedRev: speedRev,
+		// 	// speedRange: speedRange,
+		// 	// operatingMode: OperatingMode.UNKNOWN,
+		// 	// driveType: driveType,
+		// 	// era: this.parseEra(era),
+		// 	// countryCode: countryCode,
+		// 	destructuredBuffer: this.destructureBuffer(buffer),
+		// 	functions,
+		// });
 	}
 
 	// 0x17.0x19
-	private parseLocoSpeedTabExtended(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseLocoSpeedTabExtended(size: number, mode: number, nid: number, buffer: Buffer) {
 		if (this.onLocoSpeedTabExtended.observed) {
 			const setDBat6 = 5;
 			const bufferLengthOfSpeedTab = 24;
-
 			const SrcID = buffer.readUInt16LE(0);
 			const NID = buffer.readUInt16LE(2);
 			const DBat6 = buffer.readUInt8(5);
@@ -398,27 +355,6 @@ export default class LanDataGroup
 				dbat6: DBat6,
 				speedTab: locoSpeedTab,
 			});
-		}
-	}
-
-	private parseEra(eraString: number) {
-		switch (eraString & 0xf0) {
-			case 0x10:
-				return 'I';
-			case 0x20:
-				return 'II';
-			case 0x30:
-				return 'III';
-			case 0x40:
-				return 'IV';
-			case 0x50:
-				return 'V';
-			case 0x60:
-				return 'VI';
-			case 0x70:
-				return 'VII';
-			default:
-				return '';
 		}
 	}
 

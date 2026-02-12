@@ -52,12 +52,14 @@ export enum ExternalController {
 /**
  * Enum describing how given functions behaves.
  */
-export enum FunctionMode {
-	/** Functions needs to be pressed down and held to remain activated */
-	momentary,
-
-	/** Functions works as standart toggle switch */
-	switch,
+export enum FunctionMode
+{
+	/** Function works as toggle switch */
+	switch = 0x0000,
+	/** Function needs to be pressed down and held to remain activated */
+	momentary = 0x4000,
+	/** Function is automatically released after a given timeout */
+	timeout = 0x8000,
 }
 
 export enum SystemStateMode {

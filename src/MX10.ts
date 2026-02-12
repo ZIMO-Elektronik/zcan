@@ -80,6 +80,8 @@ export default class MX10
 		this.debugCommunication = debugCommunication;
 		this.reconnectionTime = connectionTimeout * 4;
 
+		Message.log = (msg: string) => {this.log.next(msg);};
+
 		const pingIntervalMs = 1000;
 
 		if (this.connected) {
@@ -194,15 +196,15 @@ export default class MX10
 			} else {
 				switch (element.length) {
 					case 1:
-						buffer.writeUInt8(element.value, offset);
+						buffer.writeUInt8(element.value as number, offset);
 						offset += 1;
 						break;
 					case 2:
-						buffer.writeUInt16LE(element.value, offset);
+						buffer.writeUInt16LE(element.value as number, offset);
 						offset += 2;
 						break;
 					case 4:
-						buffer.writeUInt32LE(element.value, offset);
+						buffer.writeUInt32LE(element.value as number, offset);
 						offset += 4;
 						break;
 					default:

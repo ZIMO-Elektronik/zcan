@@ -18,4 +18,4 @@ all:
 		fi; \
 	done; \
 	npm run build
-
+	yalc push || true

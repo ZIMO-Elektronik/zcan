@@ -17,12 +17,8 @@ import {
 	ForwardOrReverse,
 	AccessoryMode,
 	FxModeType,
-	ModInfoType,
-	MsgMode,
-	MaxSpeedSteps,
 } from './enums';
-import {Header, Message, ZcanDataArray} from './communication';
-import { Subject } from 'rxjs';
+import {ZcanDataArray} from './communication';
 
 
 export interface Train {
@@ -34,12 +30,12 @@ export interface Train {
 	externalController?: ExternalController;
 	operatingMode: OperatingMode;
 	tacho: string;
-	speedFwd: number;
-	speedRev: number;
-	speedRange: number;
-	driveType: number;
-	era: string;
-	countryCode: number;
+	vMaxFwd: number;
+	vMaxRev: number;
+	vRank: number;
+	engine: number;
+	epoch: string;
+	country: number;
 	functions: TrainFunction[];
 }
 

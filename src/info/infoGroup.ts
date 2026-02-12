@@ -29,35 +29,26 @@ export default class InfoGroup
 			this.mx10.log.next("mx10.getModuleInfo: failed to acquire lock");
 			return undefined;
 		}
-
 		this.modInfoQ = new Query(MsgModInfo.header(MsgMode.REQ, nid), this.onModuleInfoChange);
-		this.modInfoQ.log = ((msg) => {
-			this.mx10.log.next(msg);
-		});
+		this.modInfoQ.log = ((msg) => {this.mx10.log.next(msg);});
 		this.modInfoQ.tx = ((header) => {
 			const msg = new MsgModInfo(header, type);
-			this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
+			// this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.modInfoQ.match = ((msg) => {
-			this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
+			// this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
 			return (msg.type() === type);
 		})
-		// this.modInfoQ.subscribe();
 		const rv = await this.modInfoQ.run();
-		this.mx10.log.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
+		// this.mx10.log.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
 		this.modInfoQ.unlock();
 		this.modInfoQ = undefined;
 		return rv;
 	}
 
-	parse(
-		size: number,
-		command: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
+	{
 		switch (command) {
 			case 0x05:
 				this.parseBidiInfo(size, mode, nid, buffer);
@@ -71,12 +62,8 @@ export default class InfoGroup
 		}
 	}
 
-	private parseModuleInfo(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseModuleInfo(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onModuleInfoChange.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const type = buffer.readUInt16LE(2);
@@ -87,35 +74,31 @@ export default class InfoGroup
 		}
 	}
 
-	private parseBidiInfo(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
-		if (this.onBidiInfoChange.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const type = buffer.readUInt16LE(2);
-			const info = buffer.readUInt32LE(4);
-
-			let data: BidiDirectionData | number = {};
-			switch (type) {
-				case BidiType.DIRECTION:
-					data.direction = this.parseEastWest(info);
-					data.directionChange = this.parseDirChange(info);
-					data.directionConfirm = this.parseDirectionConfirm(info);
-					data.forwardOrReverse = this.parseFwdRev(info);
-					break;
-				default:
-					data = info;
-			}
-
-			this.onBidiInfoChange.next({
-				nid: NID,
-				type,
-				data,
-			});
+	private parseBidiInfo(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if (!this.onBidiInfoChange.observed)
+			return;
+	
+		const NID = buffer.readUInt16LE(0);
+		const type = buffer.readUInt16LE(2);
+		const info = buffer.readUInt32LE(4);
+		let data: BidiDirectionData | number = {};
+		
+		switch (type) {
+			case BidiType.DIRECTION:
+				data.direction = this.parseEastWest(info);
+				data.directionChange = this.parseDirChange(info);
+				data.directionConfirm = this.parseDirectionConfirm(info);
+				data.forwardOrReverse = this.parseFwdRev(info);
+				break;
+			default:
+				data = info;
 		}
+		this.onBidiInfoChange.next({
+			nid: NID,
+			type,
+			data,
+		});
 	}
 
 	private parseEastWest(data: number) {

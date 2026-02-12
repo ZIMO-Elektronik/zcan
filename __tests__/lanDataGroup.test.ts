@@ -5,8 +5,8 @@ import {
   DataValueExtendedData,
   LocoGuiMXExtended,
   LocoSpeedTabExtended,
+  MsgLocoGui,
   OperatingMode,
-  Train,
 } from '../src';
 
 describe('LAN Data group tests - 0x17', () => {
@@ -23,12 +23,12 @@ describe('LAN Data group tests - 0x17', () => {
   it('0x27 - Loco GUI eXtended', async () => {
     mx10.lanData.locoGuiExtended(211);
 
-    const train: Train = await firstValueFrom(mx10.lanData.onLocoGuiExtended);
+    const train: MsgLocoGui = await firstValueFrom(mx10.lanData.onLocoGuiExtended);
     expect(train).toBeDefined();
-    expect(train.nid).toBe(211);
-    // expect(train.name).toMatch('import loco');
-    expect(train.era).toBeDefined();
-    expect(train.functions).toBeDefined();
+    expect(train.locoNid()).toBe(211);
+    // expect(train.name()).toMatch('import loco');
+    expect(train.epoch()).toBeDefined();
+    expect(train.fxIcons()).toBeDefined();
   });
 
   it('0x28 - Loco GUI MX eXtended', async () => {
