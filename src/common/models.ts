@@ -1,28 +1,7 @@
-import { Ranger } from './utils';
-import {
-	NameType,
-	Direction,
-	ExternalController,
-	FunctionMode,
-	OperatingMode,
-	SystemStateMode,
-	TrackMode,
-	ImageType,
-	FxConfigType,
-	SpecialFunctionMode,
-	Manual,
-	DirectionDefault,
-	ShuntingFunction,
-	BidiType,
-	ForwardOrReverse,
-	AccessoryMode,
-	FxModeType,
-	ModInfoType,
-	MsgMode,
-	MaxSpeedSteps,
+import {NameType, Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode, TrackMode, ImageType,
+	FxConfigType, SpecialFunctionMode, Manual, ShuntingFunction, BidiType, ForwardOrReverse, AccessoryMode, FxModeType,
 } from './enums';
-import {Header, Message, ZcanDataArray} from './communication';
-import { Subject } from 'rxjs';
+import {ZcanDataArray} from './communication';
 
 
 export interface Train {
@@ -176,7 +155,7 @@ export interface CallFunctionData {
 export interface CallSpecialFunctionData {
 	nid: number;
 	specialFunctionMode: SpecialFunctionMode;
-	specialFunctionState: Manual | ShuntingFunction | DirectionDefault;
+	specialFunctionState: Manual | ShuntingFunction | Direction;
 }
 
 export interface SystemStateData {

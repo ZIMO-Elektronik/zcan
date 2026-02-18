@@ -1,15 +1,8 @@
 import {createMX10, initConnection} from './util';
 import {afterAll, beforeAll, expect, it} from '@jest/globals';
 import {firstValueFrom} from 'rxjs';
-import {delay} from '../src/internal/utils';
-import {
-  Direction,
-  DirectionDefault,
-  Manual,
-  OperatingMode,
-  ShuntingFunction,
-  SpecialFunctionMode,
-} from '../src';
+import {delay} from '../src/common/utils';
+import {Direction, Manual, OperatingMode, ShuntingFunction, SpecialFunctionMode} from '../src';
 
 describe('Vehicle group tests - 0x02', () => {
   const mx10 = createMX10();
@@ -37,13 +30,11 @@ describe('Vehicle group tests - 0x02', () => {
   });
 
   it('0x01 - retrieve operating mode', async () => {
-    mx10.vehicle.vehicleMode(3);
-    const data = await firstValueFrom(mx10.vehicle.onVehicleMode);
+    mx10.vehicle.getVehicleMode(3);
+    const msg = await firstValueFrom(mx10.vehicle.onVehicleMode);
 
-    expect(data.nid).toBe(3);
-
-    expect(data.nid).toBe(3);
-    expect(data.operatingMode).toBe(OperatingMode.DCC);
+    expect(msg.trainNid()).toBe(3);
+    expect(msg.operatingMode()).toBe(OperatingMode.DCC);
   });
 
   test.each([
@@ -55,16 +46,14 @@ describe('Vehicle group tests - 0x02', () => {
     '0x02 - change speed and directions',
     async ({nid, speedStep, forward, eastWest}) => {
       mx10.vehicle.changeSpeed(nid, speedStep, forward, eastWest);
-
-      const data = await firstValueFrom(mx10.vehicle.onChangeSpeed);
-      expect(data).toBeDefined();
-      expect(data.nid).toBe(nid);
-      expect(data.divisor).toBe(0);
-
-      expect(data.speedStep).toBe(speedStep);
-      expect(data.forward).toBe(forward);
-      expect(data.eastWest).toBe(eastWest);
-      expect(data.emergencyStop).toBe(false);
+      const msg = await firstValueFrom(mx10.vehicle.onVehicleSpeed);
+      expect(msg).toBeDefined();
+      expect(msg.trainNid()).toBe(nid);
+      expect(msg.divisor).toBe(0);
+      expect(msg.speedStep).toBe(speedStep);
+      expect(msg.forward).toBe(forward);
+      expect(msg.eastWest).toBe(eastWest);
+      expect(msg.emergencyStop).toBe(false);
     },
   );
 
@@ -114,7 +103,7 @@ describe('Vehicle group tests - 0x02', () => {
     {mode: SpecialFunctionMode.SHUNTING_FUNCTION, state: ShuntingFunction.AZBZ},
     {
       mode: SpecialFunctionMode.DIRECTION_DEFAULT,
-      state: DirectionDefault.DIRECTION_WEST,
+      state: Direction.WEST,
     },
   ])('0x05 - special function mode', async ({mode, state}) => {
     mx10.vehicle.changeSpecialFunction(testNID, mode, state);

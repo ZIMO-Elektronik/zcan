@@ -143,12 +143,6 @@ export enum ShuntingFunction {
 	HALF = 2,
 }
 
-export enum DirectionDefault {
-	NO_CHANGE = 0,
-	DIRECTION_EAST = 1,
-	DIRECTION_WEST = 2,
-}
-
 export enum BidiType {
 	RAILCOM_STATISTICS = 0x0000,
 	SPEED_REPORT = 0x0100,
