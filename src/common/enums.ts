@@ -53,11 +53,10 @@ export enum ExternalController {
  * Enum describing how given functions behaves.
  */
 export enum FunctionMode {
+	/** Function works as standard toggle switch */
+	switch = 0,
 	/** Functions needs to be pressed down and held to remain activated */
-	momentary,
-
-	/** Functions works as standart toggle switch */
-	switch,
+    moment = 0x4000,
 }
 
 export enum SystemStateMode {
@@ -124,6 +123,7 @@ export enum FxConfigType {
 	TIME_VALUE_2 = 0x05,
 	ICON = 0x10,
 	SOUND = 0x11,
+	ANY = 0x20
 }
 
 export enum SpecialFunctionMode {
