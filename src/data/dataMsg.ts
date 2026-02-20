@@ -3,6 +3,26 @@ import { Header, Message } from "../common/communication";
 import { MsgMode } from "../common/enums";
 
 
+export class MsgGroupCount extends Message
+{
+    public static header(mode: MsgMode, nid: number): Header
+    {return {group: 0x7, cmd: 0x0, mode: mode, nid: nid}}
+
+    constructor(header: Header, group?: number, count?: number)
+    {
+        super(header);
+        if(group !== undefined)
+            super.push({value: group, length: 2});
+        // super.push({value: groupNid, length: 2});
+        if(count !== undefined)
+            super.push({value: count, length: 2});
+    }
+
+    group() {return this.data.length ? this.data[0].value as number : this.header.nid;}
+    count() {return this.data.length > 1 ? this.data[1].value as number : 0;}
+}
+
+
 export class MsgItemsByIndexReq extends Message
 {
     public static header(mode: MsgMode, nid: number): Header

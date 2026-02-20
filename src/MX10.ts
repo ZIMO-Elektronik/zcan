@@ -229,22 +229,31 @@ export default class MX10
 
 	private readRawData(message: Buffer)
 	{
+		if(message.byteLength < 8)
+			return;
 		const size = message.readUInt16LE(0);
-		if(size < 8)
-			return;
-		const nid = message.readUInt16LE(6);
-		if(this.mx10NID && nid !== this.mx10NID)
-			return;
 		const group = message.readUInt8(4);
 		const commandAndMode = message.readUInt8(5);
 		const command = commandAndMode >> 2;
 		const mode = commandAndMode & 0x03;
+		const nid = message.readUInt16LE(6);
+		// this.log.next('rx: ' + JSON.stringify(message));
 		if(!this.mx10NID && (group !== 0x1a || command !== 0x06 || mode !== MsgMode.ACK))
 			return;
+		if(this.mx10NID && nid !== this.mx10NID) {
+			if((nid >> 8 !== 0xc0)) {
+				if(!(group === 0xa && command === 0 && mode === MsgMode.EVT))
+					this.log.next('Not from MX10: ' + JSON.stringify(message));
+			}
+			// else
+			// 	this.log.next('This packet is not from our MX10: ' + JSON.stringify(message));
+			return;
+		}
+		// this.log.next('MX10 >> ' + JSON.stringify(message));
 		
 		const buffer = message.slice(8); //Remove first 8 bytes; left only with data
 
-		this.log.next(JSON.stringify(message));
+		// this.log.next(JSON.stringify(message));
 		this.printReadout(group, command, mode, nid, size, buffer, false);
 
 		switch (group) {

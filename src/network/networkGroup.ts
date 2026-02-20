@@ -15,35 +15,23 @@ export default class NetworkGroup
 	private mx10: MX10;
 	pingTimeout: NodeJS.Timeout | null = null;
 
-	constructor(mx10: MX10) {
+	constructor(mx10: MX10)
+	{
 		this.mx10 = mx10;
 	}
 
-	ping(mode = 0b10) {
-		this.mx10.sendData(
-			0x0a,
-			0x00,
-			[
-				{
-					value: this.mx10.mx10NID,
-					length: 2,
-				},
-			],
-			mode,
-		);
+	ping(mode = 0b10)
+	{
+		this.mx10.sendData(0x0a, 0x00, [{value: this.mx10.mx10NID, length: 2}], mode);
 	}
 
-	portClose() {
+	portClose()
+	{
 		this.mx10.sendData(0x0a, 0x07, [{value: this.mx10.myNID, length: 2}], 0b01);
 	}
 
-	parse(
-		size: number,
-		command: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
+	{
 		switch (command) {
 			case 0x00:
 				this.pingResponse(size, mode, nid, buffer);
@@ -52,43 +40,42 @@ export default class NetworkGroup
 	}
 
 	// 0x0A.0x00
-	pingResponse(size: number, mode: number, nid: number, _buffer: Buffer) {
-		if (this.onPingResponse.observed) {
-			if (size === 8) {
-				// TODO IMPLEMENT DETAIL READOUT
+	pingResponse(size: number, mode: number, nid: number, _buffer: Buffer)
+	{
+		if(!this.onPingResponse.observed)
+			return;
+	
+		if (size === 8) {
+			// TODO IMPLEMENT DETAIL READOUT
 
-				if (!this.mx10.mx10NID) {
-					this.mx10.mx10NID = nid;
-				}
-				this.mx10.connected = true;
-
-				// TODO reconnect when uuid has changed
-				// const uuid = buffer.readUInt32LE(0);
-
-				this.mx10.reconnectLogic();
-
-				if (this.pingTimeout) {
-					clearTimeout(this.pingTimeout);
-				}
-
-				this.pingTimeout = setTimeout(() => {
-					this.mx10.connected = false;
-					this.onPingResponse.next({
-						connected: this.mx10.connected,
-					});
-					// eslint-disable-next-line no-console
-					console.log('No ping for 2 seconds, disconnected');
-				}, 2000);
-			} else {
-				throw new Error(
-					'LENGTH ERROR: readCmdGrp_0x0A-0x0A, read length as: ' +
-						size.toString(),
-				);
+			if (!this.mx10.mx10NID) {
+				this.mx10.mx10NID = nid;
 			}
+			this.mx10.connected = true;
 
-			this.onPingResponse.next({
-				connected: this.mx10.connected,
-			});
+			// TODO reconnect when uuid has changed
+			// const uuid = buffer.readUInt32LE(0);
+
+			this.mx10.reconnectLogic();
+
+			if (this.pingTimeout)
+				clearTimeout(this.pingTimeout);
+
+			this.pingTimeout = setTimeout(() => {
+				this.mx10.connected = false;
+				this.onPingResponse.next({
+					connected: this.mx10.connected,
+				});
+				// eslint-disable-next-line no-console
+				console.log('No ping for 2 seconds, disconnected');
+			}, 2000);
+		} else {
+			throw new Error(
+				'LENGTH ERROR: readCmdGrp_0x0A-0x0A, read length as: ' +
+					size.toString(),
+			);
 		}
+
+		this.onPingResponse.next({connected: this.mx10.connected});
 	}
 }

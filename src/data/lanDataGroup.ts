@@ -1,16 +1,8 @@
 // 0x17
 import MX10 from '../MX10';
 import {FunctionMode, FxConfigType, getOperatingMode, OperatingMode} from '../common/enums';
-import {
-	DataNameExtendedData,
-	DataValueExtendedData,
-	LocoGuiMXExtended,
-	LocoSpeedTabExtended,
-	SpeedTabData,
-	Train,
-	TrainFlags,
-	TrainFunction,
-} from '../common/models';
+import {DataNameExtendedData, DataValueExtendedData, LocoGuiMXExtended, LocoSpeedTabExtended, SpeedTabData,
+	Train, TrainFlags, TrainFunction} from '../common/models';
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';

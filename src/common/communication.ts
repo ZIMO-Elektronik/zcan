@@ -98,15 +98,15 @@ export class Query<T extends Message>
 
 	async lock(millis: number = 500): Promise<boolean>
 	{
-			let centis = Math.abs(millis) / 10;
-			while(this.mutex && centis)
-			{
-				await delay(10);
-				if(!centis--)
-					return false;
-			}
-			this.mutex = true;
-			return true;
+		let centis = Math.abs(millis) / 10;
+		while(this.mutex && centis)
+		{
+			await delay(10);
+			if(!centis--)
+				return false;
+		}
+		this.mutex = true;
+		return true;
 	}
 
 	unlock()
@@ -114,13 +114,13 @@ export class Query<T extends Message>
 		this.mutex = false;
 	}
 
-	subscribe()
+	subscribe(matchNid: boolean = true)
 	{
 		this.rx = this.subject.subscribe((msg: T) =>
 		{
 			if(msg.header.mode < MsgMode.EVT)
 				return;
-			if(msg.header.nid !== this.header.nid)
+			if(matchNid && msg.header.nid !== this.header.nid)
 				return;
 			//this.log('query.run.rx: ' + JSON.stringify(msg));
 			if(!this.match(msg))

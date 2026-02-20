@@ -2,10 +2,12 @@
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {Subject} from 'rxjs';
-import {RemoveLocomotiveData, DataNameExtended, DataNameValue1, GroupCountData,
+import {RemoveLocomotiveData, DataNameExtended, DataNameValue1,
 	ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData} from '../common/models';
-import {FxConfigType, FxModeType, ImageType, NameType} from '../common/enums';
+import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
 import ExtendedASCII from '../common/extendedAscii';
+import { MsgGroupCount } from './dataMsg';
+import { Query } from '../docs_entrypoint';
 
 /**
  *
@@ -13,7 +15,7 @@ import ExtendedASCII from '../common/extendedAscii';
  */
 export default class DataGroup
 {
-	public readonly onGroupCount = new Subject<GroupCountData>();
+	public readonly onGroupCount = new Subject<MsgGroupCount>();
 	public readonly onListItemsByIndex = new Subject<ItemListByIndexData>();
 	public readonly onListItemsByNID = new Subject<ItemListByNidData>();
 	public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
@@ -22,20 +24,39 @@ export default class DataGroup
 	public readonly onItemFxConfig = new Subject<ItemFxConfig>();
 	public readonly onDataNameExtended = new Subject<DataNameExtended>();
 
+	private groupCountQ: Query<MsgGroupCount> | undefined = undefined;
+
 	private mx10: MX10;
-	// private fxModeRequest: Query<ItemFxMode> | undefined = undefined;
 
 	constructor(mx10: MX10)
 	{
 		this.mx10 = mx10;
 	}
 
-	groupCount(objType = 0x0000)
+	async groupCount(groupNid = 0): Promise<MsgGroupCount | undefined>
 	{
-		this.mx10.sendData(0x07, 0x00, [
-			{value: this.mx10.mx10NID, length: 2},
-			{value: objType, length: 2},
-		], 0b00);
+		if(this.groupCountQ !== undefined && !await this.groupCountQ.lock()) {
+			this.mx10.log.next("mx10.groupCount: failed to acquire lock");
+			return undefined;
+		}
+		this.groupCountQ = new Query(MsgGroupCount.header(MsgMode.REQ, this.mx10.mx10NID), this.onGroupCount);
+		this.groupCountQ.log = ((msg) => {
+			this.mx10.log.next(msg);
+		});
+		this.groupCountQ.tx = ((header) => {
+			const msg = new MsgGroupCount(header, groupNid);
+			this.mx10.log.next('groupCount query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.groupCountQ.match = ((msg) => {
+			this.mx10.log.next('groupCount query rx: ' + JSON.stringify(msg));
+			return (msg.group() === groupNid);
+		})
+		const rv = await this.groupCountQ.run();
+		this.mx10.log.next("mx10.groupCount.rv: " + JSON.stringify(rv));
+		this.groupCountQ.unlock();
+		this.groupCountQ = undefined;
+		return rv;
 	}
 
 	listItemsByIndex(groupNID: number, index: number)
@@ -119,12 +140,15 @@ export default class DataGroup
 		switch (command)
 		{
 			case 0x00:
+				this.mx10.log.next('parseGroupCount: ' + JSON.stringify(buffer));
 				this.parseGroupCount(size, mode, nid, buffer);
 				break;
 			case 0x01:
+				this.mx10.log.next('parseItemListByIndex: ' + JSON.stringify(buffer));
 				this.parseItemListByIndex(size, mode, nid, buffer);
 				break;
 			case 0x02:
+				this.mx10.log.next('parseItemListByNid: ' + JSON.stringify(buffer));
 				this.parseItemListByNid(size, mode, nid, buffer);
 				break;
 			case 0x12:
@@ -152,9 +176,9 @@ export default class DataGroup
 	{
 		if(!this.onGroupCount.observed)
 			return;
-		const objectType = buffer.readUInt16LE(0);
-		const number = buffer.readUInt16LE(2);
-		this.onGroupCount.next({objectType, number});
+		const group = buffer.readUInt16LE(0);
+		const count = buffer.readUInt16LE(2);
+		this.onGroupCount.next(new MsgGroupCount(MsgGroupCount.header(mode, nid), group, count));
 	}
 
 	// 0x07.0x01
