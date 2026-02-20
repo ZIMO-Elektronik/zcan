@@ -3,6 +3,9 @@ import {Subject} from 'rxjs';
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {PingResponseExtended} from '../common/models';
+import { Query } from '../docs_entrypoint';
+import { MsgPortClose } from './networkMsg';
+import { MsgMode } from '../common/enums';
 
 /**
  *
@@ -11,6 +14,9 @@ import {PingResponseExtended} from '../common/models';
 export default class NetworkGroup
 {
 	public readonly onPingResponse = new Subject<PingResponseExtended>();
+	public readonly onPortClose = new Subject<MsgPortClose>();
+
+	private portCloseQ: Query<MsgPortClose> | undefined = undefined;
 
 	private mx10: MX10;
 	pingTimeout: NodeJS.Timeout | null = null;
@@ -25,9 +31,33 @@ export default class NetworkGroup
 		this.mx10.sendData(0x0a, 0x00, [{value: this.mx10.mx10NID, length: 2}], mode);
 	}
 
-	portClose()
+	async portClose()
 	{
+		// if(this.portCloseQ !== undefined && !await this.portCloseQ.lock()) {
+		// 	this.mx10.log.next("mx10.portClose: failed to acquire lock");
+		// 	return undefined;
+		// }
+		// this.portCloseQ = new Query(MsgPortClose.header(MsgMode.CMD, this.mx10.mx10NID), this.onPortClose);
+		// this.portCloseQ.log = ((msg) => {
+		// 	this.mx10.log.next(msg);
+		// });
+		// this.portCloseQ.tx = ((header) => {
+		// 	const msg = new MsgPortClose(header, this.mx10.myNID);
+		// 	this.mx10.log.next('portClose query tx: ' + JSON.stringify(msg));
+		// 	this.mx10.sendMsg(msg, true);
+		// });
+		// this.portCloseQ.match = ((msg) => {
+		// 	this.mx10.log.next('portClose query rx: ' + JSON.stringify(msg));
+		// 	return true;
+		// });
+		// this.portCloseQ.subscribe(false);
+		// const rv = await this.portCloseQ.run();
+		// this.mx10.log.next("mx10.portClose.rv: " + JSON.stringify(rv));
+		// this.portCloseQ.unlock();
+		// this.portCloseQ = undefined;
+		// return rv;
 		this.mx10.sendData(0x0a, 0x07, [{value: this.mx10.myNID, length: 2}], 0b01);
+		this.mx10.mx10NID = 0;
 	}
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)

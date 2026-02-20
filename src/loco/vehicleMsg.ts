@@ -37,7 +37,7 @@ export class MsgVehicleMode extends Message
 	}
 
 	rxDelay(millis: number) {MsgVehicleMode.rxTiming.set(millis)}
-	trainNid(): number {return this.header.nid}
+	trainNid(): number {return this.header.nid || 0}
 
 	mode(): number[] | undefined
 	{
@@ -77,7 +77,7 @@ export class MsgVehicleSpeed extends Message
 	}
 
 	rxDelay(millis: number) {MsgVehicleSpeed.rxTiming.set(millis)}
-	trainNid(): number {return this.header.nid}
+	trainNid(): number {return this.header.nid || 0}
 	divisor(): number {return this.data[1].value as number;}
 	speedStep(): number {return (this.data[0].value as number) & speedBites____;}
 	direction(): boolean {return ((this.data[0].value as number) & directionBites) === directionBites;}

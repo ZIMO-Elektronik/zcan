@@ -67,18 +67,23 @@ export default class MX10
 	private outgoingPort = 14520;
 	private lastPing = 0;
 	private interval: NodeJS.Timeout | undefined = undefined;
+	private clientName: string;
+	private clientId: number;
 
 	private readonly nidGeneratorFunction: NIDGenerator;
 	private readonly debugCommunication: boolean;
 	private readonly reconnectionTime: number = 0;
 
 
-	constructor(nidGeneratorFunction: NIDGenerator, connectionTimeout = 1000, debugCommunication = false)
+	constructor(nidGeneratorFunction: NIDGenerator, clientName: string, clientId: number,
+		connectionTimeout = 1000, debugCommunication = false)
 	{
 		this.nidGeneratorFunction = nidGeneratorFunction;
 		this.connectionTimeout = connectionTimeout;
 		this.debugCommunication = debugCommunication;
 		this.reconnectionTime = connectionTimeout * 4;
+		this.clientName = clientName;
+		this.clientId = clientId;
 
 		const pingIntervalMs = 1000;
 
@@ -99,10 +104,9 @@ export default class MX10
 		this.incomingPort = incomingPort;
 		this.outgoingPort = outgoingPort;
 
-		if (this.mx10Socket == null) {
-			const socket = (this.mx10Socket = createSocketFunction({
-				type: 'udp4',
-			}) as Socket);
+		if (this.mx10Socket == null)
+		{
+			const socket = (this.mx10Socket = createSocketFunction({type: 'udp4'}) as Socket);
 
 			await new Promise((resolve) => {
 				socket.bind(incomingPort, () => {
@@ -112,11 +116,15 @@ export default class MX10
 
 			this.mx10Socket.on('message', this.readRawData.bind(this));
 			this.myNID = await this.nidGeneratorFunction();
-			this.lanNetwork.portOpen();
+			const ack = await this.lanNetwork.portOpen(this.clientName, this.clientId);
+			if(ack) {
+				this.mx10NID = ack.header.nid || 0;
+				this.connected = true;
+			}
 			await delay(this.connectionTimeout);
 
 			if (!this.connected) {
-				this.closeSocket();
+				await this.closeSocket();
 				// throw new Error('mx10.connection.timeout');
 				throw new Error('mx10.connection.not_connected');
 			}
@@ -136,7 +144,9 @@ export default class MX10
 					// eslint-disable-next-line no-console
 					console.log('Reconnecting...');
 					this.network.portClose();
-					this.lanNetwork.portOpen();
+					this.connected = false;
+					this.mx10NID = 0;
+					this.lanNetwork.portOpen(this.clientName, this.clientId);
 					this.network.ping(0b00);
 				}
 			}, this.reconnectionTime);
@@ -144,11 +154,13 @@ export default class MX10
 		this.lastPing = date;
 	}
 
-	closeSocket(callMx10: boolean = true)
+	async closeSocket(callMx10: boolean = true)
 	{
 		if (this.mx10Socket != null) {
 			if (this.connected && callMx10) {
-				this.network.portClose();
+				await this.network.portClose();
+				this.connected = false;
+				this.mx10NID = 0;
 			}
 			this.mx10Socket?.close();
 			this.mx10Socket = null;
@@ -156,11 +168,11 @@ export default class MX10
 		}
 	}
 
-	sendMsg(msg: Message)
+	sendMsg(msg: Message, force = false)
 	{
 		const buffer = msg.udp(this.myNID);
 		this.log.next("mx10.sendMsg: " + JSON.stringify(buffer));
-		this.send(buffer, false);
+		this.send(buffer, force);
 	}
 
 	sendData(group: number, cmd: number, data: ZcanDataArray = [], mode = MsgMode.CMD, nid = this.myNID, force = false)

@@ -9,7 +9,7 @@ export type Header = {
 	group: number,
 	cmd: number,
 	mode: MsgMode,
-	nid: number,
+	nid: number | undefined,
 }
 
 export type ZcanData = {
@@ -48,9 +48,11 @@ export class Message
 		buffer.writeUInt8(this.header.group, 4);
 		buffer.writeUInt8(cmd_md, 5);
 		buffer.writeUInt16LE(ownNid, 6);
-		buffer.writeUInt16LE(this.header.nid, 8);
-
-		let offset = 10;
+		let offset = 8;
+		if(this.header.nid !== undefined && this.header.nid !== ownNid) {
+			buffer.writeUInt16LE(this.header.nid, offset);
+			offset += 2;
+		}
 
 		this.data.forEach((element) => {
 			if (typeof element.value === 'string') {
