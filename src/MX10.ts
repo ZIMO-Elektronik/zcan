@@ -230,13 +230,21 @@ export default class MX10
 	private readRawData(message: Buffer)
 	{
 		const size = message.readUInt16LE(0);
+		if(size < 8)
+			return;
+		const nid = message.readUInt16LE(6);
+		if(this.mx10NID && nid !== this.mx10NID)
+			return;
 		const group = message.readUInt8(4);
 		const commandAndMode = message.readUInt8(5);
 		const command = commandAndMode >> 2;
 		const mode = commandAndMode & 0x03;
-		const nid = message.readUInt16LE(6);
+		if(!this.mx10NID && (group !== 0x1a || command !== 0x06 || mode !== MsgMode.ACK))
+			return;
+		
 		const buffer = message.slice(8); //Remove first 8 bytes; left only with data
 
+		this.log.next(JSON.stringify(message));
 		this.printReadout(group, command, mode, nid, size, buffer, false);
 
 		switch (group) {

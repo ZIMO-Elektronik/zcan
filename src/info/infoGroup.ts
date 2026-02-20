@@ -19,7 +19,8 @@ export default class InfoGroup
 
 	private modInfoQ: Query<MsgModInfo> | undefined = undefined;
 
-	constructor(mx10: MX10) {
+	constructor(mx10: MX10)
+	{
 		this.mx10 = mx10;
 	}
 
@@ -51,13 +52,8 @@ export default class InfoGroup
 		return rv;
 	}
 
-	parse(
-		size: number,
-		command: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
+	{
 		switch (command) {
 			case 0x05:
 				this.parseBidiInfo(size, mode, nid, buffer);
@@ -71,12 +67,8 @@ export default class InfoGroup
 		}
 	}
 
-	private parseModuleInfo(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
+	private parseModuleInfo(size: number, mode: number, nid: number, buffer: Buffer)
+	{
 		if (this.onModuleInfoChange.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const type = buffer.readUInt16LE(2);
@@ -87,57 +79,50 @@ export default class InfoGroup
 		}
 	}
 
-	private parseBidiInfo(
-		size: number,
-		mode: number,
-		nid: number,
-		buffer: Buffer,
-	) {
-		if (this.onBidiInfoChange.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const type = buffer.readUInt16LE(2);
-			const info = buffer.readUInt32LE(4);
+	private parseBidiInfo(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onBidiInfoChange.observed)
+			return;
 
-			let data: BidiDirectionData | number = {};
-			switch (type) {
-				case BidiType.DIRECTION:
-					data.direction = this.parseEastWest(info);
-					data.directionChange = this.parseDirChange(info);
-					data.directionConfirm = this.parseDirectionConfirm(info);
-					data.forwardOrReverse = this.parseFwdRev(info);
-					break;
-				default:
-					data = info;
-			}
+		const NID = buffer.readUInt16LE(0);
+		const type = buffer.readUInt16LE(2);
+		const info = buffer.readUInt32LE(4);
 
-			this.onBidiInfoChange.next({
-				nid: NID,
-				type,
-				data,
-			});
+		let data: BidiDirectionData | number = {};
+		switch (type) {
+			case BidiType.DIRECTION:
+				data.direction = this.parseEastWest(info);
+				data.directionChange = this.parseDirChange(info);
+				data.directionConfirm = this.parseDirectionConfirm(info);
+				data.forwardOrReverse = this.parseFwdRev(info);
+				break;
+			default:
+				data = info;
 		}
+
+		this.onBidiInfoChange.next({nid: NID, type, data,});
 	}
 
-	private parseEastWest(data: number) {
-		if ((data & 0x02) == 0x02) {
+	private parseEastWest(data: number)
+	{
+		if ((data & 0x02) == 0x02)
 			return Direction.EAST;
-		} else {
-			return Direction.WEST;
-		}
+		return Direction.WEST;
 	}
 
-	private parseDirChange(data: number) {
+	private parseDirChange(data: number)
+	{
 		return (data & 0x04) == 0x04;
 	}
 
-	private parseFwdRev(data: number) {
-		if ((data & 0x01) == 0) {
+	private parseFwdRev(data: number)
+	{
+		if ((data & 0x01) == 0)
 			return ForwardOrReverse.REVERSE;
-		} else {
-			return ForwardOrReverse.FORWARD;
-		}
+		return ForwardOrReverse.FORWARD;
 	}
-	private parseDirectionConfirm(data: number) {
+	private parseDirectionConfirm(data: number)
+	{
 		return (data & 0x08) == 0x08;
 	}
 }
