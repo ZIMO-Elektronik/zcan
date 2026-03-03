@@ -248,14 +248,11 @@ export default class LanDataGroup
 
 		// reading 64 bytes of functions
 		const functions = Array<TrainFunction>();
-		for (let i = 0; i < 32; i++) {
+		for (let i = 0; i < 64; i++) {
 			const icon = buffer.readUInt16LE(68 + i * 2);
-			const iconString =
-				icon === 0 ? String(i).padStart(2, '0') : String(icon);
-			functions.push({
-				mode: FunctionMode.switch,
-				active: false,
-				icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
+			const fxMode = buffer.readUInt16LE(196 + i * 2) as FunctionMode;
+			const iconString = icon === 0 ? String(i).padStart(2, '0') : String(icon);
+			functions.push({mode: fxMode, active: false, icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
 			});
 		}
 
