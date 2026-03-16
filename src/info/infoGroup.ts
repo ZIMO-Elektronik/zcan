@@ -27,26 +27,26 @@ export default class InfoGroup
 	async getModuleInfo(nid: number, type: ModInfoType | number): Promise<MsgModInfo | undefined>
 	{
 		if(this.modInfoQ !== undefined && !await this.modInfoQ.lock()) {
-			this.mx10.log.next("mx10.getModuleInfo: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.getModuleInfo: failed to acquire lock");
 			return undefined;
 		}
 
 		this.modInfoQ = new Query(MsgModInfo.header(MsgMode.REQ, nid), this.onModuleInfoChange);
 		this.modInfoQ.log = ((msg) => {
-			this.mx10.log.next(msg);
+			this.mx10.logInfo.next(msg);
 		});
 		this.modInfoQ.tx = ((header) => {
 			const msg = new MsgModInfo(header, type);
-			this.mx10.log.next('mx10 query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('mx10 query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.modInfoQ.match = ((msg) => {
-			this.mx10.log.next('mx10 query rx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('mx10 query rx: ' + JSON.stringify(msg));
 			return (msg.type() === type);
 		})
 		// this.modInfoQ.subscribe();
 		const rv = await this.modInfoQ.run();
-		this.mx10.log.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
 		this.modInfoQ.unlock();
 		this.modInfoQ = undefined;
 		return rv;
@@ -62,8 +62,7 @@ export default class InfoGroup
 				this.parseModuleInfo(size, mode, nid, buffer);
 				break;
 			default:
-				// eslint-disable-next-line no-console
-				console.log('command not parsed: ' + command.toString());
+				this.mx10.logInfo.next('command not parsed: ' + command.toString());
 		}
 	}
 
@@ -74,7 +73,7 @@ export default class InfoGroup
 			const type = buffer.readUInt16LE(2);
 			const info = buffer.readUInt32LE(4);
 			const msg = new MsgModInfo(MsgModInfo.header(mode, NID), type, [{value: info, length: 4}]);
-			// this.mx10.log.next('onModuleInfoChange <- ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('onModuleInfoChange <- ' + JSON.stringify(msg));
 			this.onModuleInfoChange.next(msg);
 		}
 	}

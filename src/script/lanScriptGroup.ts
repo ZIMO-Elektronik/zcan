@@ -22,6 +22,6 @@ export default class LanZimoProgrammableScriptGroup
 		nid: number,
 		buffer: Buffer,
 	) {
-		// console.log('parse data group');
+		// this.mx10.logInfo.next('parse data group');
 	}
 }

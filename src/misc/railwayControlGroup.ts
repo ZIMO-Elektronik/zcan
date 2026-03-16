@@ -20,6 +20,6 @@ export default class RailwayControlGroup {
 		nid: number,
 		buffer: Buffer,
 	) {
-		// console.log('parse railway control group');
+		// this.mx10.logInfo.next('parse railway control group');
 	}
 }

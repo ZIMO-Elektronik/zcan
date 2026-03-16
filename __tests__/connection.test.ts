@@ -38,7 +38,7 @@ describe('High level tests', () => {
   });
 
   it("Error logger test", (done) => {
-    mx10.errors.subscribe((error: string) => {
+    mx10.logError.subscribe((error: string) => {
       expect(error).toBe('mx10.connection.not_connected')
       done();
     })

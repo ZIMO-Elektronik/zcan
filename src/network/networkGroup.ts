@@ -34,25 +34,25 @@ export default class NetworkGroup
 	async portClose()
 	{
 		// if(this.portCloseQ !== undefined && !await this.portCloseQ.lock()) {
-		// 	this.mx10.log.next("mx10.portClose: failed to acquire lock");
+		// 	this.mx10.logInfo.next("mx10.portClose: failed to acquire lock");
 		// 	return undefined;
 		// }
 		// this.portCloseQ = new Query(MsgPortClose.header(MsgMode.CMD, this.mx10.mx10NID), this.onPortClose);
 		// this.portCloseQ.log = ((msg) => {
-		// 	this.mx10.log.next(msg);
+		// 	this.mx10.logInfo.next(msg);
 		// });
 		// this.portCloseQ.tx = ((header) => {
 		// 	const msg = new MsgPortClose(header, this.mx10.myNID);
-		// 	this.mx10.log.next('portClose query tx: ' + JSON.stringify(msg));
+		// 	this.mx10.logInfo.next('portClose query tx: ' + JSON.stringify(msg));
 		// 	this.mx10.sendMsg(msg, true);
 		// });
 		// this.portCloseQ.match = ((msg) => {
-		// 	this.mx10.log.next('portClose query rx: ' + JSON.stringify(msg));
+		// 	this.mx10.logInfo.next('portClose query rx: ' + JSON.stringify(msg));
 		// 	return true;
 		// });
 		// this.portCloseQ.subscribe(false);
 		// const rv = await this.portCloseQ.run();
-		// this.mx10.log.next("mx10.portClose.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.portClose.rv: " + JSON.stringify(rv));
 		// this.portCloseQ.unlock();
 		// this.portCloseQ = undefined;
 		// return rv;
@@ -96,8 +96,7 @@ export default class NetworkGroup
 				this.onPingResponse.next({
 					connected: this.mx10.connected,
 				});
-				// eslint-disable-next-line no-console
-				console.log('No ping for 2 seconds, disconnected');
+				this.mx10.logInfo.next('No ping for 2 seconds, disconnected');
 			}, 2000);
 		} else {
 			throw new Error(

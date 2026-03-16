@@ -20,6 +20,6 @@ export default class FileControlGroup {
 		nid: number,
 		buffer: Buffer,
 	) {
-		// console.log('parse file control group');
+		// this.mx10.logInfo.next('parse file control group');
 	}
 }

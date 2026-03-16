@@ -24,7 +24,7 @@ export default class TrackCfgGroup
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
-		// this.mx10.log.next("parseTse: " + command + "." + mode + ":" + nid + " ... " + JSON.stringify(buffer));
+		// this.mx10.logInfo.next("parseTse: " + command + "." + mode + ":" + nid + " ... " + JSON.stringify(buffer));
 		switch (command) {
 			case 0x02: this.parseTseInfo(size, mode, nid, buffer); break;
 			case 0x08: this.parseTseProgRead(size, mode, nid, buffer); break;
@@ -62,7 +62,7 @@ export default class TrackCfgGroup
 		const NID = buffer.readUInt16LE(2);
 		const cfgNum = buffer.readUInt32LE(4);
 		const cvValue = buffer.readUInt16LE(8);
-		// this.mx10.log.next("parseTseProgRead: " + JSON.stringify(buffer));
+		// this.mx10.logInfo.next("parseTseProgRead: " + JSON.stringify(buffer));
 
 		this.onTseProgReadExtended.next(new MsgCvRead(MsgCvRead.header(mode, nid), NID, cfgNum, cvValue));
 	}
@@ -76,7 +76,7 @@ export default class TrackCfgGroup
 		const NID = buffer.readUInt16LE(0);
 		const cfgNum = buffer.readUInt32LE(2);
 		const cvValue = buffer.readUint8(6);
-		// this.mx10.log.next("parseTseProgWrite: " + JSON.stringify(buffer));
+		// this.mx10.logInfo.next("parseTseProgWrite: " + JSON.stringify(buffer));
 
 		this.onTseProgWriteExtended.next(new MsgCvWrite(MsgCvWrite.header(mode, nid), NID, cfgNum, cvValue));
 	}
@@ -126,13 +126,13 @@ export default class TrackCfgGroup
 	async getCv(trainNid: number, cvNum: number): Promise<MsgCvRead | undefined>
 	{
 		if(this.getCvQ !== undefined && !await this.getCvQ.lock()) {
-			this.mx10.log.next("mx10.getCv: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.getCv: failed to acquire lock");
 			return undefined;
 		}
 
 		this.getCvQ = new Query(MsgCvRead.header(MsgMode.CMD, this.mx10.mx10NID), this.onTseProgReadExtended);
 		this.getCvQ.log = ((msg) => {
-			this.mx10.log.next(msg);
+			this.mx10.logInfo.next(msg);
 		});
 		this.getCvQ.tx = ((header) => {
 			const msg = new MsgCvRead(header, trainNid, cvNum);
@@ -144,7 +144,7 @@ export default class TrackCfgGroup
 			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum);
 		})
 		const rv = await this.getCvQ.run();
-		this.mx10.log.next("mx10.getCv.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.getCv.rv: " + JSON.stringify(rv));
 		this.getCvQ.unlock();
 		this.getCvQ = undefined;
 		return rv;
@@ -153,25 +153,25 @@ export default class TrackCfgGroup
 	async setCv(trainNid: number, cvNum: number, cvVal: number): Promise<MsgCvWrite | undefined>
 	{
 		if(this.setCvQ !== undefined && !await this.setCvQ.lock()) {
-			this.mx10.log.next("mx10.setCv: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.setCv: failed to acquire lock");
 			return undefined;
 		}
 
 		this.setCvQ = new Query(MsgCvWrite.header(MsgMode.CMD, this.mx10.mx10NID), this.onTseProgWriteExtended);
 		this.setCvQ.log = ((msg) => {
-			this.mx10.log.next(msg);
+			this.mx10.logInfo.next(msg);
 		});
 		this.setCvQ.tx = ((header) => {
 			const msg = new MsgCvWrite(header, trainNid, cvNum, cvVal);
-			// this.mx10.log.next('cv write query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('cv write query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.setCvQ.match = ((msg) => {
-			// this.mx10.log.next('cv write query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('cv write query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum && msg.cvVal() === cvVal);
 		})
 		const rv = await this.setCvQ.run();
-		this.mx10.log.next("mx10.setCv.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.setCv.rv: " + JSON.stringify(rv));
 		this.setCvQ.unlock();
 		this.setCvQ = undefined;
 		return rv;
@@ -180,13 +180,13 @@ export default class TrackCfgGroup
 	async setCv16(trainNid: number, cvNum: number, cvVal: number): Promise<MsgCvWrite16 | undefined>
 	{
 		if(this.setCvQ !== undefined && !await this.setCvQ.lock()) {
-			this.mx10.log.next("mx10.setCv: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.setCv: failed to acquire lock");
 			return undefined;
 		}
 
 		this.setCvQ = new Query(MsgCvWrite16.header(MsgMode.CMD, this.mx10.mx10NID), this.onTseProgWrite16Extended);
 		this.setCvQ.log = ((msg) => {
-			this.mx10.log.next(msg);
+			this.mx10.logInfo.next(msg);
 		});
 		this.setCvQ.tx = ((header) => {
 			const msg = new MsgCvWrite16(header, trainNid, cvNum, cvVal);
@@ -198,7 +198,7 @@ export default class TrackCfgGroup
 			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum && msg.cvVal() === cvVal);
 		})
 		const rv = await this.setCvQ.run();
-		this.mx10.log.next("mx10.setCv.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.setCv.rv: " + JSON.stringify(rv));
 		this.setCvQ.unlock();
 		this.setCvQ = undefined;
 		return rv;

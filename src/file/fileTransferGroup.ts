@@ -20,6 +20,6 @@ parse(
 	nid: number,
 	buffer: Buffer,
 ) {
-	// console.log('parse file transfer group');
+	// this.mx10.logInfo.next('parse file transfer group');
 }
 }

@@ -1,13 +1,14 @@
 // 0x17
 import MX10 from '../MX10';
-import {FunctionMode, FxConfigType, getOperatingMode, OperatingMode} from '../common/enums';
+import {FunctionMode, FxConfigType, getOperatingMode, MsgMode, OperatingMode} from '../common/enums';
 import {DataNameExtendedData, DataValueExtendedData, LocoGuiMXExtended, LocoSpeedTabExtended, SpeedTabData,
 	Train, TrainFlags, TrainFunction} from '../common/models';
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
 import {manualModeB, shuntingFunctionB} from '../common/bites';
-import {ZcanDataArray} from '../common/communication';
+import {Query, ZcanDataArray} from '../common/communication';
+import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 
 /**
  *
@@ -15,11 +16,13 @@ import {ZcanDataArray} from '../common/communication';
  */
 export default class LanDataGroup
 {
-	public readonly onLocoGuiExtended = new Subject<Train>();
+	public readonly onLocoGuiExtended = new Subject<MsgLocoGuiRsp>();
 	public readonly onLocoGuiMXExtended = new Subject<LocoGuiMXExtended>();
 	public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
+
+	private locoGuiQ: Query<MsgLocoGuiRsp> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -79,14 +82,40 @@ export default class LanDataGroup
 		]);
 	}
 
-	locoGuiExtended(NID: number)
+	async locoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>
 	{
-		this.mx10.sendData(0x17, 0x27, [
-			{value: this.mx10.mx10NID, length: 2},
-			{value: NID, length: 2},
-			{value: 0, length: 2},
-		], 0b00);
+		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
+			this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
+			return undefined;
+		}
+		this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onLocoGuiExtended);
+		this.locoGuiQ.log = ((msg) => {
+			this.mx10.logInfo.next(msg);
+		});
+		this.locoGuiQ.tx = ((header) => {
+			const msg = new MsgLocoGuiReq(header, nid, 0);
+			this.mx10.logInfo.next('locoGuiExtended query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.locoGuiQ.match = ((msg) => {
+			this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
+			return (msg.locoNid() === nid);
+		})
+		const rv = await this.locoGuiQ.run();
+		this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
+		this.locoGuiQ.unlock();
+		this.locoGuiQ = undefined;
+		return rv;
 	}
+
+	// locoGuiExtended(NID: number)
+	// {
+	// 	this.mx10.sendData(0x17, 0x27, [
+	// 		{value: this.mx10.mx10NID, length: 2},
+	// 		{value: NID, length: 2},
+	// 		{value: 0, length: 2},
+	// 	], 0b00);
+	// }
 
 	locoGuiMXExtended(NID: number)
 	{
@@ -201,25 +230,35 @@ export default class LanDataGroup
 		const driveType = buffer.readUInt16LE(48);
 		const era = buffer.readUInt16LE(50);
 		const countryCode = buffer.readUInt16LE(52);
-
-		// reading 64 bytes of functions
-		const functions = Array<TrainFunction>();
+		const functions: number[] = [];
 		for (let i = 0; i < 32; i++) {
-			const icon = buffer.readUInt16LE(54 + i * 2);
-			const iconString =
-				icon === 0 ? String(i).padStart(2, '0') : String(icon);
-			functions.push({
-				mode: FunctionMode.switch,
-				active: false,
-				icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-			});
+			const fun = buffer.readUInt16LE(54 + 2*i);
+			functions.push(fun);
 		}
-		this.onLocoGuiExtended.next({nid: NID, subId: SubID, name: name, group: vehicleGroup,
-			image: imageId == 0 ? undefined : imageId.toString(), tacho: tacho.toString(),
-			speedFwd: speedFwd, speedRev: speedRev, speedRange: speedRange,
-			operatingMode: OperatingMode.UNKNOWN, driveType: driveType, era: this.parseEra(era),
-			countryCode: countryCode, functions,
-		});
+
+		const msg = new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, vehicleGroup, name, imageId, tacho, speedFwd, speedRev, speedRange,
+			driveType, era, countryCode, functions);
+		
+		this.onLocoGuiExtended.next(msg);
+
+		// // reading 64 bytes of functions
+		// const functions = Array<TrainFunction>();
+		// for (let i = 0; i < 32; i++) {
+		// 	const icon = buffer.readUInt16LE(54 + i * 2);
+		// 	const iconString =
+		// 		icon === 0 ? String(i).padStart(2, '0') : String(icon);
+		// 	functions.push({
+		// 		mode: FunctionMode.switch,
+		// 		active: false,
+		// 		icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
+		// 	});
+		// }
+		// this.onLocoGuiExtended.next({nid: NID, subId: SubID, name: name, group: vehicleGroup,
+		// 	image: imageId == 0 ? undefined : imageId.toString(), tacho: tacho.toString(),
+		// 	speedFwd: speedFwd, speedRev: speedRev, speedRange: speedRange,
+		// 	operatingMode: OperatingMode.UNKNOWN, driveType: driveType, era: this.parseEra(era),
+		// 	countryCode: countryCode, functions,
+		// });
 	}
 
 	// 0x17.0x28

@@ -21,6 +21,6 @@ export default class ZimoProgrammableScriptGroup
 		nid: number,
 		buffer: Buffer,
 	) {
-		// console.log('parse zcs group');
+		// this.mx10.logInfo.next('parse zcs group');
 	}
 }

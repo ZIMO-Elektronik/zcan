@@ -30,22 +30,22 @@ export default class VehicleGroup
 	async getVehicleMode(trainNid: number)
 	{
 		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
-			this.mx10.log.next("mx10.getVehicleMode: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.getVehicleMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgVehicleMode.header(MsgMode.REQ, trainNid), this.onVehicleMode);
-		this.modeQ.log = ((msg) => {this.mx10.log.next(msg)});
+		this.modeQ.log = ((msg) => {this.mx10.logInfo.next(msg)});
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgVehicleMode(header);
-			// this.mx10.log.next('mode query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.modeQ.match = ((msg) => {
-			// this.mx10.log.next('mode query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('mode query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.modeQ.run();
-		this.mx10.log.next("mx10.getVehicleMode.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.getVehicleMode.rv: " + JSON.stringify(rv));
 		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
@@ -53,24 +53,24 @@ export default class VehicleGroup
 
 	async setVehicleMode(trainNid: number, opMode: OperatingMode, speedSteps: MaxSpeedSteps)
 	{
-		MsgVehicleMode.log = (msg) => {this.mx10.log.next(msg)};
+		MsgVehicleMode.log = (msg) => {this.mx10.logInfo.next(msg)};
 		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
-			this.mx10.log.next("mx10.setVehicleMode: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.setVehicleMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgVehicleMode.header(MsgMode.CMD, trainNid), this.onVehicleMode);
-		this.modeQ.log = (msg) => {this.mx10.log.next(msg)};
+		this.modeQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgVehicleMode(header, {opMode, speedSteps});
-			this.mx10.log.next('mode query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.modeQ.match = ((msg) => {
-			this.mx10.log.next('mode query rx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('mode query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.modeQ.run(MsgVehicleMode.rxDelay());
-		this.mx10.log.next("mx10.setVehicleMode.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.setVehicleMode.rv: " + JSON.stringify(rv));
 		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
@@ -79,22 +79,22 @@ export default class VehicleGroup
 	async getVehicleSpeed(trainNid: number)
 	{
 		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
-			this.mx10.log.next("mx10.getVehicleSpeed: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.getVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
 		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.REQ, trainNid), this.onVehicleSpeed);
-		this.speedQ.log = ((msg) => {this.mx10.log.next(msg)});
+		this.speedQ.log = ((msg) => {this.mx10.logInfo.next(msg)});
 		this.speedQ.tx = ((header) => {
 			const msg = new MsgVehicleSpeed(header);
-			// this.mx10.log.next('speed query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('speed query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.speedQ.match = ((msg) => {
-			// this.mx10.log.next('speed query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.speedQ.run();
-		this.mx10.log.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
 		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
@@ -103,25 +103,25 @@ export default class VehicleGroup
 	async setVehicleSpeed(trainNid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
 		emergencyStop: boolean = false, eastWest: Direction = Direction.UNDEFINED)
 	{
-		MsgVehicleSpeed.log = (msg) => {this.mx10.log.next(msg)};
+		MsgVehicleSpeed.log = (msg) => {this.mx10.logInfo.next(msg)};
 		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
-			this.mx10.log.next("mx10.setVehicleSpeed: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.setVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
 		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.CMD, trainNid), this.onVehicleSpeed);
-		this.speedQ.log = (msg) => {this.mx10.log.next(msg)};
+		this.speedQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.speedQ.tx = ((header) => {
 			const speedAndDir= MsgVehicleSpeed.speedAndDir(speedStep, forward, emergencyStop, eastWest);
 			const msg = new MsgVehicleSpeed(header, speedAndDir, divisor);
-			this.mx10.log.next('speed query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('speed query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.speedQ.match = ((msg) => {
-			this.mx10.log.next('speed query rx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.speedQ.run(MsgVehicleSpeed.rxDelay());
-		this.mx10.log.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
 		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
@@ -177,7 +177,7 @@ export default class VehicleGroup
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
-		this.mx10.log.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
+		this.mx10.logInfo.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));
 		switch (command) {
 			case 0x00: this.parseVehicleState(size, mode, nid, buffer); break;
 			case 0x01: this.parseVehicleMode(size, mode, nid, buffer); break;
@@ -210,7 +210,7 @@ export default class VehicleGroup
 		if (this.onVehicleMode.observed) {
 			const NID = buffer.readUInt16LE(0);
 			const vMode = [buffer.readUInt8(2), buffer.readUInt8(3), buffer.readUInt8(4)];
-			this.mx10.log.next("parseVehicleMode: " + NID + " = " + JSON.stringify(vMode));
+			this.mx10.logInfo.next("parseVehicleMode: " + NID + " = " + JSON.stringify(vMode));
 			this.onVehicleMode.next(new MsgVehicleMode(MsgVehicleMode.header(mode, NID), vMode));
 		}
 	}
@@ -222,7 +222,7 @@ export default class VehicleGroup
 			return;
 
 		const msg = MsgVehicleSpeed.fromBuffer(mode, buffer);
-		this.mx10.log.next('parseVehicleSpeed: ' + JSON.stringify(msg));
+		this.mx10.logInfo.next('parseVehicleSpeed: ' + JSON.stringify(msg));
 		this.onVehicleSpeed.next(msg);
 
 

@@ -37,20 +37,20 @@ export default class LanNetworkGroup
 	async portOpen(clientName: string, clientId: number, comFlags = 0xffffffff): Promise<MsgPortOpen | undefined>
 	{
 		if(this.portOpenQ !== undefined && !await this.portOpenQ.lock()) {
-			this.mx10.log.next("mx10.portOpen: failed to acquire lock");
+			this.mx10.logInfo.next("mx10.portOpen: failed to acquire lock");
 			return undefined;
 		}
 		this.portOpenQ = new Query(MsgPortOpen.header(MsgMode.CMD, this.mx10.myNID), this.onPortOpen);
 		this.portOpenQ.log = ((msg) => {
-			this.mx10.log.next(msg);
+			this.mx10.logInfo.next(msg);
 		});
 		this.portOpenQ.tx = ((header) => {
 			const msg = new MsgPortOpen(header, clientId, comFlags, clientName);
-			this.mx10.log.next('portOpen query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('portOpen query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg, true);
 		});
 		this.portOpenQ.match = ((msg) => {
-			this.mx10.log.next('portOpen query rx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('portOpen query rx: ' + JSON.stringify(msg));
 			return (msg.clientId() === clientId);
 		});
 		this.portOpenQ.subscribe(false);
@@ -59,7 +59,7 @@ export default class LanNetworkGroup
 		// 	this.mx10.mx10NID = this.portOpenQ.header.nid || 0;
 		// 	this.mx10.connected = true;
 		// }
-		this.mx10.log.next("mx10.portOpen.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.portOpen.rv: " + JSON.stringify(rv));
 		this.portOpenQ.unlock();
 		this.portOpenQ = undefined;
 		return rv;
@@ -70,7 +70,7 @@ export default class LanNetworkGroup
 	{
 		switch (command) {
 			case 0x06:
-				this.mx10.log.next('parsePortOpen, nid = ' + nid + ', buf = ' + JSON.stringify(buffer))
+				this.mx10.logInfo.next('parsePortOpen, nid = ' + nid + ', buf = ' + JSON.stringify(buffer))
 				this.parsePortOpen(size, mode, nid, buffer);
 				break;
 			case 0x0e:

@@ -20,6 +20,6 @@ export default class PropertyConfigGroup {
 		nid: number,
 		buffer: Buffer,
 	) {
-		// console.log('parse property config group');
+		// this.mx10.logInfo.next('parse property config group');
 	}
 }

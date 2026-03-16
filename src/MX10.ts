@@ -58,8 +58,9 @@ export default class MX10
 	readonly lanNetwork = new LanNetworkGroup(this);
 	readonly lanZimoProgrammableScript = new LanZimoProgrammableScriptGroup(this);
 
-	readonly errors = new Subject<string>();
-	readonly log = new Subject<string>();
+	readonly logError = new Subject<string>();
+	readonly logWarning = new Subject<string>();
+	readonly logInfo = new Subject<string>();
 	readonly connectionTimeout: number;
 
 	private mx10Socket: Socket | null = null;
@@ -141,8 +142,7 @@ export default class MX10
 		if (this.interval === undefined) {
 			this.interval = setInterval(() => {
 				if (!this.connected) {
-					// eslint-disable-next-line no-console
-					console.log('Reconnecting...');
+					this.logInfo.next('Reconnecting...');
 					this.network.portClose();
 					this.connected = false;
 					this.mx10NID = 0;
@@ -171,14 +171,14 @@ export default class MX10
 	sendMsg(msg: Message, force = false)
 	{
 		const buffer = msg.udp(this.myNID);
-		this.log.next("mx10.sendMsg: " + JSON.stringify(buffer));
+		this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
 		this.send(buffer, force);
 	}
 
 	sendData(group: number, cmd: number, data: ZcanDataArray = [], mode = MsgMode.CMD, nid = this.myNID, force = false)
 	{
 		const buffer = this.formatData(group, cmd, mode, nid, data);
-		//this.log.next("mx10.sendData: " + JSON.stringify(buffer));
+		//this.logInfo.next("mx10.sendData: " + JSON.stringify(buffer));
 		this.send(buffer, force);
 	}
 
@@ -230,12 +230,12 @@ export default class MX10
 	private send(message: Buffer, force = false)
 	{
 		if(!this.connected && !force) {
-			this.errors.next('mx10.connection.not_connected');
+			this.logError.next('mx10.connection.not_connected');
 			return;
 		}
 		this.mx10Socket?.send(message, 0, message.length, this.outgoingPort, this.mx10IP, (err) => {
 			if (err && this.debugCommunication)
-				this.log.next(err.message);
+				this.logInfo.next(err.message);
 		});
 	}
 
@@ -249,23 +249,23 @@ export default class MX10
 		const command = commandAndMode >> 2;
 		const mode = commandAndMode & 0x03;
 		const nid = message.readUInt16LE(6);
-		// this.log.next('rx: ' + JSON.stringify(message));
+		// this.logInfo.next('rx: ' + JSON.stringify(message));
 		if(!this.mx10NID && (group !== 0x1a || command !== 0x06 || mode !== MsgMode.ACK))
 			return;
 		if(this.mx10NID && nid !== this.mx10NID) {
 			if((nid >> 8 !== 0xc0)) {
 				if(!(group === 0xa && command === 0 && mode === MsgMode.EVT))
-					this.log.next('Not from MX10: ' + JSON.stringify(message));
+					this.logInfo.next('Not from MX10: ' + JSON.stringify(message));
 			}
 			// else
-			// 	this.log.next('This packet is not from our MX10: ' + JSON.stringify(message));
+			// 	this.logInfo.next('This packet is not from our MX10: ' + JSON.stringify(message));
 			return;
 		}
 		// this.log.next('MX10 >> ' + JSON.stringify(message));
 		
 		const buffer = message.slice(8); //Remove first 8 bytes; left only with data
 
-		// this.log.next(JSON.stringify(message));
+		// this.logInfo.next(JSON.stringify(message));
 		this.printReadout(group, command, mode, nid, size, buffer, false);
 
 		switch (group) {
@@ -338,7 +338,7 @@ export default class MX10
 			const f = (obj: unknown) => Number(obj).toString(16);
 			const arrow = '|' + (out ? '→' : '←');
 			const msg = `${arrow} g=${f(group)} c=${f(cmd)} m=${f(mode)} n=${f(nid)} l=${f(size,)} : ${data}`;
-			this.log.next(msg);
+			this.logInfo.next(msg);
 		}
 	}
 }
