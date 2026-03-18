@@ -230,7 +230,7 @@ export default class MX10
 	private send(message: Buffer, force = false)
 	{
 		if(!this.connected && !force) {
-			this.logError.next('mx10.connection.not_connected');
+			this.logError.next('.mx10.connection.not_connected');
 			return;
 		}
 		this.mx10Socket?.send(message, 0, message.length, this.outgoingPort, this.mx10IP, (err) => {
