@@ -231,6 +231,7 @@ export default class MX10
 	{
 		if(!this.connected && !force) {
 			this.logError.next('.mx10.connection.not_connected');
+			this.logInfo.next('unable to send ' + JSON.stringify(message));
 			return;
 		}
 		this.mx10Socket?.send(message, 0, message.length, this.outgoingPort, this.mx10IP, (err) => {
