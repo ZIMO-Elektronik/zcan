@@ -86,7 +86,7 @@ export default class NetworkGroup
 			// TODO reconnect when uuid has changed
 			// const uuid = buffer.readUInt32LE(0);
 
-			this.mx10.reconnectLogic();
+			// this.mx10.reconnectLogic();
 
 			if (this.pingTimeout)
 				clearTimeout(this.pingTimeout);

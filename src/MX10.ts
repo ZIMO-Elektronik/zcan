@@ -122,6 +122,7 @@ export default class MX10
 				this.mx10NID = ack.header.nid || 0;
 				this.connected = true;
 			}
+			this.connected = true;	// since subsequent portOpen cmd don't seem to be answered..
 			await delay(this.connectionTimeout);
 
 			if (!this.connected) {
