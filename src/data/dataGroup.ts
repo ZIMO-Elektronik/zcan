@@ -258,7 +258,7 @@ export default class DataGroup
 				this.parseDataNameExtended(size, mode, nid, buffer);
 				break;
 			default:
-				this.mx10.logInfo.next('command not parsed: ' + command.toString());
+				this.mx10.logInfo.next('dataGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
 	}
 

@@ -69,8 +69,7 @@ export default class AccessoryCommandGroup {
         this.parseAccessoryPin(size, mode, nid, buffer);
         break;
       default:
-        // eslint-disable-next-line no-console
-        console.warn('command not parsed: ' + command.toString());
+        this.mx10.logInfo.next('accessoryCommandGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
     }
   }
 

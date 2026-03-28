@@ -270,65 +270,72 @@ export default class MX10
 		// this.logInfo.next(JSON.stringify(message));
 		this.printReadout(group, command, mode, nid, size, buffer, false);
 
-		switch (group) {
-			case 0x00:
-				this.systemControl.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x01:
-				this.accessoryCommand.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x02:
-				this.vehicle.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x05:
-				this.trainControl.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x06:
-			case 0x16:
-				this.trackCfg.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x07:
-				this.data.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x08:
-				this.info.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x09:
-				this.propertyConfig.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x0a:
-				this.network.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x0b:
-				this.railwayControl.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x0c:
-				this.zimoProgrammableScript.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x0e:
-				this.fileControl.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x0f:
-				this.fileTransfer.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x12:
-				this.lanLocoState.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x17:
-				this.lanData.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x18:
-				this.lanInfo.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x1a:
-				this.lanNetwork.parse(size, command, mode, nid, buffer);
-				break;
-			case 0x1c:
-				this.lanZimoProgrammableScript.parse(size, command, mode, nid, buffer);
-				break;
-			default:
-				// eslint-disable-next-line no-console
-				// console.warn('Unknown group: ' + Number(group).toString(16));
+		try {
+			switch (group) {
+				case 0x00:
+					this.systemControl.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x01:
+					this.accessoryCommand.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x02:
+					this.vehicle.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x05:
+					this.trainControl.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x06:
+				case 0x16:
+					this.trackCfg.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x07:
+					this.data.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x08:
+					this.info.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x09:
+					this.propertyConfig.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x0a:
+					this.network.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x0b:
+					this.railwayControl.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x0c:
+					this.zimoProgrammableScript.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x0e:
+					this.fileControl.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x0f:
+					this.fileTransfer.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x12:
+					this.lanLocoState.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x17:
+					this.lanData.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x18:
+					this.lanInfo.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x1a:
+					this.lanNetwork.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x1c:
+					this.lanZimoProgrammableScript.parse(size, command, mode, nid, buffer);
+					break;
+				case 0x2f:
+					break;
+				default:
+					this.logInfo.next('Zcan group ' + group + ' not parsed: ' + JSON.stringify(message));
+			}
+		} catch(err: any) {
+			this.logError.next('failed to parse zcan message: ' + JSON.stringify(message));
+			if(err.message)
+				this.logError.next(err.message);
 		}
 	}
 

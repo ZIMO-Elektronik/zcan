@@ -77,8 +77,7 @@ export default class LanNetworkGroup
 				this.parseUnknownCommand(size, mode, nid, buffer);
 				break;
 			default:
-				// eslint-disable-next-line no-console
-				console.warn('command not parsed: ' + command.toString());
+				this.mx10.logInfo.next('lanNetworkGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
 	}
 

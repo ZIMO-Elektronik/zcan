@@ -62,7 +62,7 @@ export default class InfoGroup
 				this.parseModuleInfo(size, mode, nid, buffer);
 				break;
 			default:
-				this.mx10.logInfo.next('command not parsed: ' + command.toString());
+				this.mx10.logInfo.next('infoGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
 	}
 

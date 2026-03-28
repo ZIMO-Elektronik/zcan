@@ -17,12 +17,13 @@ import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 export default class LanDataGroup
 {
 	public readonly onLocoGuiExtended = new Subject<MsgLocoGuiRsp>();
-	public readonly onLocoGuiMXExtended = new Subject<LocoGuiMXExtended>();
+	// public readonly onOldLocoGuiExtended = new Subject<MsgOldLocoGuiRsp>();
 	public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
 	private locoGuiQ: Query<MsgLocoGuiRsp> | undefined = undefined;
+	// private oldLocoGuiQ: Query<MsgOldLocoGuiRsp> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -82,7 +83,7 @@ export default class LanDataGroup
 		]);
 	}
 
-	async locoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>
+	async getLocoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>
 	{
 		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
 			this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
@@ -98,15 +99,72 @@ export default class LanDataGroup
 			this.mx10.sendMsg(msg);
 		});
 		this.locoGuiQ.match = ((msg) => {
-			this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
 			return (msg.locoNid() === nid);
 		})
 		const rv = await this.locoGuiQ.run();
-		this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
 		this.locoGuiQ.unlock();
 		this.locoGuiQ = undefined;
 		return rv;
 	}
+
+	async setLocoGuiExtended(loco: Train): Promise<MsgLocoGuiRsp | undefined>
+	{
+		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
+			this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
+			return undefined;
+		}
+		this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.CMD, this.mx10.myNID), this.onLocoGuiExtended);
+		this.locoGuiQ.log = ((msg) => {
+			this.mx10.logInfo.next(msg);
+		});
+		this.locoGuiQ.tx = ((header) => {
+			const msg = new MsgLocoGuiRsp(header, loco.nid, loco.subId, 0, 0, loco.group, loco.name,
+				loco.image ? parseInt(loco.image) : 0, 0, parseInt(loco.tacho), 0, loco.speedFwd, loco.speedRev,
+				loco.speedRange, loco.driveType, parseInt(loco.era), loco.countryCode,
+				loco.functions.map(fun => fun.icon ? parseInt(fun.icon) : 0), loco.functions.map(fun => fun.mode)
+			);
+			// this.mx10.logInfo.next('locoGuiExtended query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.locoGuiQ.match = ((msg) => {
+			// this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
+			return (msg.locoNid() === loco.nid);
+		})
+		this.locoGuiQ.subscribe(false);
+		const rv = await this.locoGuiQ.run(40);
+		// this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
+		this.locoGuiQ.unlock();
+		this.locoGuiQ = undefined;
+		return rv;
+	}
+
+	// async oldLocoGuiExtended(nid: number): Promise<MsgOldLocoGuiRsp | undefined>
+	// {
+	// 	if(this.oldLocoGuiQ !== undefined && !await this.oldLocoGuiQ.lock()) {
+	// 		this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
+	// 		return undefined;
+	// 	}
+	// 	this.oldLocoGuiQ = new Query(MsgOldLocoGuiReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onOldLocoGuiExtended);
+	// 	this.oldLocoGuiQ.log = ((msg) => {
+	// 		this.mx10.logInfo.next(msg);
+	// 	});
+	// 	this.oldLocoGuiQ.tx = ((header) => {
+	// 		const msg = new MsgOldLocoGuiReq(header, nid, 0);
+	// 		this.mx10.logInfo.next('locoGuiExtended query tx: ' + JSON.stringify(msg));
+	// 		this.mx10.sendMsg(msg);
+	// 	});
+	// 	this.oldLocoGuiQ.match = ((msg) => {
+	// 		this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
+	// 		return (msg.locoNid() === nid);
+	// 	})
+	// 	const rv = await this.oldLocoGuiQ.run();
+	// 	this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
+	// 	this.oldLocoGuiQ.unlock();
+	// 	this.oldLocoGuiQ = undefined;
+	// 	return rv;
+	// }
 
 	// locoGuiExtended(NID: number)
 	// {
@@ -117,14 +175,14 @@ export default class LanDataGroup
 	// 	], 0b00);
 	// }
 
-	locoGuiMXExtended(NID: number)
-	{
-		this.mx10.sendData(0x17,0x28, [
-			{value: this.mx10.mx10NID, length: 2},
-			{value: NID, length: 2},
-			{value: 0, length: 2},
-		], 0b00);
-	}
+	// locoGuiMXExtended(NID: number)
+	// {
+	// 	this.mx10.sendData(0x17,0x28, [
+	// 		{value: this.mx10.mx10NID, length: 2},
+	// 		{value: NID, length: 2},
+	// 		{value: 0, length: 2},
+	// 	], 0b00);
+	// }
 
 	locoSpeedTapExtended(NID: number)
 	{
@@ -136,10 +194,10 @@ export default class LanDataGroup
 		], 0b00);
 	}
 
-	mxUpdateFnIcons(destructuredBuffer: ZcanDataArray)
-	{
-		this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
-	}
+	// mxUpdateFnIcons(destructuredBuffer: ZcanDataArray)
+	// {
+	// 	this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
+	// }
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
@@ -151,15 +209,17 @@ export default class LanDataGroup
 			case 0x10:
 				this.parseDataNameExtended(size, mode, nid, buffer);
 				break;
-			case 0x27:
-				this.parseLocoGuiExtended(size, mode, nid, buffer);
-				break;
+			// case 0x27:
+			// 	this.parseOldLocoGuiExtended(size, mode, nid, buffer);
+			// 	break;
 			case 0x28:
-				this.parseLocoGuiMXExtended(size, mode, nid, buffer);
+				this.parseLocoGuiExtended(size, mode, nid, buffer);
 				break;
 			case 0x19:
 				this.parseLocoSpeedTabExtended(size, mode, nid, buffer);
 				break;
+			default:
+				this.mx10.logInfo.next('lanDataGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
 	}
 
@@ -213,91 +273,107 @@ export default class LanDataGroup
 	}
 
 	// 0x17.0x27
+	// private parseOldLocoGuiExtended(size: number, mode: number, nid: number, buffer: Buffer)
+	// {
+	// 	if(!this.onOldLocoGuiExtended.observed)
+	// 		return;
+
+	// 	const NID = buffer.readUInt16LE(0);
+	// 	const SubID = buffer.readUInt16LE(2);
+	// 	const vehicleGroup = buffer.readUInt16LE(4);
+	// 	const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
+	// 	const imageId = buffer.readUInt16LE(38);
+	// 	const tacho = buffer.readUInt16LE(40);
+	// 	const speedFwd = buffer.readUInt16LE(42);
+	// 	const speedRev = buffer.readUInt16LE(44);
+	// 	const speedRank = buffer.readUInt16LE(46);
+	// 	const driveType = buffer.readUInt16LE(48);
+	// 	const era = buffer.readUInt16LE(50);
+	// 	const countryCode = buffer.readUInt16LE(52);
+	// 	const functions: number[] = [];
+	// 	for (let i = 0; i < 32; i++) {
+	// 		const fun = buffer.readUInt16LE(54 + 2*i);
+	// 		functions.push(fun);
+	// 	}
+
+	// 	const msg = new MsgOldLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, vehicleGroup, name, imageId, tacho, speedFwd, speedRev, speedRank,
+	// 		driveType, era, countryCode, functions);
+		
+	// 	this.onOldLocoGuiExtended.next(msg);
+	// }
+
+	// 0x17.0x28
 	private parseLocoGuiExtended(size: number, mode: number, nid: number, buffer: Buffer)
 	{
 		if(!this.onLocoGuiExtended.observed)
 			return;
 
+		this.mx10.logInfo.next('parseLocoGuiExtended: ' + JSON.stringify(buffer));
+
 		const NID = buffer.readUInt16LE(0);
 		const SubID = buffer.readUInt16LE(2);
-		const vehicleGroup = buffer.readUInt16LE(4);
-		const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
-		const imageId = buffer.readUInt16LE(38);
-		const tacho = buffer.readUInt16LE(40);
-		const speedFwd = buffer.readUInt16LE(42);
-		const speedRev = buffer.readUInt16LE(44);
-		const speedRange = buffer.readUInt16LE(46);
-		const driveType = buffer.readUInt16LE(48);
-		const era = buffer.readUInt16LE(50);
-		const countryCode = buffer.readUInt16LE(52);
-		const functions: number[] = [];
-		for (let i = 0; i < 32; i++) {
-			const fun = buffer.readUInt16LE(54 + 2*i);
-			functions.push(fun);
+		const version = buffer.readUInt32LE(4);
+		const flags = buffer.readUInt16LE(8);
+		const group = buffer.readUInt16LE(10);
+		const name = ExtendedASCII.byte2str(buffer.subarray(12, 32));
+		const imageId = buffer.readUInt16LE(44);
+		const imageCrc = buffer.readUInt32LE(46);
+		const tachoId = buffer.readUInt16LE(50);
+		const tachoCrc = buffer.readUInt32LE(52);
+		const speedFwd = buffer.readUInt16LE(56);
+		const speedRev = buffer.readUInt16LE(58);
+		const speedRank = buffer.readUInt16LE(60);
+		const driveType = buffer.readUInt16LE(62);
+		const era = buffer.readUInt16LE(64);
+		const countryCode = buffer.readUInt16LE(66);
+		const funImg: number[] = [];
+		for (let i = 0; i < 64; i++) {
+			const fun = buffer.readUInt16LE(68 + 2*i);
+			funImg.push(fun);
+		}
+		const funMode: number[] = [];
+		for (let i = 0; i < 64; i++) {
+			const fun = buffer.readUInt16LE(132 + 2*i);
+			funMode.push(fun);
 		}
 
-		const msg = new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, vehicleGroup, name, imageId, tacho, speedFwd, speedRev, speedRange,
-			driveType, era, countryCode, functions);
+		const msg = new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, version, flags, group, name,
+			imageId, imageCrc, tachoId, tachoCrc, speedFwd, speedRev, speedRank, driveType, era, countryCode,
+			funImg, funMode);
 		
 		this.onLocoGuiExtended.next(msg);
 
+		// const NID = buffer.readUInt16LE(0);
+		// const name = ExtendedASCII.byte2str(buffer.subarray(12, 38));
+		// const imageId = buffer.readUInt16LE(44);
+
+		// // TODO: after documentation
+		// // const SubID = buffer.readUInt16LE(2);
+		// // const vehicleGroup = buffer.readUInt16LE(4);
+
+		// // const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
+		// // const imageId = buffer.readUInt16LE(38);
+		// // const tacho = buffer.readUInt16LE(40);
+		// // const speedFwd = buffer.readUInt16LE(42);
+		// // const speedRev = buffer.readUInt16LE(44);
+		// // const speedRange = buffer.readUInt16LE(46);
+		// // const driveType = buffer.readUInt16LE(48);
+		// // const era = buffer.readUInt16LE(50);
+		// // const countryCode = buffer.readUInt16LE(52);
+
 		// // reading 64 bytes of functions
 		// const functions = Array<TrainFunction>();
-		// for (let i = 0; i < 32; i++) {
-		// 	const icon = buffer.readUInt16LE(54 + i * 2);
-		// 	const iconString =
-		// 		icon === 0 ? String(i).padStart(2, '0') : String(icon);
-		// 	functions.push({
-		// 		mode: FunctionMode.switch,
-		// 		active: false,
-		// 		icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
+		// for (let i = 0; i < 64; i++) {
+		// 	const icon = buffer.readUInt16LE(68 + i * 2);
+		// 	const fxMode = buffer.readUInt16LE(196 + i * 2) as FunctionMode;
+		// 	const iconString = icon === 0 ? String(i).padStart(2, '0') : String(icon);
+		// 	functions.push({mode: fxMode, active: false, icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
 		// 	});
 		// }
-		// this.onLocoGuiExtended.next({nid: NID, subId: SubID, name: name, group: vehicleGroup,
-		// 	image: imageId == 0 ? undefined : imageId.toString(), tacho: tacho.toString(),
-		// 	speedFwd: speedFwd, speedRev: speedRev, speedRange: speedRange,
-		// 	operatingMode: OperatingMode.UNKNOWN, driveType: driveType, era: this.parseEra(era),
-		// 	countryCode: countryCode, functions,
-		// });
-	}
 
-	// 0x17.0x28
-	private parseLocoGuiMXExtended(size: number, mode: number, nid: number, buffer: Buffer)
-	{
-		if(!this.onLocoGuiMXExtended.observed)
-			return;
-
-		const NID = buffer.readUInt16LE(0);
-		const name = ExtendedASCII.byte2str(buffer.subarray(12, 38));
-		const imageId = buffer.readUInt16LE(44);
-
-		// TODO: after documentation
-		// const SubID = buffer.readUInt16LE(2);
-		// const vehicleGroup = buffer.readUInt16LE(4);
-
-		// const name = ExtendedASCII.byte2str(buffer.subarray(6, 32));
-		// const imageId = buffer.readUInt16LE(38);
-		// const tacho = buffer.readUInt16LE(40);
-		// const speedFwd = buffer.readUInt16LE(42);
-		// const speedRev = buffer.readUInt16LE(44);
-		// const speedRange = buffer.readUInt16LE(46);
-		// const driveType = buffer.readUInt16LE(48);
-		// const era = buffer.readUInt16LE(50);
-		// const countryCode = buffer.readUInt16LE(52);
-
-		// reading 64 bytes of functions
-		const functions = Array<TrainFunction>();
-		for (let i = 0; i < 64; i++) {
-			const icon = buffer.readUInt16LE(68 + i * 2);
-			const fxMode = buffer.readUInt16LE(196 + i * 2) as FunctionMode;
-			const iconString = icon === 0 ? String(i).padStart(2, '0') : String(icon);
-			functions.push({mode: fxMode, active: false, icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-			});
-		}
-
-		//TODO: implement rest
-		this.onLocoGuiMXExtended.next({nid: NID, name: name, image: imageId == 0 ? undefined : imageId.toString(),
-			destructuredBuffer: this.destructureBuffer(buffer), functions});
+		// //TODO: implement rest
+		// this.onLocoGuiMXExtended.next({nid: NID, name: name, image: imageId == 0 ? undefined : imageId.toString(),
+		// 	destructuredBuffer: this.destructureBuffer(buffer), functions});
 	}
 
 	// 0x17.0x19
