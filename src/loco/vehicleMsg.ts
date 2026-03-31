@@ -103,3 +103,63 @@ export class MsgVehicleSpeed extends Message
 		return speed | (direction << 10) | (eastWest << 12) | (stop << 15);
 	};
 }
+
+export class MsgVehicleState extends Message
+{
+	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x0, mode, nid}}
+	public static log: (msg: string) => void = () => {};
+
+	constructor(header: Header, flags?: number, lastTick?: number, lastNid?: number)
+	{
+		super(header);
+		if(header.mode === MsgMode.REQ)
+			return;
+		super.push({value: flags || 0, length: 2});
+		super.push({value: lastTick || 0, length: 2});
+		super.push({value: lastNid || 0, length: 2});
+	}
+	trainNid(): number {return this.header.nid || 0}
+	stateFlags(): number {return this.data[0].value as number;}
+	lastCtlTick(): number {return this.data[1].value as number;}
+	lastCtlNid(): number {return this.data[2].value as number;}
+
+	public static fromBuffer(mode: MsgMode, buffer: Buffer)
+	{
+		const nid = buffer.readUInt16LE(0);
+		const flags = buffer.readUInt16LE(2);
+		const lastTick = buffer.readUint16LE(4);
+		const lastNid = buffer.readUint16LE(6);
+		const msg = new MsgVehicleState(MsgVehicleState.header(mode, nid), flags, lastTick, lastNid);
+		return msg;
+	}
+}
+
+export class MsgVehicleLastCtl extends Message
+{
+	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x12, mode, nid}}
+	public static log: (msg: string) => void = () => {};
+
+	constructor(header: Header, type: number, lastNid?: number, lastTick?: number)
+	{
+		super(header);
+		super.push({value: type, length: 2});
+		if(header.mode === MsgMode.REQ)
+			return;
+		super.push({value: lastNid || 0, length: 2});
+		super.push({value: lastTick || 0, length: 2});
+	}
+	trainNid(): number {return this.header.nid || 0}
+	type(): number {return this.data[0].value as number;}
+	ctlNid(): number {return this.data[1].value as number;}
+	seconds(): number {return this.data[2].value as number;}
+
+	public static fromBuffer(mode: MsgMode, buffer: Buffer)
+	{
+		const nid = buffer.readUInt16LE(0);
+		const type = buffer.readUInt16LE(2);
+		const ctlNid = buffer.readUint16LE(4);
+		const seconds = buffer.readUint16LE(6);
+		const msg = new MsgVehicleLastCtl(MsgVehicleLastCtl.header(mode, nid), type, ctlNid, seconds);
+		return msg;
+	}
+}

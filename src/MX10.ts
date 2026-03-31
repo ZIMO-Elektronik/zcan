@@ -172,7 +172,7 @@ export default class MX10
 	sendMsg(msg: Message, force = false)
 	{
 		const buffer = msg.udp(this.myNID);
-		this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
+		// this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
 		this.send(buffer, force);
 	}
 

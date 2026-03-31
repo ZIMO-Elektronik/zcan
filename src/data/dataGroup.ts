@@ -46,15 +46,15 @@ export default class DataGroup
 		});
 		this.groupCountQ.tx = ((header) => {
 			const msg = new MsgGroupCount(header, groupNid);
-			this.mx10.logInfo.next('groupCount query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('groupCount query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.groupCountQ.match = ((msg) => {
-			this.mx10.logInfo.next('groupCount query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('groupCount query rx: ' + JSON.stringify(msg));
 			return (msg.group() === groupNid);
 		})
 		const rv = await this.groupCountQ.run();
-		this.mx10.logInfo.next("mx10.groupCount.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.groupCount.rv: " + JSON.stringify(rv));
 		this.groupCountQ.unlock();
 		this.groupCountQ = undefined;
 		return rv;
@@ -72,12 +72,12 @@ export default class DataGroup
 		});
 		this.byIndexQ.tx = ((header) => {
 			const msg = new MsgItemsByIndexReq(header, this.mx10.myNID, groupNid, index);
-			this.mx10.logInfo.next('listItemsByIndex query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('listItemsByIndex query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.byIndexQ.match = ((msg) => {
-			this.mx10.logInfo.next('listItemsByIndex query rx: ' + JSON.stringify(msg));
-			this.mx10.logInfo.next('listItemsByIndex query rx: ' + msg.itemNid());
+			// this.mx10.logInfo.next('listItemsByIndex query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('listItemsByIndex query rx: ' + msg.itemNid());
 			const nid = msg.itemNid();
 			switch(groupNid) {
 				case 0:
@@ -231,11 +231,11 @@ export default class DataGroup
 		switch (command)
 		{
 			case 0x00:
-				this.mx10.logInfo.next('parseGroupCount: ' + JSON.stringify(buffer));
+				// this.mx10.logInfo.next('parseGroupCount: ' + JSON.stringify(buffer));
 				this.parseGroupCount(size, mode, nid, buffer);
 				break;
 			case 0x01:
-				this.mx10.logInfo.next('parseItemListByIndex: ' + JSON.stringify(buffer));
+				// this.mx10.logInfo.next('parseItemListByIndex: ' + JSON.stringify(buffer));
 				this.parseItemListByIndex(size, mode, nid, buffer);
 				break;
 			case 0x02:

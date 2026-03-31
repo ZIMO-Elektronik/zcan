@@ -6,7 +6,7 @@ import {Direction, Manual, MaxSpeedSteps, MsgMode, OperatingMode, ShuntingFuncti
 } from '../common/enums';
 import {combineSpeedAndDirection} from '../common/speedUtils';
 import { Query } from '../common/communication';
-import { MsgVehicleMode, MsgVehicleSpeed } from './vehicleMsg';
+import { MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
 
 /**
  *
@@ -14,12 +14,15 @@ import { MsgVehicleMode, MsgVehicleSpeed } from './vehicleMsg';
  */
 export default class VehicleGroup
 {
-	public readonly onVehicleState = new Subject<VehicleStateData>();
+	public readonly onVehicleState = new Subject<MsgVehicleState>();
+	public readonly onVehicleLastCtl = new Subject<MsgVehicleLastCtl>();
 	public readonly onVehicleMode = new Subject<MsgVehicleMode>();
 	public readonly onVehicleSpeed = new Subject<MsgVehicleSpeed>();	// VehicleSpeedData
 	public readonly onCallFunction = new Subject<CallFunctionData>();
 	public readonly onCallSpecialFunction = new Subject<CallSpecialFunctionData>();
 
+	private stateQ: Query<MsgVehicleState> | undefined = undefined;
+	private lastCtlQ: Query<MsgVehicleLastCtl> | undefined = undefined;
 	private modeQ: Query<MsgVehicleMode> | undefined = undefined;
 	private speedQ: Query<MsgVehicleSpeed> | undefined = undefined;
 
@@ -27,7 +30,57 @@ export default class VehicleGroup
 
 	constructor(mx10: MX10) {this.mx10 = mx10}
 
-	async getVehicleMode(trainNid: number)
+	//0x02.0x00
+	async getState(nid: number)
+	{
+		if(this.stateQ !== undefined && !await this.stateQ.lock()) {
+			this.mx10.logInfo.next("mx10.getVehicleState: failed to acquire lock");
+			return undefined;
+		}
+		this.stateQ = new Query(MsgVehicleState.header(MsgMode.REQ, nid), this.onVehicleState);
+		this.stateQ.log = (msg) => {this.mx10.logInfo.next(msg)};
+		this.stateQ.tx = ((header) => {
+			const msg = new MsgVehicleState(header);
+			// this.mx10.logInfo.next('state query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.stateQ.match = ((msg) => {
+			// this.mx10.logInfo.next('state query rx: ' + JSON.stringify(msg));
+			return (msg.trainNid() === nid);
+		})
+		const rv = await this.stateQ.run();
+		// this.mx10.logInfo.next("mx10.getVehicleState.rv: " + JSON.stringify(rv));
+		this.stateQ.unlock();
+		this.stateQ = undefined;
+		return rv;
+	}
+
+	//0x02.0x00
+	async getLastController(locoNid: number, type: number = 1)
+	{
+		if(this.lastCtlQ !== undefined && !await this.lastCtlQ.lock()) {
+			this.mx10.logInfo.next("mx10.getVehicleLastCtl: failed to acquire lock");
+			return undefined;
+		}
+		this.lastCtlQ = new Query(MsgVehicleLastCtl.header(MsgMode.REQ, locoNid), this.onVehicleLastCtl);
+		this.lastCtlQ.log = (msg) => {this.mx10.logInfo.next(msg)};
+		this.lastCtlQ.tx = ((header) => {
+			const msg = new MsgVehicleLastCtl(header, type);
+			this.mx10.logInfo.next('lastCtl query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.lastCtlQ.match = ((msg) => {
+			this.mx10.logInfo.next('lastCtl query rx: ' + JSON.stringify(msg));
+			return (msg.trainNid() === locoNid);
+		})
+		const rv = await this.lastCtlQ.run();
+		this.mx10.logInfo.next("mx10.getVehicleLastCtl.rv: " + JSON.stringify(rv));
+		this.lastCtlQ.unlock();
+		this.lastCtlQ = undefined;
+		return rv;
+	}
+
+	async getMode(trainNid: number)
 	{
 		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
 			this.mx10.logInfo.next("mx10.getVehicleMode: failed to acquire lock");
@@ -45,13 +98,13 @@ export default class VehicleGroup
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.modeQ.run();
-		this.mx10.logInfo.next("mx10.getVehicleMode.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.getVehicleMode.rv: " + JSON.stringify(rv));
 		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}
 
-	async setVehicleMode(trainNid: number, opMode: OperatingMode, speedSteps: MaxSpeedSteps)
+	async setMode(trainNid: number, opMode: OperatingMode, speedSteps: MaxSpeedSteps)
 	{
 		MsgVehicleMode.log = (msg) => {this.mx10.logInfo.next(msg)};
 		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
@@ -62,21 +115,21 @@ export default class VehicleGroup
 		this.modeQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgVehicleMode(header, {opMode, speedSteps});
-			this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.modeQ.match = ((msg) => {
-			this.mx10.logInfo.next('mode query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('mode query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.modeQ.run(MsgVehicleMode.rxDelay());
-		this.mx10.logInfo.next("mx10.setVehicleMode.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.setVehicleMode.rv: " + JSON.stringify(rv));
 		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}
 
-	async getVehicleSpeed(trainNid: number)
+	async getSpeed(trainNid: number)
 	{
 		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
 			this.mx10.logInfo.next("mx10.getVehicleSpeed: failed to acquire lock");
@@ -94,13 +147,13 @@ export default class VehicleGroup
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.speedQ.run();
-		this.mx10.logInfo.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
 		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
 	}
 
-	async setVehicleSpeed(trainNid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
+	async setSpeed(trainNid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
 		emergencyStop: boolean = false, eastWest: Direction = Direction.UNDEFINED)
 	{
 		MsgVehicleSpeed.log = (msg) => {this.mx10.logInfo.next(msg)};
@@ -113,15 +166,15 @@ export default class VehicleGroup
 		this.speedQ.tx = ((header) => {
 			const speedAndDir= MsgVehicleSpeed.speedAndDir(speedStep, forward, emergencyStop, eastWest);
 			const msg = new MsgVehicleSpeed(header, speedAndDir, divisor);
-			this.mx10.logInfo.next('speed query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('speed query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.speedQ.match = ((msg) => {
-			this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid);
 		})
 		const rv = await this.speedQ.run(MsgVehicleSpeed.rxDelay());
-		this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
 		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
@@ -155,11 +208,6 @@ export default class VehicleGroup
 		]);
 	}
 
-	//0x02.0x00
-	vehicleState(vehicleAddress: number) {
-		return this.mx10.sendData(0x02, 0x00, [{value: vehicleAddress, length: 2}], 0b00);
-	}
-
 	// 0x02.0x10
 	activeModeTrain(vehicleAddress: number) {
 		return this.mx10.sendData(0x02, 0x10, [
@@ -184,24 +232,18 @@ export default class VehicleGroup
 			case 0x02: this.parseVehicleSpeed(size, mode, nid, buffer); break;
 			case 0x04: this.parseVehicleFunction(size, mode, nid, buffer); break;
 			case 0x05: this.parseVehicleSpecialFunction(size, mode, nid, buffer); break;
+			case 0x12: this.parseVehicleLastCtl(size, mode, nid, buffer); break;
 		}
 	}
 
 	// 0x02.0x00
 	private parseVehicleState( size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if (this.onVehicleState.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const stateFlags = buffer.readUInt16LE(2); // TODO: add
-			const ctrlTick = buffer.readUInt16LE(4);
-			const ctrlDevice = buffer.readUInt16LE(6);
-
-			this.onVehicleState.next({
-				nid: NID,
-				ctrlTick,
-				ctrlDevice,
-			});
-		}
+		if(!this.onVehicleState.observed)
+			return;
+		const msg = MsgVehicleState.fromBuffer(mode, buffer);
+		// this.mx10.logInfo.next('parseVehicleState' + JSON.stringify(buffer));
+		this.onVehicleState.next(msg);
 	}
 
 	// 0x02.0x01
@@ -224,23 +266,6 @@ export default class VehicleGroup
 		const msg = MsgVehicleSpeed.fromBuffer(mode, buffer);
 		// this.mx10.logInfo.next('parseVehicleSpeed: ' + JSON.stringify(msg));
 		this.onVehicleSpeed.next(msg);
-
-
-		// const NID = buffer.readUInt16LE(0);
-		// const speedAndDirection = buffer.readUInt16LE(2);
-		// const divisor = buffer.readUint8(4);
-
-		// const {speedStep, forward, eastWest, emergencyStop} =
-		// 	parseSpeed(speedAndDirection);
-
-		// {
-		// 	nid: NID,
-		// 	divisor,
-		// 	speedStep,
-		// 	forward,
-		// 	eastWest,
-		// 	emergencyStop,
-		// });
 	}
 
 	// 0x02.0x04
@@ -250,7 +275,6 @@ export default class VehicleGroup
 			const NID = buffer.readUInt16LE(0);
 			const functionNumber = buffer.readUInt16LE(2);
 			const functionState = buffer.readUInt16LE(4);
-
 			const functionActive = functionState !== 0x00;
 
 			this.onCallFunction.next({
@@ -275,5 +299,20 @@ export default class VehicleGroup
 				specialFunctionState,
 			});
 		}
+	}
+
+	// 0x02.0x12
+	private parseVehicleLastCtl( size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onVehicleLastCtl.observed)
+			return;
+
+		const NID = buffer.readUInt16LE(0);
+		const type = buffer.readUInt16LE(2);
+		const ctlNid = buffer.readUInt16LE(4);
+		const seconds = buffer.readUInt16LE(6);
+
+		const msg = new MsgVehicleLastCtl(MsgVehicleLastCtl.header(mode, NID), type, ctlNid, seconds);
+		this.onVehicleLastCtl.next(msg);
 	}
 }
