@@ -6,7 +6,7 @@ import {RemoveLocomotiveData, DataNameExtended, DataNameValue1,
 	ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData} from '../common/models';
 import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
 import ExtendedASCII from '../common/extendedAscii';
-import { MsgGroupCount, MsgItemsByIndexReq, MsgItemsByIndexRsp } from './dataMsg';
+import { MsgDataName, MsgGroupCount, MsgItemsByIndexReq, MsgItemsByIndexRsp } from './dataMsg';
 import { Query } from '../docs_entrypoint';
 
 /**
@@ -22,8 +22,9 @@ export default class DataGroup
 	public readonly onItemImageConfig = new Subject<ItemImageData>();
 	public readonly onItemFxMode = new Subject<ItemFxMode>();
 	public readonly onItemFxConfig = new Subject<ItemFxConfig>();
-	public readonly onDataNameExtended = new Subject<DataNameExtended>();
+	public readonly onDataNameExtended = new Subject<MsgDataName>();
 
+	private nameQ: Query<MsgDataName> | undefined = undefined;
 	private groupCountQ: Query<MsgGroupCount> | undefined = undefined;
 	private byIndexQ: Query<MsgItemsByIndexRsp> | undefined = undefined;
 
@@ -214,11 +215,61 @@ export default class DataGroup
 		]);
 	}
 
-	dataNameExtended(NID: number, subID: number, name: string)
+	async getName(nid: number, subId: number)
 	{
+		if(this.nameQ !== undefined && !await this.nameQ.lock()) {
+			this.mx10.logInfo.next("mx10.getName: failed to acquire lock");
+			return undefined;
+		}
+		this.nameQ = new Query(MsgDataName.header(MsgMode.REQ, this.mx10.mx10NID), this.onDataNameExtended);
+		this.nameQ.log = ((msg) => {
+			this.mx10.logInfo.next(msg);
+		});
+		this.nameQ.tx = ((header) => {
+			const msg = new MsgDataName(header, subId);
+			// this.mx10.logInfo.next('getName query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.nameQ.match = ((msg) => {
+			// this.mx10.logInfo.next('getName query rx: ' + JSON.stringify(msg));
+			return (msg.itemNid() === nid && msg.subId() === subId);
+		})
+		const rv = await this.nameQ.run();
+		// this.mx10.logInfo.next("mx10.getName.rv: " + JSON.stringify(rv));
+		this.nameQ.unlock();
+		this.nameQ = undefined;
+		return rv;
+	}
+
+	async setName(nid: number, subId: number, name: string)
+	{
+		if(this.nameQ !== undefined && !await this.nameQ.lock()) {
+			this.mx10.logInfo.next("mx10.setName: failed to acquire lock");
+			return undefined;
+		}
+		this.nameQ = new Query(MsgDataName.header(MsgMode.CMD, nid), this.onDataNameExtended);
+		this.nameQ.log = ((msg) => {
+			this.mx10.logInfo.next(msg);
+		});
+		this.nameQ.tx = ((header) => {
+			const msg = new MsgDataName(header, subId, name);
+			// this.mx10.logInfo.next('setName query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.nameQ.match = ((msg) => {
+			// this.mx10.logInfo.next('setName query rx: ' + JSON.stringify(msg));
+			return (msg.itemNid() === nid && msg.subId() === subId);
+		})
+		this.nameQ.subscribe(false);
+		const rv = await this.nameQ.run();
+		// this.mx10.logInfo.next("mx10.setName.rv: " + JSON.stringify(rv));
+		this.nameQ.unlock();
+		this.nameQ = undefined;
+		return rv;
+
 		this.mx10.sendData(0x07, 0x21, [
-			{value: NID, length: 2},
-			{value: subID, length: 2},
+			{value: nid, length: 2},
+			{value: subId, length: 2},
 			{value: 0, length: 4},
 			{value: 0, length: 4},
 			{value: name, length: name.length},
@@ -377,6 +428,11 @@ export default class DataGroup
 	{
 		if(!this.onDataNameExtended.observed)
 			return;
+
+		this.mx10.logInfo.next('parseDataNameExtended: ' + nid + ', ' + JSON.stringify(buffer));
+		const msg = MsgDataName.fromBuffer(mode, nid, buffer);
+		this.onDataNameExtended.next(msg);
+		return;
 		
 		const NID = buffer.readUInt16LE(0);
 		const subID = buffer.readUInt16LE(2);
@@ -427,6 +483,7 @@ export default class DataGroup
 				else
 					type = NameType.CONNECTION;
 		}
-		this.onDataNameExtended.next({nid: NID, type, subID, value1, value2, name});
+		
+		// this.onDataNameExtended.next({nid: NID, type, subID, value1, value2, name});
 	}
 }

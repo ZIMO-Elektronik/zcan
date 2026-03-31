@@ -25,10 +25,10 @@ export class MsgVehicleMode extends Message
 	{
 		super(header);
 		if(!mode) return;
-		MsgVehicleMode.log("MsgVehicleMode.mode: " + mode);
+		// MsgVehicleMode.log("MsgVehicleMode.mode: " + mode);
 		if(Array.isArray(mode)) for(let byte of mode.slice(0, 2)) {
 			super.push({value: byte, length: 1});
-			MsgVehicleMode.log("MsgVehicleMode.push: " + byte);
+			// MsgVehicleMode.log("MsgVehicleMode.push: " + byte);
 		} else {
 			super.push({value: MsgVehicleMode.modeByte1(mode.opMode, mode.speedSteps), length: 1});
 			super.push({value: 0, length: 1});
