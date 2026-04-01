@@ -303,7 +303,7 @@ export default class LanDataGroup
 		}
 		const funMode: number[] = [];
 		for (let i = 0; i < 64; i++) {
-			const fun = buffer.readUInt16LE(132 + 2*i);
+			const fun = buffer.readUInt16LE(196 + 2*i);
 			funMode.push(fun);
 		}
 
