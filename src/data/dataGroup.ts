@@ -6,7 +6,7 @@ import {RemoveLocomotiveData, DataNameExtended, DataNameValue1,
 	ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData} from '../common/models';
 import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
 import ExtendedASCII from '../common/extendedAscii';
-import { MsgDataName, MsgGroupCount, MsgItemsByIndexReq, MsgItemsByIndexRsp } from './dataMsg';
+import { MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp } from './dataMsg';
 import { Query } from '../docs_entrypoint';
 
 /**
@@ -19,12 +19,13 @@ export default class DataGroup
 	public readonly onListItemsByIndex = new Subject<MsgItemsByIndexRsp>();
 	public readonly onListItemsByNID = new Subject<ItemListByNidData>();
 	public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
-	public readonly onItemImageConfig = new Subject<ItemImageData>();
+	public readonly onItemImageConfig = new Subject<MsgItemImage>();
 	public readonly onItemFxMode = new Subject<ItemFxMode>();
 	public readonly onItemFxConfig = new Subject<ItemFxConfig>();
 	public readonly onDataNameExtended = new Subject<MsgDataName>();
 
 	private nameQ: Query<MsgDataName> | undefined = undefined;
+	private imageQ: Query<MsgItemImage> | undefined = undefined;
 	private groupCountQ: Query<MsgGroupCount> | undefined = undefined;
 	private byIndexQ: Query<MsgItemsByIndexRsp> | undefined = undefined;
 
@@ -266,15 +267,56 @@ export default class DataGroup
 		this.nameQ.unlock();
 		this.nameQ = undefined;
 		return rv;
+	}
 
-		this.mx10.sendData(0x07, 0x21, [
-			{value: nid, length: 2},
-			{value: subId, length: 2},
-			{value: 0, length: 4},
-			{value: 0, length: 4},
-			{value: name, length: name.length},
-			{value: 0, length: 1},
-		], 0b01);
+	async getImage(nid: number, type: number)
+	{
+		if(this.imageQ !== undefined && !await this.imageQ.lock()) {
+			this.mx10.logInfo.next("mx10.getImage: failed to acquire lock");
+			return undefined;
+		}
+		this.imageQ = new Query(MsgItemImage.header(MsgMode.REQ, this.mx10.mx10NID), this.onItemImageConfig);
+		this.imageQ.tx = ((header) => {
+			const msg = new MsgItemImage(header, nid, type);
+			// this.mx10.logInfo.next('getImage query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.imageQ.match = ((msg) => {
+			// this.mx10.logInfo.next('getImage query rx: ' + JSON.stringify(msg));
+			return (msg.itemNid() === nid && msg.imageType() === type);
+		})
+		const rv = await this.imageQ.run();
+		// this.mx10.logInfo.next("mx10.getImage.rv: " + JSON.stringify(rv));
+		this.imageQ.unlock();
+		this.imageQ = undefined;
+		return rv;
+	}
+
+	async setImage(nid: number, type: number, id: number)
+	{
+		if(this.imageQ !== undefined && !await this.imageQ.lock()) {
+			this.mx10.logInfo.next("mx10.setImage: failed to acquire lock");
+			return undefined;
+		}
+		this.imageQ = new Query(MsgItemImage.header(MsgMode.CMD, nid), this.onItemImageConfig);
+		this.imageQ.log = ((msg) => {
+			this.mx10.logInfo.next(msg);
+		});
+		this.imageQ.tx = ((header) => {
+			const msg = new MsgItemImage(header, nid, type, id);
+			// this.mx10.logInfo.next('setImage query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.imageQ.match = ((msg) => {
+			// this.mx10.logInfo.next('setImage query rx: ' + JSON.stringify(msg));
+			return (msg.itemNid() === nid && msg.imageType() === type);
+		})
+		this.imageQ.subscribe(false);
+		const rv = await this.imageQ.run();
+		// this.mx10.logInfo.next("mx10.setImage.rv: " + JSON.stringify(rv));
+		this.imageQ.unlock();
+		this.imageQ = undefined;
+		return rv;
 	}
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
@@ -367,7 +409,7 @@ export default class DataGroup
 		const NID = buffer.readUInt16LE(0);
 		const type = buffer.readUInt16LE(2);
 		const imageId = buffer.readUInt16LE(4);
-		this.onItemImageConfig.next({nid: NID, type, imageId});
+		this.onItemImageConfig.next(new MsgItemImage(MsgItemImage.header(mode, nid), NID, type, imageId));
 	}
 
 	// 0x07.0x14
