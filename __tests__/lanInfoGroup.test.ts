@@ -3,39 +3,39 @@ import {afterAll, beforeAll, it, describe, expect} from "@jest/globals";
 import {TrackMode} from "../src";
 
 describe('LAN Info group tests - 0x18', () => {
-  const mx10 = createMX10();
+	const mx10 = createMX10();
 
-  beforeAll(async () => {
-    await initConnection(mx10)
-  })
+	beforeAll(async () => {
+		await initConnection(mx10)
+	})
 
-  afterAll(() => {
-    mx10.closeSocket();
-  })
+	afterAll(() => {
+		mx10.closeSocket();
+	})
 
-  it("0x00 - module power info", (done) => {
-    const sub = mx10.lanInfo.onModulePowerInfo.subscribe((data) => {
-      if (data.deviceNID === mx10.mx10NID) {
+	it("0x00 - module power info", (done) => {
+		const sub = mx10.lanInfo.onModulePowerInfo.subscribe((data) => {
+			if (data.deviceNID === mx10.mx10NID) {
 
-        expect(data.port1Status).toBeDefined();
-        expect(data.port1Status).toBe(TrackMode.NORMAL);
-        expect(data.port1Voltage).toBeDefined();
-        expect(data.port1Amperage).toBeDefined();
+				expect(data.port1Status).toBeDefined();
+				expect(data.port1Status).toBe(TrackMode.NORMAL);
+				expect(data.port1Voltage).toBeDefined();
+				expect(data.port1Amperage).toBeDefined();
 
-        expect(data.port2Status).toBeDefined();
-        expect(data.port2Status).toBe(TrackMode.NORMAL);
-        expect(data.port2Voltage).toBeDefined();
-        expect(data.port2Amperage).toBeDefined();
+				expect(data.port2Status).toBeDefined();
+				expect(data.port2Status).toBe(TrackMode.NORMAL);
+				expect(data.port2Voltage).toBeDefined();
+				expect(data.port2Amperage).toBeDefined();
 
-        expect(data.amperage32V).toBeDefined();
-        expect(data.amperage12V).toBeDefined();
-        expect(data.voltageTotal).toBeDefined();
-        expect(data.temperature).toBeDefined();
+				expect(data.amperage32V).toBeDefined();
+				expect(data.amperage12V).toBeDefined();
+				expect(data.voltageTotal).toBeDefined();
+				expect(data.temperature).toBeDefined();
 
-        sub.unsubscribe();
-        done();
-      }
-    })
-  })
+				sub.unsubscribe();
+				done();
+			}
+		})
+	})
 
 });

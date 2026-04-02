@@ -40,4 +40,24 @@ export class MsgBidiInfo extends Message
 	nid(): number {return this.header.mode === MsgMode.REQ ? this.data[0].value as number : this.header.nid || 0}
 	type(): number {return this.data[this.header.mode === MsgMode.REQ ? 1 : 0].value as number}
 	info(): number | undefined {return this.data.length > 1 ? this.data[1].value as number : undefined}
+
+	public static dirEast(info: number)
+	{
+		return ((info & 0x02) == 0x02)
+	}
+
+	public static dirChanging(info: number)
+	{
+		return ((info & 0x04) == 0x04)
+	}
+
+	public static dirForward(info: number)
+	{
+		return ((info & 0x01) == 0x01)
+	}
+
+	public static dirConfirm(info: number)
+	{
+		return ((info & 0x08) == 0x08)
+	}
 }

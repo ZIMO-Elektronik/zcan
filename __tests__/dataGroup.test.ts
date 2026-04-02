@@ -1,98 +1,88 @@
 import {createMX10, initConnection} from './util';
 import {afterAll, beforeAll, describe, expect, it} from '@jest/globals';
 import {firstValueFrom} from 'rxjs';
-import {FxInfoType, ImageType, NameType} from '../src';
+import {FxConfigType, ImageType, NameType} from '../src';
 
 describe('Data group tests - 0x07', () => {
-  const mx10 = createMX10(true);
+	const mx10 = createMX10(true);
 
-  beforeAll(async () => {
-    await initConnection(mx10);
-  });
+	beforeAll(async () => {
+		await initConnection(mx10);
+	});
 
-  afterAll(() => {
-    mx10.closeSocket();
-  });
+	afterAll(() => {
+		mx10.closeSocket();
+	});
 
-  it('0x00 - Group count test', (done) => {
-    mx10.data.groupCount();
+	it('0x00 - Group count test',  async () => {
+		const msg = await mx10.data.groupCount();
+		expect(msg).toBeDefined();
+		expect(msg?.group()).toBe(0x0000);
+		expect(msg?.count()).toBeDefined();
+	});
 
-    const sub = mx10.data.onGroupCount.subscribe((data) => {
-      if (data.objectType === 0x0000) {
-        expect(data.objectType).toBe(0x000);
-        expect(data.number).toBeDefined();
+	it('0x01 - List item by index test', async () => {
+		const msg = await mx10.data.listItemsByIndex(0x0000, 3);
 
-        done();
-        sub.unsubscribe();
-      }
-    });
-  });
+		expect(msg).toBeDefined();
+		expect(msg?.index()).toBe(3);
+		expect(msg?.itemNid()).toBe(4);
+	});
 
-  it('0x01 - List item by index test', async () => {
-    mx10.data.listItemsByIndex(0x0000, 3);
+	it('0x02 - List item by nid test', async () => {
+		mx10.data.listItemsByNID(3);
 
-    const data = await firstValueFrom(mx10.data.onListItemsByIndex);
+		const data = await firstValueFrom(mx10.data.onListItemsByNID);
+		expect(data.nid).toBe(65535);
+		expect(data.index).toBe(65535);
+	});
 
-    expect(data.index).toBe(3);
-    expect(data.nid).toBe(4);
-  });
+	it('0x1f - Remove locomotive with nid', async () => {
+		mx10.data.removeLocomotive(3);
 
-  it('0x02 - List item by nid test', async () => {
-    mx10.data.listItemsByNID(3);
+		const data = await firstValueFrom(mx10.data.onRemoveLocomotive);
+		expect(data.nid).toBe(3);
+		expect(data.state).toBeDefined();
+	});
 
-    const data = await firstValueFrom(mx10.data.onListItemsByNID);
-    expect(data.nid).toBe(65535);
-    expect(data.index).toBe(65535);
-  });
+	it('0x12 - Image config test', async () => {
+		const promise = firstValueFrom(mx10.data.onItemImageConfig).then((data) => {
+			expect(data.itemNid()).toBe(3);
+			expect(data.imageType()).toBe(ImageType.VEHICLE);
+			expect(data.imageId()).toBe(6055);
+		});
 
-  it('0x1f - Remove locomotive with nid', async () => {
-    mx10.data.removeLocomotive(3);
+		mx10.data.itemImageConfig(3, ImageType.VEHICLE, 6055);
 
-    const data = await firstValueFrom(mx10.data.onRemoveLocomotive);
-    expect(data.nid).toBe(3);
-    expect(data.state).toBeDefined();
-  });
+		return promise;
+	});
 
-  it('0x12 - Image config test', async () => {
-    const promise = firstValueFrom(mx10.data.onItemImageConfig).then((data) => {
-      expect(data.nid).toBe(3);
-      expect(data.type).toBe(ImageType.VEHICLE);
-      expect(data.imageId).toBe(6055);
-    });
+	test.each<{icon: number; fx: number}>([
+		{icon: 755, fx: 1},
+		{icon: 756, fx: 1},
+		{icon: 700, fx: 1},
+	])('0x15 - Function image change test', async ({icon, fx}) => {
+		const promise = firstValueFrom(mx10.data.onItemFxConfig).then((data) => {
+			expect(data.nid).toBe(3);
+			expect(data.function).toBe(fx);
+			expect(data.item).toBe(FxConfigType.ICON);
+			expect(data.data).toBe(icon);
+		});
 
-    mx10.data.itemImageConfig(3, ImageType.VEHICLE, 6055);
+		mx10.data.itemFxConfig(3, fx, FxConfigType.ICON, icon);
 
-    return promise;
-  });
+		return promise;
+	});
 
-  test.each<{icon: number; fx: number}>([
-    {icon: 755, fx: 1},
-    {icon: 756, fx: 1},
-    {icon: 700, fx: 1},
-  ])('0x15 - Function image change test', async ({icon, fx}) => {
-    const promise = firstValueFrom(mx10.data.onItemFxInfo).then((data) => {
-      expect(data.nid).toBe(3);
-      expect(data.function).toBe(fx);
-      expect(data.type).toBe(FxInfoType.ICON);
-      expect(data.data).toBe(icon);
-    });
-
-    mx10.data.itemFxInfo(3, fx, FxInfoType.ICON, icon);
-
-    return promise;
-  });
-
-  test.each<{name: string}>([
-    {name: '---'},
-    {name: 'teßt Öf a näme'},
-    {name: 'dodo1'},
-  ])('0x21 - Data name extended test', async ({name}) => {
-    mx10.data.dataNameExtended(3, 0, name);
-
-    const data = await firstValueFrom(mx10.data.onDataNameExtended);
-    expect(data.nid).toBe(3);
-    expect(data.type).toBe(NameType.VEHICLE);
-    expect(data.value1).toBe(undefined);
-    expect(data.name).toBe(name);
-  });
+	test.each<{name: string}>([
+		{name: '---'},
+		{name: 'teßt Öf a näme'},
+		{name: 'dodo1'},
+	])('0x21 - Data name extended test', async ({name}) => {
+		const msg = await mx10.data.setName(3, 0, name);
+		expect(msg).toBeDefined();
+		expect(msg?.itemNid()).toBe(3);
+		expect(msg?.type()).toBe(NameType.VEHICLE);
+		expect(msg?.name()).toBe(name);
+	});
 });

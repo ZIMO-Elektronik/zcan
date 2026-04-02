@@ -2,8 +2,7 @@ import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {Query} from '../common/communication';
-import {BidiInfoData, BidiDirectionData} from '../common/models';
-import {BidiType, Direction, ForwardOrReverse, ModInfoType, MsgMode} from '../common/enums';
+import {ModInfoType, MsgMode} from '../common/enums';
 import {MsgBidiInfo, MsgModInfo} from './infoMsg';
 
 /**
@@ -111,41 +110,30 @@ export default class InfoGroup
 		const type = buffer.readUInt16LE(2);
 		const info = buffer.readUInt32LE(4);
 
-		let data: BidiDirectionData | number = {};
-		switch (type) {
-			case BidiType.DIRECTION:
-				data.direction = this.parseEastWest(info);
-				data.directionChange = this.parseDirChange(info);
-				data.directionConfirm = this.parseDirectionConfirm(info);
-				data.forwardOrReverse = this.parseFwdRev(info);
-				break;
-			default:
-				data = info;
-		}
 		const msg = new MsgBidiInfo(MsgBidiInfo.header(mode, NID), type, undefined, info);
 		this.onBidiInfoChange.next(msg);
 	}
 
-	private parseEastWest(data: number)
-	{
-		if ((data & 0x02) == 0x02)
-			return Direction.EAST;
-		return Direction.WEST;
-	}
+	// private parseEastWest(data: number)
+	// {
+	// 	if ((data & 0x02) == 0x02)
+	// 		return Direction.EAST;
+	// 	return Direction.WEST;
+	// }
 
-	private parseDirChange(data: number)
-	{
-		return (data & 0x04) == 0x04;
-	}
+	// private parseDirChange(data: number)
+	// {
+	// 	return (data & 0x04) == 0x04;
+	// }
 
-	private parseFwdRev(data: number)
-	{
-		if ((data & 0x01) == 0)
-			return ForwardOrReverse.REVERSE;
-		return ForwardOrReverse.FORWARD;
-	}
-	private parseDirectionConfirm(data: number)
-	{
-		return (data & 0x08) == 0x08;
-	}
+	// private parseFwdRev(data: number)
+	// {
+	// 	if ((data & 0x01) == 0)
+	// 		return ForwardOrReverse.REVERSE;
+	// 	return ForwardOrReverse.FORWARD;
+	// }
+	// private parseDirectionConfirm(data: number)
+	// {
+	// 	return (data & 0x08) == 0x08;
+	// }
 }

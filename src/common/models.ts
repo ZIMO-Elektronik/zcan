@@ -110,18 +110,18 @@ export interface ModulePowerInfoData {
 	temperature: number;
 }
 
-export interface BidiInfoData {
-	nid: number;
-	type: BidiType;
-	data: BidiDirectionData | number;
-}
+// export interface BidiInfoData {
+// 	nid: number;
+// 	type: BidiType;
+// 	data: BidiDirectionData | number;
+// }
 
-export interface BidiDirectionData {
-	direction?: Direction;
-	forwardOrReverse?: ForwardOrReverse;
-	directionChange?: boolean;
-	directionConfirm?: boolean;
-}
+// export interface BidiDirectionData {
+// 	direction?: Direction;
+// 	forwardOrReverse?: ForwardOrReverse;
+// 	directionChange?: boolean;
+// 	directionConfirm?: boolean;
+// }
 
 export interface VehicleStateData {
 	nid: number;
