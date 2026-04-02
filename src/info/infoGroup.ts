@@ -4,7 +4,7 @@ import {Subject} from 'rxjs';
 import {Query} from '../common/communication';
 import {BidiInfoData, BidiDirectionData} from '../common/models';
 import {BidiType, Direction, ForwardOrReverse, ModInfoType, MsgMode} from '../common/enums';
-import { MsgModInfo } from './infoMsg';
+import {MsgBidiInfo, MsgModInfo} from './infoMsg';
 
 /**
  *
@@ -14,10 +14,11 @@ export default class InfoGroup
 {
 	private mx10: MX10;
 
-	public readonly onBidiInfoChange = new Subject<BidiInfoData>();
+	public readonly onBidiInfoChange = new Subject<MsgBidiInfo>();
 	public readonly onModuleInfoChange = new Subject<MsgModInfo>();
 
 	private modInfoQ: Query<MsgModInfo> | undefined = undefined;
+	private bidiQ: Query<MsgBidiInfo> | undefined = undefined;
 
 	constructor(mx10: MX10)
 	{
@@ -30,7 +31,6 @@ export default class InfoGroup
 			this.mx10.logInfo.next("mx10.getModuleInfo: failed to acquire lock");
 			return undefined;
 		}
-
 		this.modInfoQ = new Query(MsgModInfo.header(MsgMode.REQ, nid), this.onModuleInfoChange);
 		this.modInfoQ.log = ((msg) => {
 			this.mx10.logInfo.next(msg);
@@ -49,6 +49,30 @@ export default class InfoGroup
 		this.mx10.logInfo.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
 		this.modInfoQ.unlock();
 		this.modInfoQ = undefined;
+		return rv;
+	}
+
+	async getBidiInfo(locoNid: number, type: number): Promise<MsgBidiInfo | undefined>
+	{
+		if(this.bidiQ !== undefined && !await this.bidiQ.lock()) {
+			this.mx10.logInfo.next("mx10.getBidiInfo: failed to acquire lock");
+			return undefined;
+		}
+		this.bidiQ = new Query(MsgBidiInfo.header(MsgMode.REQ, locoNid), this.onBidiInfoChange);
+		this.bidiQ.tx = ((header) => {
+			const msg = new MsgBidiInfo(header, type, locoNid);
+			this.mx10.logInfo.next('bidi query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.bidiQ.match = ((msg) => {
+			this.mx10.logInfo.next('bidi query rx: ' + JSON.stringify(msg));
+			return (msg.type() === type);
+		})
+		this.bidiQ.subscribe(false);
+		const rv = await this.bidiQ.run();
+		this.mx10.logInfo.next("mx10.getBidiInfo.rv: " + JSON.stringify(rv));
+		this.bidiQ.unlock();
+		this.bidiQ = undefined;
 		return rv;
 	}
 
@@ -98,8 +122,8 @@ export default class InfoGroup
 			default:
 				data = info;
 		}
-
-		this.onBidiInfoChange.next({nid: NID, type, data,});
+		const msg = new MsgBidiInfo(MsgBidiInfo.header(mode, NID), type, undefined, info);
+		this.onBidiInfoChange.next(msg);
 	}
 
 	private parseEastWest(data: number)
