@@ -1,5 +1,6 @@
 import {NameType, Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode, TrackMode, ImageType,
-	FxConfigType, SpecialFunctionMode, Manual, ShuntingFunction, BidiType, ForwardOrReverse, AccessoryMode, FxModeType,
+	FxConfigType, Manual, AccessoryMode, FxModeType,
+	Shunting,
 } from './enums';
 import {ZcanDataArray} from './communication';
 
@@ -46,7 +47,7 @@ export interface DataValueExtendedData {
 	operatingMode: OperatingMode;
 	functionsStates: boolean[];
 	flags: TrainFlags;
-	shuntingFunction: ShuntingFunction;
+	shuntingFunction: Shunting;
 	manualMode: Manual;
 	deleted: boolean;
 }
@@ -151,11 +152,6 @@ export interface CallFunctionData {
 	nid: number;
 	functionNumber: number;
 	functionState: boolean;
-}
-export interface CallSpecialFunctionData {
-	nid: number;
-	specialFunctionMode: SpecialFunctionMode;
-	specialFunctionState: Manual | ShuntingFunction | Direction;
 }
 
 export interface SystemStateData {

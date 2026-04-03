@@ -1,7 +1,7 @@
 
 import { Header, Message } from "../common/communication";
 import { Ranger } from "../common/utils";
-import { Direction, MaxSpeedSteps, MsgMode, OperatingMode } from "../common/enums";
+import { Direction, MaxSpeedSteps, MsgMode, OperatingMode, SpecialFxNr } from "../common/enums";
 import { directACKBites, directionBites, eastWestBites_, emergencyStopB, speedBites____ } from "../common/bites";
 
 
@@ -160,6 +160,32 @@ export class MsgVehicleLastCtl extends Message
 		const ctlNid = buffer.readUint16LE(4);
 		const seconds = buffer.readUint16LE(6);
 		const msg = new MsgVehicleLastCtl(MsgVehicleLastCtl.header(mode, nid), type, ctlNid, seconds);
+		return msg;
+	}
+}
+
+export class MsgSpecialFx extends Message
+{
+	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x5, mode, nid}}
+
+	constructor(header: Header, sfxNr: SpecialFxNr, state?: number)
+	{
+		super(header);
+		super.push({value: sfxNr || 0, length: 2});
+		if(header.mode === MsgMode.REQ)
+			return;
+		super.push({value: state || 0, length: 2});
+	}
+	nid(): number {return this.header.nid || 0}
+	sfxNr(): number {return this.data[0].value as number;}
+	state(): number | undefined {return this.data.length < 2 ? undefined : this.data[1].value as number;}
+
+	public static fromBuffer(mode: MsgMode, buffer: Buffer)
+	{
+		const nid = buffer.readUInt16LE(0);
+		const sfxNr = buffer.readUInt16LE(2);
+		const state = buffer.readUint16LE(4);
+		const msg = new MsgSpecialFx(MsgVehicleState.header(mode, nid), sfxNr, state);
 		return msg;
 	}
 }

@@ -1,8 +1,8 @@
 // 0x17
 import MX10 from '../MX10';
-import {FunctionMode, FxConfigType, getOperatingMode, MsgMode, OperatingMode} from '../common/enums';
-import {DataNameExtendedData, DataValueExtendedData, LocoGuiMXExtended, LocoSpeedTabExtended, SpeedTabData,
-	Train, TrainFlags, TrainFunction} from '../common/models';
+import {FxConfigType, getOperatingMode, MsgMode} from '../common/enums';
+import {DataNameExtendedData, DataValueExtendedData, LocoSpeedTabExtended, SpeedTabData,
+	Train, TrainFlags} from '../common/models';
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
@@ -17,13 +17,11 @@ import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 export default class LanDataGroup
 {
 	public readonly onLocoGuiExtended = new Subject<MsgLocoGuiRsp>();
-	// public readonly onOldLocoGuiExtended = new Subject<MsgOldLocoGuiRsp>();
 	public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
 	private locoGuiQ: Query<MsgLocoGuiRsp> | undefined = undefined;
-	// private oldLocoGuiQ: Query<MsgOldLocoGuiRsp> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -140,50 +138,6 @@ export default class LanDataGroup
 		return rv;
 	}
 
-	// async oldLocoGuiExtended(nid: number): Promise<MsgOldLocoGuiRsp | undefined>
-	// {
-	// 	if(this.oldLocoGuiQ !== undefined && !await this.oldLocoGuiQ.lock()) {
-	// 		this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
-	// 		return undefined;
-	// 	}
-	// 	this.oldLocoGuiQ = new Query(MsgOldLocoGuiReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onOldLocoGuiExtended);
-	// 	this.oldLocoGuiQ.log = ((msg) => {
-	// 		this.mx10.logInfo.next(msg);
-	// 	});
-	// 	this.oldLocoGuiQ.tx = ((header) => {
-	// 		const msg = new MsgOldLocoGuiReq(header, nid, 0);
-	// 		this.mx10.logInfo.next('locoGuiExtended query tx: ' + JSON.stringify(msg));
-	// 		this.mx10.sendMsg(msg);
-	// 	});
-	// 	this.oldLocoGuiQ.match = ((msg) => {
-	// 		this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
-	// 		return (msg.locoNid() === nid);
-	// 	})
-	// 	const rv = await this.oldLocoGuiQ.run();
-	// 	this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
-	// 	this.oldLocoGuiQ.unlock();
-	// 	this.oldLocoGuiQ = undefined;
-	// 	return rv;
-	// }
-
-	// locoGuiExtended(NID: number)
-	// {
-	// 	this.mx10.sendData(0x17, 0x27, [
-	// 		{value: this.mx10.mx10NID, length: 2},
-	// 		{value: NID, length: 2},
-	// 		{value: 0, length: 2},
-	// 	], 0b00);
-	// }
-
-	// locoGuiMXExtended(NID: number)
-	// {
-	// 	this.mx10.sendData(0x17,0x28, [
-	// 		{value: this.mx10.mx10NID, length: 2},
-	// 		{value: NID, length: 2},
-	// 		{value: 0, length: 2},
-	// 	], 0b00);
-	// }
-
 	locoSpeedTapExtended(NID: number)
 	{
 		this.mx10.sendData(0x17, 0x19, [
@@ -193,11 +147,6 @@ export default class LanDataGroup
 			{value: 0, length: 1},
 		], 0b00);
 	}
-
-	// mxUpdateFnIcons(destructuredBuffer: ZcanDataArray)
-	// {
-	// 	this.mx10.sendData(0x17, 0x28, destructuredBuffer, 0b01);
-	// }
 
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
@@ -209,9 +158,6 @@ export default class LanDataGroup
 			case 0x10:
 				this.parseDataNameExtended(size, mode, nid, buffer);
 				break;
-			// case 0x27:
-			// 	this.parseOldLocoGuiExtended(size, mode, nid, buffer);
-			// 	break;
 			case 0x28:
 				this.parseLocoGuiExtended(size, mode, nid, buffer);
 				break;
@@ -360,29 +306,6 @@ export default class LanDataGroup
 		this.onLocoSpeedTabExtended.next({srcid: SrcID, nid: NID, dbat6: DBat6, speedTab: locoSpeedTab});
 	}
 
-	private parseEra(eraString: number)
-	{
-		switch (eraString & 0xf0)
-		{
-			case 0x10:
-				return 'I';
-			case 0x20:
-				return 'II';
-			case 0x30:
-				return 'III';
-			case 0x40:
-				return 'IV';
-			case 0x50:
-				return 'V';
-			case 0x60:
-				return 'VI';
-			case 0x70:
-				return 'VII';
-			default:
-				return '';
-		}
-	}
-
 	private parseFlags(flagsNumber: number): TrainFlags
 	{
 		return {deleted: flagsNumber >> 31 === 1};
@@ -391,17 +314,5 @@ export default class LanDataGroup
 	private parseDeleted(parseDeletedFlag: number)
 	{
 		return parseDeletedFlag === 1;
-	}
-
-	private destructureBuffer(buffer: Buffer): ZcanDataArray
-	{
-		const values = [];
-		for (let i = 0; i < buffer.length; i += 2) {
-			values.push({
-				value: buffer.readUInt16LE(i),
-				length: 2,
-			});
-		}
-		return values;
 	}
 }

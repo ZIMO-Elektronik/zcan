@@ -1,12 +1,11 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
-import {CallFunctionData, CallSpecialFunctionData, VehicleStateData} from '../common/models';
-import {Direction, Manual, MaxSpeedSteps, MsgMode, OperatingMode, ShuntingFunction, SpecialFunctionMode,
-} from '../common/enums';
+import {CallFunctionData} from '../common/models';
+import {Direction, Manual, MaxSpeedSteps, MsgMode, OperatingMode, SpecialFxNr} from '../common/enums';
 import {combineSpeedAndDirection} from '../common/speedUtils';
 import { Query } from '../common/communication';
-import { MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
+import { MsgSpecialFx, MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
 
 /**
  *
@@ -17,14 +16,15 @@ export default class VehicleGroup
 	public readonly onVehicleState = new Subject<MsgVehicleState>();
 	public readonly onVehicleLastCtl = new Subject<MsgVehicleLastCtl>();
 	public readonly onVehicleMode = new Subject<MsgVehicleMode>();
-	public readonly onVehicleSpeed = new Subject<MsgVehicleSpeed>();	// VehicleSpeedData
+	public readonly onVehicleSpeed = new Subject<MsgVehicleSpeed>();
 	public readonly onCallFunction = new Subject<CallFunctionData>();
-	public readonly onCallSpecialFunction = new Subject<CallSpecialFunctionData>();
+	public readonly onCallSpecialFunction = new Subject<MsgSpecialFx>();
 
 	private stateQ: Query<MsgVehicleState> | undefined = undefined;
 	private lastCtlQ: Query<MsgVehicleLastCtl> | undefined = undefined;
 	private modeQ: Query<MsgVehicleMode> | undefined = undefined;
 	private speedQ: Query<MsgVehicleSpeed> | undefined = undefined;
+	private sfxQ: Query<MsgSpecialFx> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -199,14 +199,60 @@ export default class VehicleGroup
 		]);
 	}
 
-	changeSpecialFunction(vehicleAddress: number, specialFunctionMode: SpecialFunctionMode,
-		specialFunctionStatus: Manual | ShuntingFunction | Direction) {
-		this.mx10.sendData(0x02, 0x05, [
-			{value: vehicleAddress, length: 2},
-			{value: specialFunctionMode, length: 2},
-			{value: specialFunctionStatus, length: 2},
-		]);
+	async getSpecialFx(nid: number, sfxNr: SpecialFxNr)
+	{
+		if(this.sfxQ !== undefined && !await this.sfxQ.lock()) {
+			this.mx10.logInfo.next("mx10.getSpecialFx: failed to acquire lock");
+			return undefined;
+		}
+		this.sfxQ = new Query(MsgSpecialFx.header(MsgMode.REQ, nid), this.onCallSpecialFunction);
+		this.sfxQ.tx = ((header) => {
+			const msg = new MsgSpecialFx(header, sfxNr);
+			// this.mx10.logInfo.next('sfx query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.sfxQ.match = ((msg) => {
+			// this.mx10.logInfo.next('sfx query rx: ' + JSON.stringify(msg));
+			return (msg.nid() === nid);
+		})
+		const rv = await this.sfxQ.run();
+		// this.mx10.logInfo.next("mx10.getSpecialFx.rv: " + JSON.stringify(rv));
+		this.sfxQ.unlock();
+		this.sfxQ = undefined;
+		return rv;
 	}
+
+	async setSpecialFx(nid: number, sfxNr: SpecialFxNr, state: number)
+	{
+		if(this.sfxQ !== undefined && !await this.sfxQ.lock()) {
+			this.mx10.logInfo.next("mx10.setSpecialFx: failed to acquire lock");
+			return undefined;
+		}
+		this.sfxQ = new Query(MsgSpecialFx.header(MsgMode.CMD, nid), this.onCallSpecialFunction);
+		this.sfxQ.tx = ((header) => {
+			const msg = new MsgSpecialFx(header, sfxNr, state);
+			// this.mx10.logInfo.next('sfx query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.sfxQ.match = ((msg) => {
+			// this.mx10.logInfo.next('sfx query rx: ' + JSON.stringify(msg));
+			return (msg.nid() === nid);
+		})
+		const rv = await this.sfxQ.run();
+		// this.mx10.logInfo.next("mx10.setSpecialFx.rv: " + JSON.stringify(rv));
+		this.sfxQ.unlock();
+		this.sfxQ = undefined;
+		return rv;
+	}
+
+	// changeSpecialFunction(vehicleAddress: number, specialFunctionMode: SpecialFunctionMode,
+	// 	specialFunctionStatus: Manual | ShuntingFunction | Direction) {
+	// 	this.mx10.sendData(0x02, 0x05, [
+	// 		{value: vehicleAddress, length: 2},
+	// 		{value: specialFunctionMode, length: 2},
+	// 		{value: specialFunctionStatus, length: 2},
+	// 	]);
+	// }
 
 	// 0x02.0x10
 	activeModeTrain(vehicleAddress: number) {
@@ -288,17 +334,9 @@ export default class VehicleGroup
 	// 0x02.0x05
 	private parseVehicleSpecialFunction(size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if (this.onCallSpecialFunction.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const specialFunctionMode = buffer.readUInt16LE(2);
-			const specialFunctionState = buffer.readUInt16LE(4);
-
-			this.onCallSpecialFunction.next({
-				nid: NID,
-				specialFunctionMode,
-				specialFunctionState,
-			});
-		}
+		if(!this.onCallSpecialFunction.observed)
+			return;
+		this.onCallSpecialFunction.next(MsgSpecialFx.fromBuffer(mode, buffer));
 	}
 
 	// 0x02.0x12

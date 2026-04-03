@@ -126,10 +126,10 @@ export enum FxConfigType {
 	ANY = 0x20
 }
 
-export enum SpecialFunctionMode {
+export enum SpecialFxNr {
 	MANUAL = 1,
-	SHUNTING_FUNCTION = 2,
-	DIRECTION_DEFAULT = 3,
+	SHUNTING = 2,
+	DIR_DEFAULT = 3,
 }
 
 export enum Manual {
@@ -137,7 +137,7 @@ export enum Manual {
 	ON = 1,
 }
 
-export enum ShuntingFunction {
+export enum Shunting {
 	OFF = 0,
 	AZBZ = 1,
 	HALF = 2,
