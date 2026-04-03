@@ -7,7 +7,7 @@ import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
 import {manualModeB, shuntingFunctionB} from '../common/bites';
-import {Query, ZcanDataArray} from '../common/communication';
+import {Query} from '../common/communication';
 import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 
 /**
@@ -194,12 +194,12 @@ export default class LanDataGroup
 		}
 
 		const specialFunc = buffer.readUInt32LE(50);
-		const shuntingFunction = specialFunc & shuntingFunctionB;
+		const shunting = specialFunc & shuntingFunctionB;
 		const manualMode = (specialFunc & manualModeB) >> 4;
 		const deleted = this.parseDeleted(deletedFlag);
 
 		this.onDataValueExtended.next({nid: NID, flags, functionCount, speedStep, forward, eastWest,
-			emergencyStop, operatingMode, functionsStates, shuntingFunction, manualMode, deleted});
+			emergencyStop, operatingMode, functionsStates, shunting, manualMode, deleted});
 	}
 
 	// 0x17.0x10

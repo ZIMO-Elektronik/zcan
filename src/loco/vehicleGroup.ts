@@ -216,7 +216,7 @@ export default class VehicleGroup
 			return (msg.nid() === nid);
 		})
 		const rv = await this.sfxQ.run();
-		// this.mx10.logInfo.next("mx10.getSpecialFx.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.getSpecialFx.rv: " + JSON.stringify(rv));
 		this.sfxQ.unlock();
 		this.sfxQ = undefined;
 		return rv;
@@ -239,14 +239,14 @@ export default class VehicleGroup
 			return (msg.nid() === nid);
 		})
 		const rv = await this.sfxQ.run();
-		// this.mx10.logInfo.next("mx10.setSpecialFx.rv: " + JSON.stringify(rv));
+		this.mx10.logInfo.next("mx10.setSpecialFx.rv: " + JSON.stringify(rv));
 		this.sfxQ.unlock();
 		this.sfxQ = undefined;
 		return rv;
 	}
 
-	// changeSpecialFunction(vehicleAddress: number, specialFunctionMode: SpecialFunctionMode,
-	// 	specialFunctionStatus: Manual | ShuntingFunction | Direction) {
+	// changeSpecialFunction(vehicleAddress: number, specialFunctionMode: SpecialFxNr,
+	// 	specialFunctionStatus: Manual | Shunting| Direction) {
 	// 	this.mx10.sendData(0x02, 0x05, [
 	// 		{value: vehicleAddress, length: 2},
 	// 		{value: specialFunctionMode, length: 2},

@@ -47,7 +47,7 @@ export interface DataValueExtendedData {
 	operatingMode: OperatingMode;
 	functionsStates: boolean[];
 	flags: TrainFlags;
-	shuntingFunction: Shunting;
+	shunting: Shunting;
 	manualMode: Manual;
 	deleted: boolean;
 }

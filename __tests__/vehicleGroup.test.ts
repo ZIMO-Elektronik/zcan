@@ -2,7 +2,7 @@ import {createMX10, initConnection} from './util';
 import {afterAll, beforeAll, expect, it} from '@jest/globals';
 import {firstValueFrom} from 'rxjs';
 import {delay} from '../src/common/utils';
-import {Direction, Manual, OperatingMode, ShuntingFunction, SpecialFunctionMode} from '../src';
+import {Direction, Manual, OperatingMode, Shunting, SpecialFxNr} from '../src';
 
 describe('Vehicle group tests - 0x02', () =>
 {
@@ -98,19 +98,19 @@ describe('Vehicle group tests - 0x02', () =>
 	});
 
 	test.each([
-		{mode: SpecialFunctionMode.MANUAL, state: Manual.OFF},
-		{mode: SpecialFunctionMode.SHUNTING_FUNCTION, state: ShuntingFunction.AZBZ},
+		{mode: SpecialFxNr.MANUAL, state: Manual.OFF},
+		{mode: SpecialFxNr.SHUNTING, state: Shunting.AZBZ},
 		{
-			mode: SpecialFunctionMode.DIRECTION_DEFAULT,
+			mode: SpecialFxNr.DIR_DEFAULT,
 			state: Direction.WEST,
 		},
 	])('0x05 - special function mode', async ({mode, state}) => {
-		mx10.vehicle.changeSpecialFunction(testNID, mode, state);
-		const data = await firstValueFrom(mx10.vehicle.onCallSpecialFunction);
+		
+		const msg = await mx10.vehicle.setSpecialFx(testNID, mode, state);
 
-		expect(data).toBeDefined();
-		expect(data.nid).toBe(testNID);
-		expect(data.specialFunctionMode).toBe(mode);
-		expect(data.specialFunctionState).toBe(state);
+		expect(msg).toBeDefined();
+		expect(msg?.nid()).toBe(testNID);
+		expect(msg?.sfxNr()).toBe(mode);
+		expect(msg?.state()).toBe(state);
 	});
 });
