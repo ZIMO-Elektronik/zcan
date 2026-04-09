@@ -6,7 +6,7 @@ import {RemoveLocomotiveData, DataNameExtended, DataNameValue1,
 	ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData} from '../common/models';
 import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
 import ExtendedASCII from '../common/extendedAscii';
-import { MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp } from './dataMsg';
+import { MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp, MsgItemsByNidReq, MsgItemsByNidRsp } from './dataMsg';
 import { Query } from '../docs_entrypoint';
 
 /**
@@ -17,7 +17,7 @@ export default class DataGroup
 {
 	public readonly onGroupCount = new Subject<MsgGroupCount>();
 	public readonly onListItemsByIndex = new Subject<MsgItemsByIndexRsp>();
-	public readonly onListItemsByNID = new Subject<ItemListByNidData>();
+	public readonly onListItemsByNid = new Subject<MsgItemsByNidRsp>();
 	public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
 	public readonly onItemImageConfig = new Subject<MsgItemImage>();
 	public readonly onItemFxMode = new Subject<ItemFxMode>();
@@ -28,6 +28,7 @@ export default class DataGroup
 	private imageQ: Query<MsgItemImage> | undefined = undefined;
 	private groupCountQ: Query<MsgGroupCount> | undefined = undefined;
 	private byIndexQ: Query<MsgItemsByIndexRsp> | undefined = undefined;
+	private byNidQ: Query<MsgItemsByNidRsp> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -161,13 +162,32 @@ export default class DataGroup
 	// 	], 0b00);
 	// }
 
-	listItemsByNID(searchAfterValue: number)
+	async listItemsByNid(previousNid: number)
 	{
-		this.mx10.sendData(0x07, 0x02, [
-			{value: this.mx10.mx10NID, length: 2},
-			{value: searchAfterValue, length: 2},
-		], 0b00);
+		if(this.byNidQ !== undefined && !await this.byNidQ.lock()) {
+			this.mx10.logInfo.next("mx10.listItemsByNid: failed to acquire lock");
+			return undefined;
+		}
+		this.byNidQ = new Query(MsgItemsByNidReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onListItemsByNid);
+		this.byNidQ.tx = ((header) => {
+			const msg = new MsgItemsByNidReq(header, previousNid);
+			this.mx10.logInfo.next('listItemsByNid query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		const rv = await this.byNidQ.run();
+		this.mx10.logInfo.next("mx10.listItemsByNid.rv: " + JSON.stringify(rv));
+		this.byNidQ.unlock();
+		this.byNidQ = undefined;
+		return rv;
 	}
+
+	// listItemsByNID(searchAfterValue: number)
+	// {
+	// 	this.mx10.sendData(0x07, 0x02, [
+	// 		{value: this.mx10.mx10NID, length: 2},
+	// 		{value: searchAfterValue, length: 2},
+	// 	], 0b00);
+	// }
 
 	removeLocomotive(toRemove: number, removeFrom = this.mx10.mx10NID)
 	{
@@ -382,13 +402,14 @@ export default class DataGroup
 	// 0x07.0x02
 	private parseItemListByNid(size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if(!this.onListItemsByNID.observed)
+		if(!this.onListItemsByNid.observed)
 			return;
 		const NID = buffer.readUInt16LE(0);
 		const index = buffer.readUInt16LE(2);
 		const itemState = buffer.readUInt16LE(4);
 		const lastTick = buffer.readUInt16LE(6);
-		this.onListItemsByNID.next({nid: NID, index, itemState, lastTick});
+		const msg = new MsgItemsByNidRsp(MsgItemsByNidRsp.header(mode, nid), NID, index, itemState, lastTick);
+		this.onListItemsByNid.next(msg);
 	}
 
 	// 0x07.0x04

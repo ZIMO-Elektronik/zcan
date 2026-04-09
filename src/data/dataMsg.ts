@@ -62,10 +62,9 @@ export class MsgItemsByNidReq extends Message
 	public static header(mode: MsgMode, nid: number): Header
 	{return {group: 0x7, cmd: 0x2, mode: mode, nid: nid}}
 
-	constructor(header: Header, mx10Nid: number, precedingNid: number)
+	constructor(header: Header, precedingNid: number)
 	{
 		super(header);
-		super.push({value: mx10Nid, length: 2});
 		super.push({value: precedingNid, length: 2});
 	}
 }
@@ -84,10 +83,10 @@ export class MsgItemsByNidRsp extends Message
 		if(lastTick !== undefined)
 			super.push({value: lastTick, length: 2});
 	}
-	itemNid(): number {return (this.data[1].value as number)}
-	index(): number {return (this.data[2].value as number)}
-	itemState(): number {return (this.data[3].value as number)}
-	lastTick(): number {return (this.data[4].value as number)}
+	itemNid(): number {return (this.data[0].value as number)}
+	index(): number {return (this.data[1].value as number)}
+	itemState(): number {return (this.data[2].value as number)}
+	lastTick(): number {return (this.data[3].value as number)}
 }
 
 export class MsgDataName extends Message
