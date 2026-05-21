@@ -2,12 +2,12 @@
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {Subject} from 'rxjs';
-import {RemoveLocomotiveData, DataNameExtended, DataNameValue1,
-	ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData} from '../common/models';
+import {DataNameValue1, ItemFxMode, ItemFxConfig} from '../common/models';
 import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
 import ExtendedASCII from '../common/extendedAscii';
-import { MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp, MsgItemsByNidReq, MsgItemsByNidRsp } from './dataMsg';
-import { Query } from '../docs_entrypoint';
+import {MsgDataClear, MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp,
+	MsgItemsByNidReq, MsgItemsByNidRsp } from './dataMsg';
+import {Query} from '../docs_entrypoint';
 
 /**
  *
@@ -18,7 +18,7 @@ export default class DataGroup
 	public readonly onGroupCount = new Subject<MsgGroupCount>();
 	public readonly onListItemsByIndex = new Subject<MsgItemsByIndexRsp>();
 	public readonly onListItemsByNid = new Subject<MsgItemsByNidRsp>();
-	public readonly onRemoveLocomotive = new Subject<RemoveLocomotiveData>();
+	public readonly onClear = new Subject<MsgDataClear>();
 	public readonly onItemImageConfig = new Subject<MsgItemImage>();
 	public readonly onItemFxMode = new Subject<ItemFxMode>();
 	public readonly onItemFxConfig = new Subject<ItemFxConfig>();
@@ -29,6 +29,7 @@ export default class DataGroup
 	private groupCountQ: Query<MsgGroupCount> | undefined = undefined;
 	private byIndexQ: Query<MsgItemsByIndexRsp> | undefined = undefined;
 	private byNidQ: Query<MsgItemsByNidRsp> | undefined = undefined;
+	private clearQ: Query<MsgDataClear> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -189,13 +190,36 @@ export default class DataGroup
 	// 	], 0b00);
 	// }
 
-	removeLocomotive(toRemove: number, removeFrom = this.mx10.mx10NID)
+	async clear(nid: number)
 	{
-		this.mx10.sendData(0x07, 0x1f, [
-			{value: removeFrom, length: 2},
-			{value: toRemove, length: 2},
-		]);
+		if(this.clearQ !== undefined && !await this.clearQ.lock()) {
+			this.mx10.logInfo.next("mx10.dataClear: failed to acquire lock");
+			return undefined;
+		}
+		this.clearQ = new Query(MsgDataClear.header(MsgMode.CMD, this.mx10.mx10NID), this.onClear);
+		this.clearQ.tx = ((header) => {
+			const msg = new MsgDataClear(header, nid);
+			this.mx10.logInfo.next('dataClear query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.clearQ.match = ((msg) => {
+			return msg.nid() === msg.nid();
+		});
+		this.clearQ.subscribe(false);
+		const rv = await this.clearQ.run();
+		this.mx10.logInfo.next("mx10.dataClear.rv: " + JSON.stringify(rv));
+		this.clearQ.unlock();
+		this.clearQ = undefined;
+		return rv;
 	}
+
+	// removeLocomotive(toRemove: number, removeFrom = this.mx10.mx10NID)
+	// {
+	// 	this.mx10.sendData(0x07, 0x1f, [
+	// 		{value: removeFrom, length: 2},
+	// 		{value: toRemove, length: 2},
+	// 	]);
+	// }
 
 	itemImageConfig(nid: number, type: ImageType, imageId: number)
 	{
@@ -412,14 +436,15 @@ export default class DataGroup
 		this.onListItemsByNid.next(msg);
 	}
 
-	// 0x07.0x04
+	// 0x07.0x1f
 	private parseDataClear(size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if(!this.onRemoveLocomotive.observed)
+		if(!this.onClear.observed)
 			return;
 		const NID = buffer.readUInt16LE(0);
 		const state = buffer.readUInt16LE(2);
-		this.onRemoveLocomotive.next({nid: NID, state: state});
+		const msg = new MsgDataClear(MsgDataClear.header(mode, NID), state);
+		this.onClear.next(msg);
 	}
 
 	// 0x07.0x12

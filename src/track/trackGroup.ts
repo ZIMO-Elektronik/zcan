@@ -76,7 +76,7 @@ export default class TrackCfgGroup
 		const NID = buffer.readUInt16LE(0);
 		const cfgNum = buffer.readUInt32LE(2);
 		const cvValue = buffer.readUint8(6);
-		// this.mx10.logInfo.next("parseTseProgWrite: " + JSON.stringify(buffer));
+		this.mx10.logInfo.next("parseTseProgWrite: mode=" + mode + " ... " + JSON.stringify(buffer));
 
 		this.onTseProgWriteExtended.next(new MsgCvWrite(MsgCvWrite.header(mode, nid), NID, cfgNum, cvValue));
 	}

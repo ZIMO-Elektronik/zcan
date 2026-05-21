@@ -183,3 +183,17 @@ export class MsgItemImage extends Message
 	imageType(): number {return (this.data[this.header.mode === MsgMode.REQ ? 1 : 0].value as number)}
 	imageId(): number {return (this.header.mode === MsgMode.REQ ? 0 : this.data[1].value as number)}
 }
+
+export class MsgDataClear extends Message
+{
+	public static header(mode: MsgMode, nid: number): Header
+	{return {group: 0x7, cmd: 0x1f, mode: mode, nid: nid}}
+
+	constructor(header: Header, nidOrState: number)
+	{
+		super(header);
+		super.push({value: nidOrState, length: 2});
+	}
+	nid(): number {return (this.header.mode === MsgMode.CMD ? this.data[0].value as number : this.header.nid || 0)}
+	state(): number {return (this.header.mode === MsgMode.CMD ? 0 : this.data[0].value as number)}
+}
