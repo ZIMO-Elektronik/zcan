@@ -1,11 +1,10 @@
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
-import {CallFunctionData} from '../common/models';
 import {Direction, Manual, MaxSpeedSteps, MsgMode, OperatingMode, SpecialFxNr} from '../common/enums';
 import {combineSpeedAndDirection} from '../common/speedUtils';
 import { Query } from '../common/communication';
-import { MsgSpecialFx, MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
+import { MsgFx, MsgFxStates, MsgSpecialFx, MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
 
 /**
  *
@@ -17,13 +16,16 @@ export default class VehicleGroup
 	public readonly onVehicleLastCtl = new Subject<MsgVehicleLastCtl>();
 	public readonly onVehicleMode = new Subject<MsgVehicleMode>();
 	public readonly onVehicleSpeed = new Subject<MsgVehicleSpeed>();
-	public readonly onCallFunction = new Subject<CallFunctionData>();
+	public readonly onCallFunction = new Subject<MsgFx>();
+	public readonly onFxStates = new Subject<MsgFxStates>();
 	public readonly onCallSpecialFunction = new Subject<MsgSpecialFx>();
 
 	private stateQ: Query<MsgVehicleState> | undefined = undefined;
 	private lastCtlQ: Query<MsgVehicleLastCtl> | undefined = undefined;
 	private modeQ: Query<MsgVehicleMode> | undefined = undefined;
 	private speedQ: Query<MsgVehicleSpeed> | undefined = undefined;
+	private fxQ: Query<MsgFx> | undefined = undefined;
+	private fxStatesQ: Query<MsgFxStates> | undefined = undefined;
 	private sfxQ: Query<MsgSpecialFx> | undefined = undefined;
 
 	private mx10: MX10;
@@ -190,13 +192,82 @@ export default class VehicleGroup
 		]);
 	}
 
-	callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
+	// callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
+	// {
+	// 	this.mx10.sendData(0x02, 0x04, [
+	// 		{value: vehicleAddress, length: 2},
+	// 		{value: functionId, length: 2},
+	// 		{value: Number(functionStatus), length: 2},
+	// 	]);
+	// }
+
+	async getFx(nid: number, fxNr: number)
 	{
-		this.mx10.sendData(0x02, 0x04, [
-			{value: vehicleAddress, length: 2},
-			{value: functionId, length: 2},
-			{value: Number(functionStatus), length: 2},
-		]);
+		if(this.fxQ !== undefined && !await this.fxQ.lock()) {
+			this.mx10.logInfo.next("mx10.getFx: failed to acquire lock");
+			return undefined;
+		}
+		this.fxQ = new Query(MsgFx.header(MsgMode.REQ, nid), this.onCallFunction);
+		this.fxQ.tx = ((header) => {
+			const msg = new MsgFx(header, fxNr);
+			// this.mx10.logInfo.next('fx query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.fxQ.match = ((msg) => {
+			// this.mx10.logInfo.next('fx query rx: ' + JSON.stringify(msg));
+			return (msg.nid() === nid && msg.fxNr() === fxNr);
+		})
+		const rv = await this.fxQ.run();
+		this.mx10.logInfo.next("mx10.getFx.rv: " + JSON.stringify(rv));
+		this.fxQ.unlock();
+		this.fxQ = undefined;
+		return rv;
+	}
+
+	async setFx(nid: number, fxNr: number, state: number)
+	{
+		if(this.fxQ !== undefined && !await this.fxQ.lock()) {
+			this.mx10.logInfo.next("mx10.setFx: failed to acquire lock");
+			return undefined;
+		}
+		this.fxQ = new Query(MsgFx.header(MsgMode.CMD, nid), this.onCallFunction);
+		this.fxQ.tx = ((header) => {
+			const msg = new MsgFx(header, fxNr, state);
+			// this.mx10.logInfo.next('fx query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.fxQ.match = ((msg) => {
+			// this.mx10.logInfo.next('fx query rx: ' + JSON.stringify(msg));
+			return (msg.nid() === nid && msg.fxNr() === fxNr);
+		})
+		const rv = await this.fxQ.run();
+		this.mx10.logInfo.next("mx10.setFx.rv: " + JSON.stringify(rv));
+		this.fxQ.unlock();
+		this.fxQ = undefined;
+		return rv;
+	}
+
+	async getFxStates(nid: number)
+	{
+		if(this.fxStatesQ !== undefined && !await this.fxStatesQ.lock()) {
+			this.mx10.logInfo.next("mx10.getFxStates: failed to acquire lock");
+			return undefined;
+		}
+		this.fxStatesQ = new Query(MsgFxStates.header(MsgMode.REQ, nid), this.onFxStates);
+		this.fxStatesQ.tx = ((header) => {
+			const msg = new MsgFxStates(header);
+			// this.mx10.logInfo.next('fxStates query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.fxStatesQ.match = ((msg) => {
+			// this.mx10.logInfo.next('fxStates query rx: ' + JSON.stringify(msg));
+			return (msg.nid() === nid);
+		})
+		const rv = await this.fxStatesQ.run();
+		this.mx10.logInfo.next("mx10.getFxStates.rv: " + JSON.stringify(rv));
+		this.fxStatesQ.unlock();
+		this.fxStatesQ = undefined;
+		return rv;
 	}
 
 	async getSpecialFx(nid: number, sfxNr: SpecialFxNr)
@@ -213,7 +284,7 @@ export default class VehicleGroup
 		});
 		this.sfxQ.match = ((msg) => {
 			// this.mx10.logInfo.next('sfx query rx: ' + JSON.stringify(msg));
-			return (msg.nid() === nid);
+			return (msg.nid() === nid && msg.sfxNr() === sfxNr);
 		})
 		const rv = await this.sfxQ.run();
 		this.mx10.logInfo.next("mx10.getSpecialFx.rv: " + JSON.stringify(rv));
@@ -236,7 +307,7 @@ export default class VehicleGroup
 		});
 		this.sfxQ.match = ((msg) => {
 			// this.mx10.logInfo.next('sfx query rx: ' + JSON.stringify(msg));
-			return (msg.nid() === nid);
+			return (msg.nid() === nid && msg.sfxNr() === sfxNr);
 		})
 		const rv = await this.sfxQ.run();
 		this.mx10.logInfo.next("mx10.setSpecialFx.rv: " + JSON.stringify(rv));
@@ -276,6 +347,7 @@ export default class VehicleGroup
 			case 0x00: this.parseVehicleState(size, mode, nid, buffer); break;
 			case 0x01: this.parseVehicleMode(size, mode, nid, buffer); break;
 			case 0x02: this.parseVehicleSpeed(size, mode, nid, buffer); break;
+			case 0x03: this.parseVehicleFxStates(size, mode, nid, buffer); break;
 			case 0x04: this.parseVehicleFunction(size, mode, nid, buffer); break;
 			case 0x05: this.parseVehicleSpecialFunction(size, mode, nid, buffer); break;
 			case 0x12: this.parseVehicleLastCtl(size, mode, nid, buffer); break;
@@ -314,20 +386,26 @@ export default class VehicleGroup
 		this.onVehicleSpeed.next(msg);
 	}
 
+	// 0x02.0x03
+	private parseVehicleFxStates(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if (this.onFxStates.observed) {
+			const msg = MsgFxStates.fromBuffer(mode, buffer);
+			this.onFxStates.next(msg);
+		}
+	}
+
 	// 0x02.0x04
 	private parseVehicleFunction(size: number, mode: number, nid: number, buffer: Buffer)
 	{
 		if (this.onCallFunction.observed) {
-			const NID = buffer.readUInt16LE(0);
-			const functionNumber = buffer.readUInt16LE(2);
-			const functionState = buffer.readUInt16LE(4);
-			const functionActive = functionState !== 0x00;
+			// const NID = buffer.readUInt16LE(0);
+			// const functionNumber = buffer.readUInt16LE(2);
+			// const functionState = buffer.readUInt16LE(4);
+			// const functionActive = functionState !== 0x00;
 
-			this.onCallFunction.next({
-				nid: NID,
-				functionNumber,
-				functionState: functionActive,
-			});
+			const msg = MsgFx.fromBuffer(mode, buffer);
+			this.onCallFunction.next(msg);
 		}
 	}
 

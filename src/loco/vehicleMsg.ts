@@ -164,6 +164,57 @@ export class MsgVehicleLastCtl extends Message
 	}
 }
 
+export class MsgFx extends Message
+{
+	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x4, mode, nid}}
+
+	constructor(header: Header, fxNr: number, state?: number)
+	{
+		super(header);
+		super.push({value: fxNr, length: 2});
+		if(header.mode === MsgMode.REQ)
+			return;
+		super.push({value: state || 0, length: 2});
+	}
+	nid(): number {return this.header.nid || 0}
+	fxNr(): number {return this.data[0].value as number;}
+	state(): number | undefined {return this.data.length < 2 ? undefined : this.data[1].value as number;}
+
+	public static fromBuffer(mode: MsgMode, buffer: Buffer)
+	{
+		const nid = buffer.readUInt16LE(0);
+		const fxNr = buffer.readUInt16LE(2);
+		const state = buffer.readUint16LE(4);
+		const msg = new MsgFx(MsgFx.header(mode, nid), fxNr, state);
+		return msg;
+	}
+}
+
+export class MsgFxStates extends Message
+{
+	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x3, mode, nid}}
+
+	constructor(header: Header, state?: number)
+	{
+		super(header);
+		if(header.mode === MsgMode.REQ)
+			return;
+		super.push({value: state || 0, length: 2});
+	}
+	nid(): number {return this.header.nid || 0}
+	fx(fxNr: number): boolean | undefined {
+		return this.data.length < 1 ? undefined : ((this.data[0].value as number >> fxNr) & 1) === 1;}
+	state(): number | undefined {return this.data.length < 1 ? undefined : this.data[0].value as number;}
+
+	public static fromBuffer(mode: MsgMode, buffer: Buffer)
+	{
+		const nid = buffer.readUInt16LE(0);
+		const state = buffer.readUint32LE(2);
+		const msg = new MsgFxStates(MsgFxStates.header(mode, nid), state);
+		return msg;
+	}
+}
+
 export class MsgSpecialFx extends Message
 {
 	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x5, mode, nid}}
@@ -185,7 +236,7 @@ export class MsgSpecialFx extends Message
 		const nid = buffer.readUInt16LE(0);
 		const sfxNr = buffer.readUInt16LE(2);
 		const state = buffer.readUint16LE(4);
-		const msg = new MsgSpecialFx(MsgVehicleState.header(mode, nid), sfxNr, state);
+		const msg = new MsgSpecialFx(MsgSpecialFx.header(mode, nid), sfxNr, state);
 		return msg;
 	}
 }
