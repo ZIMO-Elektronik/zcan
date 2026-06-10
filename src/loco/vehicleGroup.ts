@@ -192,14 +192,14 @@ export default class VehicleGroup
 		]);
 	}
 
-	// callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
-	// {
-	// 	this.mx10.sendData(0x02, 0x04, [
-	// 		{value: vehicleAddress, length: 2},
-	// 		{value: functionId, length: 2},
-	// 		{value: Number(functionStatus), length: 2},
-	// 	]);
-	// }
+	callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
+	{
+		this.mx10.sendData(0x02, 0x04, [
+			{value: vehicleAddress, length: 2},
+			{value: functionId, length: 2},
+			{value: Number(functionStatus), length: 2},
+		]);
+	}
 
 	async getFx(nid: number, fxNr: number)
 	{

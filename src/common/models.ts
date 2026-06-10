@@ -268,8 +268,14 @@ export interface AccessoryPortData {
 	type: number;
 	port: number;
 }
-export interface AccessoryPinData {
+export interface AccessoryPin4Data {
 	nid: number;
 	pin: number;
+	state: number;
+}
+export interface AccessoryPin6Data {
+	nid: number;
+	pin: number;
+	type: number;
 	state: number;
 }
