@@ -22,6 +22,9 @@ export default class MX10
 	mx10IP: string | undefined;
 	connected = false;
 
+	onConnect = () => {};
+	onDisconnect = () => {};
+
 	readonly systemControl = new SystemControlGroup(this);
 	readonly accessoryCommand = new AccessoryCommandGroup(this);
 	readonly vehicle = new VehicleGroup(this);
@@ -73,7 +76,6 @@ export default class MX10
 					this.lastPing = Date.now();
 				else if(Date.now() - this.lastPing > 2000) {
 					this.logInfo.next('No ping for 2 seconds, disconnected');
-					this.connected = false;
 					this.closeSocket();
 					this.logError.next('.mx10.connection.not_connected');
 				}
@@ -113,10 +115,12 @@ export default class MX10
 			// this.connected = true;	// since subsequent portOpen cmd don't seem to be answered..
 			// await delay(this.connectionTimeout);
 
-			if(!this.connected) {
+			if(this.connected) {
+				this.onConnect();
+			} else {
 				await this.closeSocket();
 				// throw new Error('mx10.connection.timeout');
-				// throw new Error('mx10.connection.not_connected');
+				throw new Error('mx10.connection.not_connected');
 			}
 		}
 	}
@@ -145,15 +149,15 @@ export default class MX10
 
 	async closeSocket(callMx10: boolean = true)
 	{
-		if (this.mx10Socket != null) {
-			if (this.connected && callMx10) {
+		if(this.mx10Socket != null) {
+			if(this.connected && callMx10) {
 				await this.network.portClose();
-				this.connected = false;
 				this.mx10NID = 0;
 			}
 			this.mx10Socket?.close();
 			this.mx10Socket = null;
 			this.connected = false;
+			this.onDisconnect();
 		}
 	}
 
