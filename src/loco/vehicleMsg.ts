@@ -9,7 +9,6 @@ export class MsgVehicleMode extends Message
 {
 	public static header = (mode: MsgMode, nid: number) => {return {group: 0x2, cmd: 0x1, mode, nid}}
 	public static rxDelay = () => {return this.rxTiming.now()}
-	public static log: (msg: string) => void = () => {};
 
 	private static rxTiming = new Ranger({min: 5, max: 20, now: 5});
 

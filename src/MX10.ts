@@ -3,27 +3,10 @@
 import {Buffer} from 'buffer';
 import {interval, Subject} from 'rxjs';
 import {Message} from './common/communication';
-import {
-	AccessoryCommandGroup,
-	DataGroup,
-	FileControlGroup,
-	FileTransferGroup,
-	InfoGroup,
-	LanDataGroup,
-	LanInfoGroup,
-	LanNetworkGroup,
-	LanLocoStateGroup,
-	LanZimoProgrammableScriptGroup,
-	NetworkGroup,
-	PropertyConfigGroup,
-	RailwayControlGroup,
-	SystemControlGroup,
-	TrackCfgGroup,
-	TrainControlGroup,
-	VehicleGroup,
-	ZimoProgrammableScriptGroup,
-	MsgMode,
-} from './';
+import {AccessoryCommandGroup, DataGroup, FileControlGroup, FileTransferGroup, InfoGroup, LanDataGroup, LanInfoGroup,
+	LanNetworkGroup, LanLocoStateGroup, LanZimoProgrammableScriptGroup, NetworkGroup, PropertyConfigGroup,
+	RailwayControlGroup, SystemControlGroup, TrackCfgGroup, TrainControlGroup, VehicleGroup,
+	ZimoProgrammableScriptGroup, MsgMode} from './';
 import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from './common/communication';
 import {delay} from './common/utils';
 import ExtendedASCII from './common/extendedAscii';
@@ -61,7 +44,6 @@ export default class MX10
 	readonly logError = new Subject<string>();
 	readonly logWarning = new Subject<string>();
 	readonly logInfo = new Subject<string>();
-	readonly connectionTimeout: number;
 
 	private mx10Socket: Socket | null = null;
 	private incomingPort = 14521;
@@ -76,24 +58,26 @@ export default class MX10
 	private readonly reconnectionTime: number = 0;
 
 
-	constructor(nidGeneratorFunction: NIDGenerator, clientName: string, clientId: number,
-		connectionTimeout = 1000, debugCommunication = false)
+	constructor(nidGeneratorFunction: NIDGenerator, clientName: string, clientId: number, debugCommunication = false)
 	{
 		this.nidGeneratorFunction = nidGeneratorFunction;
-		this.connectionTimeout = connectionTimeout;
 		this.debugCommunication = debugCommunication;
-		this.reconnectionTime = connectionTimeout * 4;
+		this.reconnectionTime = 2000;
 		this.clientName = clientName;
 		this.clientId = clientId;
 
-		const pingIntervalMs = 1000;
-
-		if (this.connected) {
-			this.network.ping();
-		}
-		interval(pingIntervalMs).subscribe(() => {
-			if (this.connected) {
-				this.network.ping();
+		interval(1000).subscribe(async () => {
+			if(this.connected) {
+				this.logInfo.next('ping, weil connected');
+				const msg = await this.network.ping(this.mx10NID);
+				if(msg)
+					this.lastPing = Date.now();
+				else if(Date.now() - this.lastPing > 2000) {
+					this.logInfo.next('No ping for 2 seconds, disconnected');
+					this.connected = false;
+					this.closeSocket();
+					this.logError.next('.mx10.connection.not_connected');
+				}
 			}
 		});
 	}
@@ -101,11 +85,12 @@ export default class MX10
 	async initSocket(createSocketFunction: CreateSocketFunction, ipAddress: string,
 		incomingPort = 14521, outgoingPort = 14520)
 	{
-		this.mx10IP = ipAddress;
 		this.incomingPort = incomingPort;
 		this.outgoingPort = outgoingPort;
+		this.mx10IP = ipAddress;
+		// this.mx10NID = 0xc000 | Number.parseInt(ipAddress.split('.')[3]);
 
-		if (this.mx10Socket == null)
+		if(this.mx10Socket == null)
 		{
 			const socket = (this.mx10Socket = createSocketFunction({type: 'udp4'}) as Socket);
 
@@ -117,18 +102,23 @@ export default class MX10
 
 			this.mx10Socket.on('message', this.readRawData.bind(this));
 			this.myNID = await this.nidGeneratorFunction();
-			const ack = await this.lanNetwork.portOpen(this.clientName, this.clientId);
-			if(ack) {
-				this.mx10NID = ack.header.nid || 0;
+			const ping = await this.network.ping();
+			if(ping) {
 				this.connected = true;
+			} else {
+				const ack = await this.lanNetwork.portOpen(this.clientName, this.clientId);
+				if(ack) {
+					this.mx10NID = ack.header.nid || 0;
+					this.connected = true;
+				}
 			}
-			this.connected = true;	// since subsequent portOpen cmd don't seem to be answered..
-			await delay(this.connectionTimeout);
+			// this.connected = true;	// since subsequent portOpen cmd don't seem to be answered..
+			// await delay(this.connectionTimeout);
 
-			if (!this.connected) {
+			if(!this.connected) {
 				await this.closeSocket();
 				// throw new Error('mx10.connection.timeout');
-				throw new Error('mx10.connection.not_connected');
+				// throw new Error('mx10.connection.not_connected');
 			}
 		}
 	}
@@ -148,7 +138,7 @@ export default class MX10
 					this.connected = false;
 					this.mx10NID = 0;
 					this.lanNetwork.portOpen(this.clientName, this.clientId);
-					this.network.ping(0b00);
+					this.network.ping();
 				}
 			}, this.reconnectionTime);
 		}
@@ -171,6 +161,7 @@ export default class MX10
 
 	sendMsg(msg: Message, force = false)
 	{
+		// Message.log = (msg) => this.logInfo.next(msg);
 		const buffer = msg.udp(this.myNID);
 		this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
 		this.send(buffer, force);
@@ -231,7 +222,7 @@ export default class MX10
 	private send(message: Buffer, force = false)
 	{
 		if(!this.connected && !force) {
-			this.logError.next('.mx10.connection.not_connected');
+			// this.logError.next('.mx10.connection.not_connected');
 			this.logInfo.next('unable to send ' + JSON.stringify(message));
 			return;
 		}

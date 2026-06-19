@@ -21,6 +21,8 @@ export type ZcanDataArray = ZcanData[];
 
 export class Message
 {
+	public static log: (msg: string) => void = () => {};
+
 	header: Header;
 	data: ZcanDataArray;
 
@@ -55,6 +57,7 @@ export class Message
 		}
 
 		this.data.forEach((element) => {
+			// Message.log('offset = ' + offset + ', element: ' + JSON.stringify(element) + ', buffer: ' + JSON.stringify(buffer));
 			if (typeof element.value === 'string') {
 				ExtendedASCII.str2byte(element.value, buffer, offset, element.length);
 				offset += element.length;

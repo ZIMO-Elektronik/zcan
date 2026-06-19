@@ -32,3 +32,24 @@ export class MsgPortClose extends Message
 		super.push({value: myNid, length: 2});
 	}
 }
+
+export class MsgPing extends Message
+{
+	public static header(mode: MsgMode, nid: number): Header
+	{return {group: 0xa, cmd: 0x0, mode: mode, nid: nid}}
+
+	constructor(header: Header, masterUid?: number, type?: number, session?: number)
+	{
+		super(header);
+		if(header.mode < MsgMode.EVT)
+			return;
+		super.push({value: masterUid || 0, length: 4});
+		super.push({value: type || 0, length: 2});
+		super.push({value: session || 0, length: 2});
+	}
+
+	nid() {return this.header.nid as number;}
+	masterUid() {return this.data[0].value as number;}
+	type() {return this.data[0].value as number;}
+	session() {return this.data[0].value as number;}
+}
