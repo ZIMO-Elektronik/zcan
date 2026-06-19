@@ -163,8 +163,6 @@ export class Query<T extends Message>
 	}
 }
 
-export type NIDGenerator = () => Promise<number>;
-
 export interface Socket {
 	bind(port?: number, address?: string, callback?: () => void): this;
 	bind(port?: number, callback?: () => void): this;

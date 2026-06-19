@@ -7,7 +7,7 @@ import {AccessoryCommandGroup, DataGroup, FileControlGroup, FileTransferGroup, I
 	LanNetworkGroup, LanLocoStateGroup, LanZimoProgrammableScriptGroup, NetworkGroup, PropertyConfigGroup,
 	RailwayControlGroup, SystemControlGroup, TrackCfgGroup, TrainControlGroup, VehicleGroup,
 	ZimoProgrammableScriptGroup, MsgMode} from './';
-import {CreateSocketFunction, NIDGenerator, Socket, ZcanDataArray} from './common/communication';
+import {CreateSocketFunction, Socket, ZcanDataArray} from './common/communication';
 import {delay} from './common/utils';
 import ExtendedASCII from './common/extendedAscii';
 
@@ -53,18 +53,17 @@ export default class MX10
 	private clientName: string;
 	private clientId: number;
 
-	private readonly nidGeneratorFunction: NIDGenerator;
 	private readonly debugCommunication: boolean;
 	private readonly reconnectionTime: number = 0;
 
 
-	constructor(nidGeneratorFunction: NIDGenerator, clientName: string, clientId: number, debugCommunication = false)
+	constructor(ownNid: number, clientName: string, clientId: number, debugCommunication = false)
 	{
-		this.nidGeneratorFunction = nidGeneratorFunction;
 		this.debugCommunication = debugCommunication;
 		this.reconnectionTime = 2000;
 		this.clientName = clientName;
 		this.clientId = clientId;
+		this.myNID = ownNid;
 
 		interval(1000).subscribe(async () => {
 			if(this.connected) {
@@ -101,7 +100,6 @@ export default class MX10
 			});
 
 			this.mx10Socket.on('message', this.readRawData.bind(this));
-			this.myNID = await this.nidGeneratorFunction();
 			const ping = await this.network.ping();
 			if(ping) {
 				this.connected = true;
