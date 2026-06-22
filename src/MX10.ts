@@ -76,7 +76,7 @@ export default class MX10
 					this.lastPing = Date.now();
 				else if(Date.now() - this.lastPing > 2000) {
 					this.logInfo.next('No ping for 2 seconds, disconnected');
-					this.closeSocket();
+					await this.closeSocket();
 					this.logError.next('.mx10.connection.not_connected');
 				}
 			}
