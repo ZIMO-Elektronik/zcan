@@ -1,6 +1,7 @@
 /* eslint-disable no-bitwise */
 
 import {Buffer} from 'buffer';
+import {RemoteInfo} from 'dgram';
 import {interval, Subject} from 'rxjs';
 import {Message} from './common/communication';
 import {AccessoryCommandGroup, DataGroup, FileControlGroup, FileTransferGroup, InfoGroup, LanDataGroup, LanInfoGroup,
@@ -24,6 +25,7 @@ export default class MX10
 
 	onConnect = () => {};
 	onDisconnect = () => {};
+	onTimeout = () => {};
 
 	readonly systemControl = new SystemControlGroup(this);
 	readonly accessoryCommand = new AccessoryCommandGroup(this);
@@ -75,9 +77,10 @@ export default class MX10
 				if(msg)
 					this.lastPing = Date.now();
 				else if(Date.now() - this.lastPing > 2000) {
-					this.logInfo.next('No ping for 2 seconds, disconnected');
-					await this.closeSocket();
-					this.logError.next('.mx10.connection.not_connected');
+					this.logInfo.next('No ping for 2 seconds!');
+					this.onTimeout();
+					// await this.closeSocket();
+					// this.logError.next('.mx10.connection.not_connected');
 				}
 			}
 		});
@@ -90,10 +93,17 @@ export default class MX10
 		this.outgoingPort = outgoingPort;
 		this.mx10IP = ipAddress;
 		// this.mx10NID = 0xc000 | Number.parseInt(ipAddress.split('.')[3]);
+		if(this.mx10Socket)
+		{
+			this.logInfo.next('.initSocket: ' + 'closing socket');
+			await this.closeSocket();
+		}
 
 		if(this.mx10Socket == null)
 		{
+			this.logInfo.next('.initSocket: ' + 'creating socket');
 			const socket = (this.mx10Socket = createSocketFunction({type: 'udp4'}) as Socket);
+			this.logInfo.next('.initSocket: ' + 'socket = ' + JSON.stringify(socket));
 
 			await new Promise((resolve) => {
 				socket.bind(incomingPort, () => {
@@ -101,7 +111,12 @@ export default class MX10
 				});
 			});
 
+			this.logInfo.next('.initSocket: ' + 'socket. = ' + JSON.stringify(socket));
 			this.mx10Socket.on('message', this.readRawData.bind(this));
+			// this.mx10Socket.on('message', (data, rinfo) => {
+			// 	this.logInfo.next('onMessage: ' + JSON.stringify(data) + ' ... ' + JSON.stringify(rinfo));
+			// });
+			this.logInfo.next('.initSocket: ' + 'socket.. = ' + JSON.stringify(socket));
 			const ping = await this.network.ping();
 			if(ping) {
 				this.connected = true;
@@ -116,12 +131,19 @@ export default class MX10
 			// await delay(this.connectionTimeout);
 
 			if(this.connected) {
+				this.logInfo.next('.initSocket: ' + 'created socket');
 				this.onConnect();
+			// } else {
+			// 	await this.closeSocket();
+			// 	// throw new Error('mx10.connection.timeout');
+			// 	throw new Error('mx10.connection.not_connected');
 			} else {
-				await this.closeSocket();
-				// throw new Error('mx10.connection.timeout');
-				throw new Error('mx10.connection.not_connected');
+				this.logInfo.next('.initSocket: ' + 'failed to connect');
 			}
+		}
+		else
+		{
+			this.logInfo.next('.initSocket: ' + 'socket wasnt null');
 		}
 	}
 
@@ -147,18 +169,17 @@ export default class MX10
 		this.lastPing = date;
 	}
 
-	async closeSocket(callMx10: boolean = true)
+	async closeSocket()
 	{
+		this.logInfo.next('.closeSocket');
 		if(this.mx10Socket != null) {
-			if(this.connected && callMx10) {
-				await this.network.portClose();
-				this.mx10NID = 0;
-			}
+			await this.network.portClose();
 			this.mx10Socket?.close();
 			this.mx10Socket = null;
-			this.connected = false;
-			this.onDisconnect();
 		}
+		this.mx10NID = 0;
+		this.connected = false;
+		this.onDisconnect();
 	}
 
 	sendMsg(msg: Message, force = false)
@@ -234,9 +255,10 @@ export default class MX10
 		});
 	}
 
-	private readRawData(message: Buffer)
+	private readRawData(message: Buffer, rinfo: RemoteInfo)
 	{
-		if(message.byteLength < 8)
+		//this.logInfo.next('readRawData: ' + JSON.stringify(message));
+		if(message.byteLength < 8 || rinfo.address !== this.mx10IP)
 			return;
 		const size = message.readUInt16LE(0);
 		const group = message.readUInt8(4);
