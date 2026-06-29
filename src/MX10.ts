@@ -62,9 +62,9 @@ export default class MX10
 	private readonly reconnectionTime: number = 0;
 
 
-	constructor(ownNid: number, clientName: string, clientId: number, debugCommunication = false)
+	constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs: number = 2000, debug = false)
 	{
-		this.debugCommunication = debugCommunication;
+		this.debugCommunication = debug;
 		this.reconnectionTime = 2000;
 		this.clientName = clientName;
 		this.clientId = clientId;
@@ -76,7 +76,7 @@ export default class MX10
 				const msg = await this.network.ping(this.mx10NID);
 				if(msg)
 					this.lastPing = Date.now();
-				else if(Date.now() - this.lastPing > 2000) {
+				else if(Date.now() - this.lastPing > pingTimeoutMs) {
 					this.logInfo.next('No ping for 2 seconds!');
 					this.onTimeout();
 					// await this.closeSocket();
