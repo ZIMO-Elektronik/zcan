@@ -43,18 +43,18 @@ export default class NetworkGroup
 		});
 		this.pingQ.tx = ((header) => {
 			const msg = new MsgPing(header, nid);
-			this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg, true);
 		});
 		this.pingQ.match = ((msg) => {
-			this.mx10.logInfo.next('ping query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('ping query rx: ' + JSON.stringify(msg));
 			if(nid & 0xff)
 				return msg.header.nid === nid;
 			return ((msg.header.nid||0) & 0xff00) === (nid & 0xff00);
 		});
 		this.pingQ.subscribe(false);
 		const rv = await this.pingQ.run(100);
-		this.mx10.logInfo.next("mx10.ping.rv: " + JSON.stringify(rv));
+		// this.mx10.logInfo.next("mx10.ping.rv: " + JSON.stringify(rv));
 		this.pingQ.unlock();
 		this.pingQ = undefined;
 		return rv;
@@ -104,7 +104,7 @@ export default class NetworkGroup
 		if(!this.onPing.observed)
 			return;
 
-		this.mx10.logInfo.next('parsePing from 0x' + nid.toString(16) + ': ' + JSON.stringify(buffer));
+		// this.mx10.logInfo.next('parsePing from 0x' + nid.toString(16) + ': ' + JSON.stringify(buffer));
 
 		if(mode < MsgMode.EVT) {
 			const nid = buffer.readUInt16LE(0);

@@ -72,7 +72,7 @@ export default class MX10
 
 		interval(1000).subscribe(async () => {
 			if(this.connected) {
-				this.logInfo.next('ping, weil connected');
+				// this.logInfo.next('ping, weil connected');
 				const msg = await this.network.ping(this.mx10NID);
 				if(msg)
 					this.lastPing = Date.now();
