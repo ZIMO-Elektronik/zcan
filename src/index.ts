@@ -4,7 +4,7 @@ import LanNetworkGroup from './network/lanNetworkGroup';
 import NetworkGroup from './network/networkGroup';
 import VehicleGroup from './loco/vehicleGroup';
 import SystemControlGroup from './system/systemControlGroup';
-import AccessoryCommandGroup from './accessory/accessoryCommandGroup';
+import AccessoryGroup from './accessory/accessoryGroup';
 import TrainControlGroup from './train/trainControlGroup';
 import TrackCfgGroup from './track/trackGroup';
 import DataGroup from './data/dataGroup';
@@ -24,7 +24,7 @@ export * from './common/enums';
 export * from './common/models';
 export * from './common/communication';
 export * from 'rxjs';
-export * from './accessory/accessoryCommandGroup';
+export * from './accessory/accessoryGroup';
 export * from './data/dataGroup';
 export * from './data/lanDataGroup';
 export * from './data/dataMsg';
@@ -52,7 +52,7 @@ export {
   NetworkGroup,
   VehicleGroup,
   SystemControlGroup,
-  AccessoryCommandGroup,
+  AccessoryGroup,
   TrainControlGroup,
   TrackCfgGroup,
   DataGroup,

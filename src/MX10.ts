@@ -4,7 +4,7 @@ import {Buffer} from 'buffer';
 import {RemoteInfo} from 'dgram';
 import {interval, Subject} from 'rxjs';
 import {Message} from './common/communication';
-import {AccessoryCommandGroup, DataGroup, FileControlGroup, FileTransferGroup, InfoGroup, LanDataGroup, LanInfoGroup,
+import {AccessoryGroup, DataGroup, FileControlGroup, FileTransferGroup, InfoGroup, LanDataGroup, LanInfoGroup,
 	LanNetworkGroup, LanLocoStateGroup, LanZimoProgrammableScriptGroup, NetworkGroup, PropertyConfigGroup,
 	RailwayControlGroup, SystemControlGroup, TrackCfgGroup, TrainControlGroup, VehicleGroup,
 	ZimoProgrammableScriptGroup, MsgMode} from './';
@@ -28,7 +28,7 @@ export default class MX10
 	onTimeout = () => {};
 
 	readonly systemControl = new SystemControlGroup(this);
-	readonly accessoryCommand = new AccessoryCommandGroup(this);
+	readonly accessory = new AccessoryGroup(this);
 	readonly vehicle = new VehicleGroup(this);
 	readonly trainControl = new TrainControlGroup(this);
 	readonly trackCfg = new TrackCfgGroup(this);
@@ -291,7 +291,7 @@ export default class MX10
 					this.systemControl.parse(size, command, mode, nid, buffer);
 					break;
 				case 0x01:
-					this.accessoryCommand.parse(size, command, mode, nid, buffer);
+					this.accessory.parse(size, command, mode, nid, buffer);
 					break;
 				case 0x02:
 					this.vehicle.parse(size, command, mode, nid, buffer);

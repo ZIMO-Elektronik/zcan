@@ -340,6 +340,15 @@ export default class VehicleGroup
 		], 0b01);
 	}
 
+	favoritePrio(nid1: number, nid2 = 0, nid3 = 0, nid4 = 0) {
+		return this.mx10.sendData(0x02, 0x11, [
+			{value: nid1, length: 2},
+			{value: nid2, length: 2},
+			{value: nid3, length: 2},
+			{value: nid4, length: 2},
+		], 0b01);
+	}
+
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
 		// this.mx10.logInfo.next("mx10.vehicleGroup.parse: " + command + "," + nid + "," + JSON.stringify(buffer));

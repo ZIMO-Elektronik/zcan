@@ -1,7 +1,7 @@
 export {default as MX10} from './MX10';
 
 export {
-  AccessoryCommandGroup,
+  AccessoryGroup,
   DataGroup,
   FileControlGroup,
   FileTransferGroup,
