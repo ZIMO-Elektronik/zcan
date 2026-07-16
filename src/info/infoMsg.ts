@@ -1,6 +1,6 @@
 
 import { Header, Message, ZcanDataArray } from "../common/communication";
-import { ModInfoType, MsgMode } from "../common/enums";
+import { BidiType, ModInfoType, MsgMode } from "../common/enums";
 
 
 
@@ -37,27 +37,60 @@ export class MsgBidiInfo extends Message
 			super.push({value: info || 0, length: 4});
 		}
 	}
-	nid(): number {return this.header.mode === MsgMode.REQ ? this.data[0].value as number : this.header.nid || 0}
-	type(): number {return this.data[this.header.mode === MsgMode.REQ ? 1 : 0].value as number}
-	info(): number | undefined {return this.data.length > 1 ? this.data[1].value as number : undefined}
+	public get nid() {return this.header.mode === MsgMode.REQ ? this.data[0].value as number : this.header.nid || 0}
+	public get type() {return this.data[this.header.mode === MsgMode.REQ ? 1 : 0].value as BidiType}
+	public get info() {return this.data.length > 1 ? this.data[1].value as number : undefined}
 
-	public static dirEast(info: number)
+	public static fromBuffer(mode: number, buf: Buffer): MsgBidiDir | MsgBidiSpeed  | MsgBidiInfo
 	{
-		return ((info & 0x02) == 0x02)
+		const NID = buf.readUInt16LE(0);
+		const type = buf.readUInt16LE(2);
+		const info = buf.readUInt32LE(4);
+		switch(type)
+		{
+			case BidiType.DIRECTION:
+				return MsgBidiDir.fromBuffer(mode, buf);
+			case BidiType.SPEED_REPORT:
+				return MsgBidiSpeed.fromBuffer(mode, buf);
+			default:
+				return new MsgBidiInfo(MsgBidiInfo.header(mode, NID), type, undefined, info);
+		}
 	}
+}
 
-	public static dirChanging(info: number)
+export class MsgBidiSpeed extends MsgBidiInfo
+{
+	constructor(header: Header, nid?: number, info?: number)
 	{
-		return ((info & 0x04) == 0x04)
+		super(header, BidiType.SPEED_REPORT, nid, info);
 	}
+	get speed() {return this.info}
 
-	public static dirForward(info: number)
+	static fromBuffer(mode: number, buf: Buffer)
 	{
-		return ((info & 0x01) == 0x01)
+		const NID = buf.readUInt16LE(0);
+		const type = buf.readUInt16LE(2);
+		const info = buf.readUInt32LE(4);
+		return new MsgBidiSpeed(MsgBidiInfo.header(mode, NID), undefined, info);
 	}
+}
 
-	public static dirConfirm(info: number)
+export class MsgBidiDir extends MsgBidiInfo
+{
+	constructor(header: Header, nid?: number, info?: number)
 	{
-		return ((info & 0x08) == 0x08)
+		super(header, BidiType.DIRECTION, nid, info);
+	}
+	get fwd() {return super.info === undefined ? undefined : !!(super.info & 0x01)}
+	get east() {return this.info === undefined ? undefined : !!(this.info & 0x02)}
+	get change() {return this.info === undefined ? undefined : !!(this.info & 0x04)}
+	get confirm() {return this.info === undefined ? undefined : !!(this.info & 0x08)}
+
+	static fromBuffer(mode: number, buf: Buffer)
+	{
+		const nid = buf.readUInt16LE(0);
+		const type = buf.readUInt16LE(2);
+		const info = buf.readUInt32LE(4);
+		return new MsgBidiDir(MsgBidiInfo.header(mode, nid), undefined, info);
 	}
 }

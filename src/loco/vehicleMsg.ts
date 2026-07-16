@@ -76,14 +76,14 @@ export class MsgVehicleSpeed extends Message
 	}
 
 	rxDelay(millis: number) {MsgVehicleSpeed.rxTiming.set(millis)}
-	trainNid(): number {return this.header.nid || 0}
-	divisor(): number {return this.data[1].value as number;}
-	speedStep(): number {return (this.data[0].value as number) & speedBites____;}
-	direction(): boolean {return ((this.data[0].value as number) & directionBites) === directionBites;}
-	directionAck(): boolean {return ((this.data[0].value as number) & directACKBites) === directACKBites;}
-	forward(): boolean {return !this.direction() && !this.directionAck();}
-	eastWest(): number {return ((this.data[0].value as number) & eastWestBites_) >> 12;}
-	emergencyStop(): boolean {return ((this.data[0].value as number) & emergencyStopB) === emergencyStopB;}
+	get nid(): number {return this.header.nid || 0}
+	get divisor(): number {return this.data[1].value as number}
+	get speedStep(): number {return (this.data[0].value as number) & 0x3ff}
+	get direction(): boolean {return !!((this.data[0].value as number) & 0x400)}
+	get directionAck(): boolean {return !!((this.data[0].value as number) & 0x800)}
+	get forward(): boolean {return !this.direction && !this.directionAck}
+	get eastWest(): number {return ((this.data[0].value as number) & 0x3000) >> 12}
+	get emergencyStop(): boolean {return !!((this.data[0].value as number) & 0x8000)}
 
 	public static fromBuffer(mode: MsgMode, buffer: Buffer)
 	{

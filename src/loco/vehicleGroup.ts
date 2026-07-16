@@ -131,13 +131,13 @@ export default class VehicleGroup
 		return rv;
 	}
 
-	async getSpeed(trainNid: number)
+	async getSpeed(nid: number)
 	{
 		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
 			this.mx10.logInfo.next("mx10.getVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
-		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.REQ, trainNid), this.onVehicleSpeed);
+		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.REQ, nid), this.onVehicleSpeed);
 		this.speedQ.log = ((msg) => {this.mx10.logInfo.next(msg)});
 		this.speedQ.tx = ((header) => {
 			const msg = new MsgVehicleSpeed(header);
@@ -146,7 +146,7 @@ export default class VehicleGroup
 		});
 		this.speedQ.match = ((msg) => {
 			// this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
-			return (msg.trainNid() === trainNid);
+			return (msg.nid === nid);
 		})
 		const rv = await this.speedQ.run();
 		// this.mx10.logInfo.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
@@ -155,7 +155,7 @@ export default class VehicleGroup
 		return rv;
 	}
 
-	async setSpeed(trainNid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
+	async setSpeed(nid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
 		emergencyStop: boolean = false, eastWest: Direction = Direction.UNDEFINED)
 	{
 		MsgVehicleSpeed.log = (msg) => {this.mx10.logInfo.next(msg)};
@@ -163,7 +163,7 @@ export default class VehicleGroup
 			this.mx10.logInfo.next("mx10.setVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
-		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.CMD, trainNid), this.onVehicleSpeed);
+		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.CMD, nid), this.onVehicleSpeed);
 		this.speedQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.speedQ.tx = ((header) => {
 			const speedAndDir= MsgVehicleSpeed.speedAndDir(speedStep, forward, emergencyStop, eastWest);
@@ -173,7 +173,7 @@ export default class VehicleGroup
 		});
 		this.speedQ.match = ((msg) => {
 			// this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
-			return (msg.trainNid() === trainNid);
+			return (msg.nid === nid);
 		})
 		const rv = await this.speedQ.run(MsgVehicleSpeed.rxDelay());
 		// this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));

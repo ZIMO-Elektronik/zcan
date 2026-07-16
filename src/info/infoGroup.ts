@@ -2,8 +2,8 @@ import {Buffer} from 'buffer';
 import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {Query} from '../common/communication';
-import {ModInfoType, MsgMode} from '../common/enums';
-import {MsgBidiInfo, MsgModInfo} from './infoMsg';
+import {BidiType, ModInfoType, MsgMode} from '../common/enums';
+import {MsgBidiDir, MsgBidiInfo, MsgBidiSpeed, MsgModInfo} from './infoMsg';
 
 /**
  *
@@ -13,11 +13,15 @@ export default class InfoGroup
 {
 	private mx10: MX10;
 
-	public readonly onBidiInfoChange = new Subject<MsgBidiInfo>();
+	public readonly onBidiDir = new Subject<MsgBidiDir>();
+	public readonly onBidiSpeed = new Subject<MsgBidiSpeed>();
+	public readonly onBidiInfo = new Subject<MsgBidiInfo>();
 	public readonly onModuleInfoChange = new Subject<MsgModInfo>();
 
 	private modInfoQ: Query<MsgModInfo> | undefined = undefined;
 	private bidiQ: Query<MsgBidiInfo> | undefined = undefined;
+	private bidiDirQ: Query<MsgBidiDir> | undefined = undefined;
+	private bidiSpeedQ: Query<MsgBidiSpeed> | undefined = undefined;
 
 	constructor(mx10: MX10)
 	{
@@ -51,13 +55,53 @@ export default class InfoGroup
 		return rv;
 	}
 
-	async getBidiInfo(locoNid: number, type: number): Promise<MsgBidiInfo | undefined>
+	async getBidiDir(nid: number): Promise<MsgBidiDir | undefined>
+	{
+		if(this.bidiDirQ !== undefined && !await this.bidiDirQ.lock()) {
+			this.mx10.logInfo.next("mx10.getBidiDir: failed to acquire lock");
+			return undefined;
+		}
+		this.bidiDirQ = new Query(MsgBidiInfo.header(MsgMode.REQ, nid), this.onBidiDir);
+		this.bidiDirQ.tx = ((header) => {
+			const msg = new MsgBidiSpeed(header, nid);
+			this.mx10.logInfo.next('bidi query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.bidiDirQ.subscribe(false);
+		const rv = await this.bidiDirQ.run();
+		this.mx10.logInfo.next("mx10.getBidiDir.rv: " + JSON.stringify(rv));
+		this.bidiDirQ.unlock();
+		this.bidiDirQ = undefined;
+		return rv;
+	}
+
+	async getBidiSpeed(nid: number): Promise<MsgBidiSpeed | undefined>
+	{
+		if(this.bidiSpeedQ !== undefined && !await this.bidiSpeedQ.lock()) {
+			this.mx10.logInfo.next("mx10.getBidiSpeed: failed to acquire lock");
+			return undefined;
+		}
+		this.bidiSpeedQ = new Query(MsgBidiInfo.header(MsgMode.REQ, nid), this.onBidiSpeed);
+		this.bidiSpeedQ.tx = ((header) => {
+			const msg = new MsgBidiSpeed(header, nid);
+			this.mx10.logInfo.next('bidi query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.bidiSpeedQ.subscribe(false);
+		const rv = await this.bidiSpeedQ.run();
+		this.mx10.logInfo.next("mx10.getBidiSpeed.rv: " + JSON.stringify(rv));
+		this.bidiSpeedQ.unlock();
+		this.bidiSpeedQ = undefined;
+		return rv;
+	}
+
+	async getBidiInfo(locoNid: number, type: BidiType): Promise<MsgBidiInfo | undefined>
 	{
 		if(this.bidiQ !== undefined && !await this.bidiQ.lock()) {
 			this.mx10.logInfo.next("mx10.getBidiInfo: failed to acquire lock");
 			return undefined;
 		}
-		this.bidiQ = new Query(MsgBidiInfo.header(MsgMode.REQ, locoNid), this.onBidiInfoChange);
+		this.bidiQ = new Query(MsgBidiInfo.header(MsgMode.REQ, locoNid), this.onBidiInfo);
 		this.bidiQ.tx = ((header) => {
 			const msg = new MsgBidiInfo(header, type, locoNid);
 			this.mx10.logInfo.next('bidi query tx: ' + JSON.stringify(msg));
@@ -65,7 +109,7 @@ export default class InfoGroup
 		});
 		this.bidiQ.match = ((msg) => {
 			this.mx10.logInfo.next('bidi query rx: ' + JSON.stringify(msg));
-			return (msg.type() === type);
+			return (msg.type === type);
 		})
 		this.bidiQ.subscribe(false);
 		const rv = await this.bidiQ.run();
@@ -103,15 +147,24 @@ export default class InfoGroup
 
 	private parseBidiInfo(size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if(!this.onBidiInfoChange.observed)
-			return;
-
 		const NID = buffer.readUInt16LE(0);
 		const type = buffer.readUInt16LE(2);
 		const info = buffer.readUInt32LE(4);
 
-		const msg = new MsgBidiInfo(MsgBidiInfo.header(mode, NID), type, undefined, info);
-		this.onBidiInfoChange.next(msg);
+		const msg = MsgBidiInfo.fromBuffer(mode, buffer);
+
+		switch(type)
+		{
+			case BidiType.DIRECTION:
+				this.onBidiDir.next(/*MsgBidiDir.fromBuffer(mode, buffer)*/msg as MsgBidiDir);
+				break;
+			case BidiType.SPEED_REPORT:
+				this.onBidiSpeed.next(msg as MsgBidiSpeed);
+				break;
+			default:
+				this.onBidiInfo.next(msg as MsgBidiInfo);
+				break;
+		}
 	}
 
 	// private parseEastWest(data: number)
