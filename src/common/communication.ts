@@ -85,14 +85,15 @@ export class Message
 
 export class Query<T extends Message>
 {
+	static log: (msg: string) => void = () => {};
+
 	header: Header;
 	subject: Subject<T>;
+	private result: T | undefined = undefined;
 	rx: Subscription | undefined = undefined;
 	tx: (header: Header) => void = () => {};
-	private result: T | undefined = undefined;
 	match: (msg: T) => boolean = () => {return true};
-	private mutex: boolean = false;
-	log: (msg: string) => void = () => {};
+	log: (msg: string) => void = Query.log;
 
 	constructor(header: Header, subject: Subject<T> , match: (msg: T) => boolean = (() => {return true;}))
 	{
@@ -101,22 +102,22 @@ export class Query<T extends Message>
 		this.match = match;
 	}
 
-	async lock(millis: number = 500): Promise<boolean>
+	static async wait(mutexFun: () => boolean, millis = 500)
 	{
 		let centis = Math.abs(millis) / 10;
-		while(this.mutex && centis)
+		let lock = mutexFun();
+		while(lock)
 		{
-			await delay(10);
-			if(!centis--)
+			if(lock && centis <= 0) {
+				this.log('query gave up waiting after ' + millis + 'ms');
 				return false;
+			}
+			await delay(10);
+			centis--;
+			lock = mutexFun();
 		}
-		this.mutex = true;
+		this.log('query waited for ' + (millis-centis*10) + 'ms');
 		return true;
-	}
-
-	unlock()
-	{
-		this.mutex = false;
 	}
 
 	subscribe(matchNid: boolean = true)

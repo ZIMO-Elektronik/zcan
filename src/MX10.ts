@@ -3,7 +3,7 @@
 import {Buffer} from 'buffer';
 import {RemoteInfo} from 'dgram';
 import {interval, Subject} from 'rxjs';
-import {Message} from './common/communication';
+import {Message, Query} from './common/communication';
 import {AccessoryGroup, DataGroup, FileControlGroup, FileTransferGroup, InfoGroup, LanDataGroup, LanInfoGroup,
 	LanNetworkGroup, LanLocoStateGroup, LanZimoProgrammableScriptGroup, NetworkGroup, PropertyConfigGroup,
 	RailwayControlGroup, SystemControlGroup, TrackCfgGroup, TrainControlGroup, VehicleGroup,
@@ -64,6 +64,7 @@ export default class MX10
 
 	constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs: number = 2000, debug = false)
 	{
+		Query.log = (msg) => this.logInfo.next(msg);
 		this.debugCommunication = debug;
 		this.reconnectionTime = 2000;
 		this.clientName = clientName;

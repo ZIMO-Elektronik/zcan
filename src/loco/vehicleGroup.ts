@@ -35,12 +35,11 @@ export default class VehicleGroup
 	//0x02.0x00
 	async getState(nid: number)
 	{
-		if(this.stateQ !== undefined && !await this.stateQ.lock()) {
+		if(this.stateQ !== undefined && !await Query.wait(() => !!this.stateQ)) {
 			this.mx10.logInfo.next("mx10.getVehicleState: failed to acquire lock");
 			return undefined;
 		}
 		this.stateQ = new Query(MsgVehicleState.header(MsgMode.REQ, nid), this.onVehicleState);
-		this.stateQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.stateQ.tx = ((header) => {
 			const msg = new MsgVehicleState(header);
 			// this.mx10.logInfo.next('state query tx: ' + JSON.stringify(msg));
@@ -52,7 +51,6 @@ export default class VehicleGroup
 		})
 		const rv = await this.stateQ.run();
 		// this.mx10.logInfo.next("mx10.getVehicleState.rv: " + JSON.stringify(rv));
-		this.stateQ.unlock();
 		this.stateQ = undefined;
 		return rv;
 	}
@@ -60,12 +58,11 @@ export default class VehicleGroup
 	//0x02.0x00
 	async getLastController(locoNid: number, type: number = 1)
 	{
-		if(this.lastCtlQ !== undefined && !await this.lastCtlQ.lock()) {
+		if(this.lastCtlQ !== undefined && !await Query.wait(() => !!this.lastCtlQ)) {
 			this.mx10.logInfo.next("mx10.getVehicleLastCtl: failed to acquire lock");
 			return undefined;
 		}
 		this.lastCtlQ = new Query(MsgVehicleLastCtl.header(MsgMode.REQ, locoNid), this.onVehicleLastCtl);
-		this.lastCtlQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.lastCtlQ.tx = ((header) => {
 			const msg = new MsgVehicleLastCtl(header, type);
 			this.mx10.logInfo.next('lastCtl query tx: ' + JSON.stringify(msg));
@@ -77,19 +74,17 @@ export default class VehicleGroup
 		})
 		const rv = await this.lastCtlQ.run();
 		this.mx10.logInfo.next("mx10.getVehicleLastCtl.rv: " + JSON.stringify(rv));
-		this.lastCtlQ.unlock();
 		this.lastCtlQ = undefined;
 		return rv;
 	}
 
 	async getMode(trainNid: number)
 	{
-		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
+		if(this.modeQ !== undefined && !await Query.wait(() => !!this.modeQ)) {
 			this.mx10.logInfo.next("mx10.getVehicleMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgVehicleMode.header(MsgMode.REQ, trainNid), this.onVehicleMode);
-		this.modeQ.log = ((msg) => {this.mx10.logInfo.next(msg)});
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgVehicleMode(header);
 			// this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
@@ -101,7 +96,6 @@ export default class VehicleGroup
 		})
 		const rv = await this.modeQ.run();
 		// this.mx10.logInfo.next("mx10.getVehicleMode.rv: " + JSON.stringify(rv));
-		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}
@@ -109,12 +103,11 @@ export default class VehicleGroup
 	async setMode(trainNid: number, opMode: OperatingMode, speedSteps: MaxSpeedSteps)
 	{
 		MsgVehicleMode.log = (msg) => {this.mx10.logInfo.next(msg)};
-		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
+		if(this.modeQ !== undefined && !await Query.wait(() => !!this.modeQ)) {
 			this.mx10.logInfo.next("mx10.setVehicleMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgVehicleMode.header(MsgMode.CMD, trainNid), this.onVehicleMode);
-		this.modeQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgVehicleMode(header, {opMode, speedSteps});
 			// this.mx10.logInfo.next('mode query tx: ' + JSON.stringify(msg));
@@ -126,19 +119,17 @@ export default class VehicleGroup
 		})
 		const rv = await this.modeQ.run(MsgVehicleMode.rxDelay());
 		// this.mx10.logInfo.next("mx10.setVehicleMode.rv: " + JSON.stringify(rv));
-		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}
 
 	async getSpeed(nid: number)
 	{
-		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
+		if(this.speedQ !== undefined && !await Query.wait(() => !!this.speedQ)) {
 			this.mx10.logInfo.next("mx10.getVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
 		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.REQ, nid), this.onVehicleSpeed);
-		this.speedQ.log = ((msg) => {this.mx10.logInfo.next(msg)});
 		this.speedQ.tx = ((header) => {
 			const msg = new MsgVehicleSpeed(header);
 			// this.mx10.logInfo.next('speed query tx: ' + JSON.stringify(msg));
@@ -150,7 +141,6 @@ export default class VehicleGroup
 		})
 		const rv = await this.speedQ.run();
 		// this.mx10.logInfo.next("mx10.getVehicleSpeed.rv: " + JSON.stringify(rv));
-		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
 	}
@@ -159,12 +149,11 @@ export default class VehicleGroup
 		emergencyStop: boolean = false, eastWest: Direction = Direction.UNDEFINED)
 	{
 		MsgVehicleSpeed.log = (msg) => {this.mx10.logInfo.next(msg)};
-		if(this.speedQ !== undefined && !await this.speedQ.lock()) {
+		if(this.speedQ !== undefined && !await Query.wait(() => !!this.speedQ)) {
 			this.mx10.logInfo.next("mx10.setVehicleSpeed: failed to acquire lock");
 			return undefined;
 		}
 		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.CMD, nid), this.onVehicleSpeed);
-		this.speedQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.speedQ.tx = ((header) => {
 			const speedAndDir= MsgVehicleSpeed.speedAndDir(speedStep, forward, emergencyStop, eastWest);
 			const msg = new MsgVehicleSpeed(header, speedAndDir, divisor);
@@ -177,7 +166,6 @@ export default class VehicleGroup
 		})
 		const rv = await this.speedQ.run(MsgVehicleSpeed.rxDelay());
 		// this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
-		this.speedQ.unlock();
 		this.speedQ = undefined;
 		return rv;
 	}
@@ -203,7 +191,7 @@ export default class VehicleGroup
 
 	async getFx(nid: number, fxNr: number)
 	{
-		if(this.fxQ !== undefined && !await this.fxQ.lock()) {
+		if(this.fxQ !== undefined && !await Query.wait(() => !!this.fxQ)) {
 			this.mx10.logInfo.next("mx10.getFx: failed to acquire lock");
 			return undefined;
 		}
@@ -219,14 +207,13 @@ export default class VehicleGroup
 		})
 		const rv = await this.fxQ.run();
 		this.mx10.logInfo.next("mx10.getFx.rv: " + JSON.stringify(rv));
-		this.fxQ.unlock();
 		this.fxQ = undefined;
 		return rv;
 	}
 
 	async setFx(nid: number, fxNr: number, state: number)
 	{
-		if(this.fxQ !== undefined && !await this.fxQ.lock()) {
+		if(this.fxQ !== undefined && !await Query.wait(() => !!this.fxQ)) {
 			this.mx10.logInfo.next("mx10.setFx: failed to acquire lock");
 			return undefined;
 		}
@@ -242,14 +229,13 @@ export default class VehicleGroup
 		})
 		const rv = await this.fxQ.run();
 		this.mx10.logInfo.next("mx10.setFx.rv: " + JSON.stringify(rv));
-		this.fxQ.unlock();
 		this.fxQ = undefined;
 		return rv;
 	}
 
 	async getFxStates(nid: number)
 	{
-		if(this.fxStatesQ !== undefined && !await this.fxStatesQ.lock()) {
+		if(this.fxStatesQ !== undefined && !await Query.wait(() => !!this.fxStatesQ)) {
 			this.mx10.logInfo.next("mx10.getFxStates: failed to acquire lock");
 			return undefined;
 		}
@@ -265,14 +251,13 @@ export default class VehicleGroup
 		})
 		const rv = await this.fxStatesQ.run();
 		this.mx10.logInfo.next("mx10.getFxStates.rv: " + JSON.stringify(rv));
-		this.fxStatesQ.unlock();
 		this.fxStatesQ = undefined;
 		return rv;
 	}
 
 	async getSpecialFx(nid: number, sfxNr: SpecialFxNr)
 	{
-		if(this.sfxQ !== undefined && !await this.sfxQ.lock()) {
+		if(this.sfxQ !== undefined && !await Query.wait(() => !!this.sfxQ)) {
 			this.mx10.logInfo.next("mx10.getSpecialFx: failed to acquire lock");
 			return undefined;
 		}
@@ -288,14 +273,13 @@ export default class VehicleGroup
 		})
 		const rv = await this.sfxQ.run();
 		this.mx10.logInfo.next("mx10.getSpecialFx.rv: " + JSON.stringify(rv));
-		this.sfxQ.unlock();
 		this.sfxQ = undefined;
 		return rv;
 	}
 
 	async setSpecialFx(nid: number, sfxNr: SpecialFxNr, state: number)
 	{
-		if(this.sfxQ !== undefined && !await this.sfxQ.lock()) {
+		if(this.sfxQ !== undefined && !await Query.wait(() => !!this.sfxQ)) {
 			this.mx10.logInfo.next("mx10.setSpecialFx: failed to acquire lock");
 			return undefined;
 		}
@@ -311,7 +295,6 @@ export default class VehicleGroup
 		})
 		const rv = await this.sfxQ.run();
 		this.mx10.logInfo.next("mx10.setSpecialFx.rv: " + JSON.stringify(rv));
-		this.sfxQ.unlock();
 		this.sfxQ = undefined;
 		return rv;
 	}

@@ -33,14 +33,11 @@ export default class NetworkGroup
 
 	async ping(nid = 0xc000)
 	{
-		if(this.pingQ !== undefined && !await this.pingQ.lock()) {
+		if(this.pingQ !== undefined && !await Query.wait(() => !!this.pingQ)) {
 			this.mx10.logInfo.next("mx10.ping: failed to acquire lock");
 			return undefined;
 		}
 		this.pingQ = new Query(MsgPing.header(MsgMode.CMD, nid), this.onPing);
-		this.pingQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.pingQ.tx = ((header) => {
 			const msg = new MsgPing(header, nid);
 			// this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));
@@ -55,21 +52,17 @@ export default class NetworkGroup
 		this.pingQ.subscribe(false);
 		const rv = await this.pingQ.run(100);
 		// this.mx10.logInfo.next("mx10.ping.rv: " + JSON.stringify(rv));
-		this.pingQ.unlock();
 		this.pingQ = undefined;
 		return rv;
 	}
 
 	async portClose()
 	{
-		// if(this.portCloseQ !== undefined && !await this.portCloseQ.lock()) {
+		// if(this.portCloseQ !== undefined && !await Query.wait(() => !!this.portCloseQ)) {
 		// 	this.mx10.logInfo.next("mx10.portClose: failed to acquire lock");
 		// 	return undefined;
 		// }
 		// this.portCloseQ = new Query(MsgPortClose.header(MsgMode.CMD, this.mx10.mx10NID), this.onPortClose);
-		// this.portCloseQ.log = ((msg) => {
-		// 	this.mx10.logInfo.next(msg);
-		// });
 		// this.portCloseQ.tx = ((header) => {
 		// 	const msg = new MsgPortClose(header, this.mx10.myNID);
 		// 	this.mx10.logInfo.next('portClose query tx: ' + JSON.stringify(msg));
@@ -82,7 +75,6 @@ export default class NetworkGroup
 		// this.portCloseQ.subscribe(false);
 		// const rv = await this.portCloseQ.run();
 		// this.mx10.logInfo.next("mx10.portClose.rv: " + JSON.stringify(rv));
-		// this.portCloseQ.unlock();
 		// this.portCloseQ = undefined;
 		// return rv;
 		this.mx10.sendData(0x0a, 0x07, [{value: this.mx10.myNID, length: 2}], 0b01);

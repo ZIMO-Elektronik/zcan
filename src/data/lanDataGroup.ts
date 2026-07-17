@@ -83,40 +83,33 @@ export default class LanDataGroup
 
 	async getLocoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>
 	{
-		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
-			this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
+		if(this.locoGuiQ && !await Query.wait(() => !!this.locoGuiQ)) {
+			this.mx10.logInfo.next("getLocoGuiExtended: failed to acquire lock");
 			return undefined;
 		}
 		this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onLocoGuiExtended);
-		this.locoGuiQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.locoGuiQ.tx = ((header) => {
 			const msg = new MsgLocoGuiReq(header, nid, 0);
-			// this.mx10.logInfo.next('locoGuiExtended query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('getLocoGuiExtended query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.locoGuiQ.match = ((msg) => {
-			// this.mx10.logInfo.next('locoGuiExtended query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('getLocoGuiExtended query rx: ' + JSON.stringify(msg));
 			return (msg.locoNid() === nid);
 		})
 		const rv = await this.locoGuiQ.run();
-		// this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
-		this.locoGuiQ.unlock();
 		this.locoGuiQ = undefined;
+		//this.mx10.logInfo.next("getLocoGuiExtended.rv: " + JSON.stringify(rv));
 		return rv;
 	}
 
 	async setLocoGuiExtended(loco: Train): Promise<MsgLocoGuiRsp | undefined>
 	{
-		if(this.locoGuiQ !== undefined && !await this.locoGuiQ.lock()) {
+		if(this.locoGuiQ && !await Query.wait(() => !!this.locoGuiQ)) {
 			this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
 			return undefined;
 		}
 		this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.CMD, this.mx10.myNID), this.onLocoGuiExtended);
-		this.locoGuiQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.locoGuiQ.tx = ((header) => {
 			const msg = new MsgLocoGuiRsp(header, loco.nid, loco.subId, 0, 0, loco.group, loco.name,
 				loco.image ? parseInt(loco.image) : 0, 0, parseInt(loco.tacho), 0, loco.speedFwd, loco.speedRev,
@@ -133,7 +126,6 @@ export default class LanDataGroup
 		this.locoGuiQ.subscribe(false);
 		const rv = await this.locoGuiQ.run(40);
 		// this.mx10.logInfo.next("mx10.locoGuiExtended.rv: " + JSON.stringify(rv));
-		this.locoGuiQ.unlock();
 		this.locoGuiQ = undefined;
 		return rv;
 	}

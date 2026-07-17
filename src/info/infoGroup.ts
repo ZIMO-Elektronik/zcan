@@ -30,14 +30,11 @@ export default class InfoGroup
 
 	async getModuleInfo(nid: number, type: ModInfoType | number): Promise<MsgModInfo | undefined>
 	{
-		if(this.modInfoQ !== undefined && !await this.modInfoQ.lock()) {
+		if(this.modInfoQ !== undefined && !await Query.wait(() => !!this.modInfoQ)) {
 			this.mx10.logInfo.next("mx10.getModuleInfo: failed to acquire lock");
 			return undefined;
 		}
 		this.modInfoQ = new Query(MsgModInfo.header(MsgMode.REQ, nid), this.onModuleInfoChange);
-		this.modInfoQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.modInfoQ.tx = ((header) => {
 			const msg = new MsgModInfo(header, type);
 			this.mx10.logInfo.next('mx10 query tx: ' + JSON.stringify(msg));
@@ -50,14 +47,13 @@ export default class InfoGroup
 		// this.modInfoQ.subscribe();
 		const rv = await this.modInfoQ.run();
 		this.mx10.logInfo.next("mx10.getModuleInfo.rv: " + JSON.stringify(rv));
-		this.modInfoQ.unlock();
 		this.modInfoQ = undefined;
 		return rv;
 	}
 
 	async getBidiDir(nid: number): Promise<MsgBidiDir | undefined>
 	{
-		if(this.bidiDirQ !== undefined && !await this.bidiDirQ.lock()) {
+		if(this.bidiDirQ !== undefined && !await Query.wait(() => !!this.bidiDirQ)) {
 			this.mx10.logInfo.next("mx10.getBidiDir: failed to acquire lock");
 			return undefined;
 		}
@@ -70,14 +66,13 @@ export default class InfoGroup
 		this.bidiDirQ.subscribe(false);
 		const rv = await this.bidiDirQ.run();
 		this.mx10.logInfo.next("mx10.getBidiDir.rv: " + JSON.stringify(rv));
-		this.bidiDirQ.unlock();
 		this.bidiDirQ = undefined;
 		return rv;
 	}
 
 	async getBidiSpeed(nid: number): Promise<MsgBidiSpeed | undefined>
 	{
-		if(this.bidiSpeedQ !== undefined && !await this.bidiSpeedQ.lock()) {
+		if(this.bidiSpeedQ !== undefined && !await Query.wait(() => !!this.bidiSpeedQ)) {
 			this.mx10.logInfo.next("mx10.getBidiSpeed: failed to acquire lock");
 			return undefined;
 		}
@@ -90,14 +85,13 @@ export default class InfoGroup
 		this.bidiSpeedQ.subscribe(false);
 		const rv = await this.bidiSpeedQ.run();
 		this.mx10.logInfo.next("mx10.getBidiSpeed.rv: " + JSON.stringify(rv));
-		this.bidiSpeedQ.unlock();
 		this.bidiSpeedQ = undefined;
 		return rv;
 	}
 
 	async getBidiInfo(locoNid: number, type: BidiType): Promise<MsgBidiInfo | undefined>
 	{
-		if(this.bidiQ !== undefined && !await this.bidiQ.lock()) {
+		if(this.bidiQ !== undefined && !await Query.wait(() => !!this.bidiQ)) {
 			this.mx10.logInfo.next("mx10.getBidiInfo: failed to acquire lock");
 			return undefined;
 		}
@@ -114,7 +108,6 @@ export default class InfoGroup
 		this.bidiQ.subscribe(false);
 		const rv = await this.bidiQ.run();
 		this.mx10.logInfo.next("mx10.getBidiInfo.rv: " + JSON.stringify(rv));
-		this.bidiQ.unlock();
 		this.bidiQ = undefined;
 		return rv;
 	}

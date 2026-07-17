@@ -28,12 +28,11 @@ export default class AccessoryGroup
 
 	async getAccessoryMode(nid: number)
 	{
-		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
+		if(this.modeQ !== undefined && !await Query.wait(() => !!this.modeQ)) {
 			this.mx10.logInfo.next("mx10.getAccessoryMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgAccessoryMode.header(MsgMode.REQ, nid), this.onAccessoryMode);
-		this.modeQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgAccessoryMode(header);
 			this.mx10.logInfo.next('accMode query tx: ' + JSON.stringify(msg));
@@ -45,19 +44,17 @@ export default class AccessoryGroup
 		})
 		const rv = await this.modeQ.run();
 		this.mx10.logInfo.next("mx10.getAccessoryMode.rv: " + JSON.stringify(rv));
-		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}
 
 	async setAccessoryMode(nid: number, mode: AccessoryMode)
 	{
-		if(this.modeQ !== undefined && !await this.modeQ.lock()) {
+		if(this.modeQ !== undefined && !await Query.wait(() => !!this.modeQ)) {
 			this.mx10.logInfo.next("mx10.setAccessoryMode: failed to acquire lock");
 			return undefined;
 		}
 		this.modeQ = new Query(MsgAccessoryMode.header(MsgMode.CMD, nid), this.onAccessoryMode);
-		this.modeQ.log = (msg) => {this.mx10.logInfo.next(msg)};
 		this.modeQ.tx = ((header) => {
 			const msg = new MsgAccessoryMode(header, mode);
 			this.mx10.logInfo.next('accMode query tx: ' + JSON.stringify(msg));
@@ -69,7 +66,6 @@ export default class AccessoryGroup
 		})
 		const rv = await this.modeQ.run();
 		this.mx10.logInfo.next("mx10.setAccessoryMode.rv: " + JSON.stringify(rv));
-		this.modeQ.unlock();
 		this.modeQ = undefined;
 		return rv;
 	}

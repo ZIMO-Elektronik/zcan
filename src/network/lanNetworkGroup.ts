@@ -36,14 +36,11 @@ export default class LanNetworkGroup
 
 	async portOpen(clientName: string, clientId: number, comFlags = 0xffffffff): Promise<MsgPortOpen | undefined>
 	{
-		if(this.portOpenQ !== undefined && !await this.portOpenQ.lock()) {
+		if(this.portOpenQ !== undefined && !await Query.wait(() => !!this.portOpenQ)) {
 			this.mx10.logInfo.next("mx10.portOpen: failed to acquire lock");
 			return undefined;
 		}
 		this.portOpenQ = new Query(MsgPortOpen.header(MsgMode.CMD, this.mx10.myNID), this.onPortOpen);
-		this.portOpenQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.portOpenQ.tx = ((header) => {
 			const msg = new MsgPortOpen(header, clientId, comFlags, clientName);
 			this.mx10.logInfo.next('portOpen query tx: ' + JSON.stringify(msg));
@@ -60,7 +57,6 @@ export default class LanNetworkGroup
 		// 	this.mx10.connected = true;
 		// }
 		this.mx10.logInfo.next("mx10.portOpen.rv: " + JSON.stringify(rv));
-		this.portOpenQ.unlock();
 		this.portOpenQ = undefined;
 		return rv;
 	}

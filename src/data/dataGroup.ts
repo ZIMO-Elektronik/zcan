@@ -40,14 +40,11 @@ export default class DataGroup
 
 	async groupCount(groupNid = 0): Promise<MsgGroupCount | undefined>
 	{
-		if(this.groupCountQ !== undefined && !await this.groupCountQ.lock()) {
+		if(this.groupCountQ !== undefined && !await Query.wait(() => !!this.groupCountQ)) {
 			this.mx10.logInfo.next("mx10.groupCount: failed to acquire lock");
 			return undefined;
 		}
 		this.groupCountQ = new Query(MsgGroupCount.header(MsgMode.REQ, this.mx10.mx10NID), this.onGroupCount);
-		this.groupCountQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.groupCountQ.tx = ((header) => {
 			const msg = new MsgGroupCount(header, groupNid);
 			// this.mx10.logInfo.next('groupCount query tx: ' + JSON.stringify(msg));
@@ -59,21 +56,17 @@ export default class DataGroup
 		})
 		const rv = await this.groupCountQ.run();
 		// this.mx10.logInfo.next("mx10.groupCount.rv: " + JSON.stringify(rv));
-		this.groupCountQ.unlock();
 		this.groupCountQ = undefined;
 		return rv;
 	}
 
 	async listItemsByIndex(groupNid: number, index: number): Promise<MsgItemsByIndexRsp | undefined>
 	{
-		if(this.byIndexQ !== undefined && !await this.byIndexQ.lock()) {
+		if(this.byIndexQ !== undefined && !await Query.wait(() => !!this.byIndexQ)) {
 			this.mx10.logInfo.next("mx10.listItemsByIndex: failed to acquire lock");
 			return undefined;
 		}
 		this.byIndexQ = new Query(MsgItemsByIndexReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onListItemsByIndex);
-		this.byIndexQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.byIndexQ.tx = ((header) => {
 			const msg = new MsgItemsByIndexReq(header, this.mx10.myNID, groupNid, index);
 			// this.mx10.logInfo.next('listItemsByIndex query tx: ' + JSON.stringify(msg));
@@ -149,7 +142,6 @@ export default class DataGroup
 		})
 		const rv = await this.byIndexQ.run();
 		this.mx10.logInfo.next("mx10.listItemsByIndex.rv: " + JSON.stringify(rv));
-		this.byIndexQ.unlock();
 		this.byIndexQ = undefined;
 		return rv;
 	}
@@ -165,7 +157,7 @@ export default class DataGroup
 
 	async listItemsByNid(previousNid: number)
 	{
-		if(this.byNidQ !== undefined && !await this.byNidQ.lock()) {
+		if(this.byNidQ !== undefined && !await Query.wait(() => !!this.byNidQ)) {
 			this.mx10.logInfo.next("mx10.listItemsByNid: failed to acquire lock");
 			return undefined;
 		}
@@ -177,7 +169,6 @@ export default class DataGroup
 		});
 		const rv = await this.byNidQ.run();
 		this.mx10.logInfo.next("mx10.listItemsByNid.rv: " + JSON.stringify(rv));
-		this.byNidQ.unlock();
 		this.byNidQ = undefined;
 		return rv;
 	}
@@ -192,7 +183,7 @@ export default class DataGroup
 
 	async clear(nid: number)
 	{
-		if(this.clearQ !== undefined && !await this.clearQ.lock()) {
+		if(this.clearQ !== undefined && !await Query.wait(() => !!this.clearQ)) {
 			this.mx10.logInfo.next("mx10.dataClear: failed to acquire lock");
 			return undefined;
 		}
@@ -208,7 +199,6 @@ export default class DataGroup
 		this.clearQ.subscribe(false);
 		const rv = await this.clearQ.run();
 		this.mx10.logInfo.next("mx10.dataClear.rv: " + JSON.stringify(rv));
-		this.clearQ.unlock();
 		this.clearQ = undefined;
 		return rv;
 	}
@@ -262,14 +252,11 @@ export default class DataGroup
 
 	async getName(nid: number, subId: number)
 	{
-		if(this.nameQ !== undefined && !await this.nameQ.lock()) {
+		if(this.nameQ !== undefined && !await Query.wait(() => !!this.nameQ)) {
 			this.mx10.logInfo.next("mx10.getName: failed to acquire lock");
 			return undefined;
 		}
 		this.nameQ = new Query(MsgDataName.header(MsgMode.REQ, this.mx10.mx10NID), this.onDataNameExtended);
-		this.nameQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.nameQ.tx = ((header) => {
 			const msg = new MsgDataName(header, subId);
 			// this.mx10.logInfo.next('getName query tx: ' + JSON.stringify(msg));
@@ -281,21 +268,17 @@ export default class DataGroup
 		})
 		const rv = await this.nameQ.run();
 		// this.mx10.logInfo.next("mx10.getName.rv: " + JSON.stringify(rv));
-		this.nameQ.unlock();
 		this.nameQ = undefined;
 		return rv;
 	}
 
 	async setName(nid: number, subId: number, name: string)
 	{
-		if(this.nameQ !== undefined && !await this.nameQ.lock()) {
+		if(this.nameQ !== undefined && !await Query.wait(() => !!this.nameQ)) {
 			this.mx10.logInfo.next("mx10.setName: failed to acquire lock");
 			return undefined;
 		}
 		this.nameQ = new Query(MsgDataName.header(MsgMode.CMD, nid), this.onDataNameExtended);
-		this.nameQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.nameQ.tx = ((header) => {
 			const msg = new MsgDataName(header, subId, name);
 			// this.mx10.logInfo.next('setName query tx: ' + JSON.stringify(msg));
@@ -308,14 +291,13 @@ export default class DataGroup
 		this.nameQ.subscribe(false);
 		const rv = await this.nameQ.run();
 		// this.mx10.logInfo.next("mx10.setName.rv: " + JSON.stringify(rv));
-		this.nameQ.unlock();
 		this.nameQ = undefined;
 		return rv;
 	}
 
 	async getImage(nid: number, type: number)
 	{
-		if(this.imageQ !== undefined && !await this.imageQ.lock()) {
+		if(this.imageQ !== undefined && !await Query.wait(() => !!this.imageQ)) {
 			this.mx10.logInfo.next("mx10.getImage: failed to acquire lock");
 			return undefined;
 		}
@@ -331,21 +313,17 @@ export default class DataGroup
 		})
 		const rv = await this.imageQ.run();
 		// this.mx10.logInfo.next("mx10.getImage.rv: " + JSON.stringify(rv));
-		this.imageQ.unlock();
 		this.imageQ = undefined;
 		return rv;
 	}
 
 	async setImage(nid: number, type: number, id: number)
 	{
-		if(this.imageQ !== undefined && !await this.imageQ.lock()) {
+		if(this.imageQ !== undefined && !await Query.wait(() => !!this.imageQ)) {
 			this.mx10.logInfo.next("mx10.setImage: failed to acquire lock");
 			return undefined;
 		}
 		this.imageQ = new Query(MsgItemImage.header(MsgMode.CMD, nid), this.onItemImageConfig);
-		this.imageQ.log = ((msg) => {
-			this.mx10.logInfo.next(msg);
-		});
 		this.imageQ.tx = ((header) => {
 			const msg = new MsgItemImage(header, nid, type, id);
 			// this.mx10.logInfo.next('setImage query tx: ' + JSON.stringify(msg));
@@ -358,7 +336,6 @@ export default class DataGroup
 		this.imageQ.subscribe(false);
 		const rv = await this.imageQ.run();
 		// this.mx10.logInfo.next("mx10.setImage.rv: " + JSON.stringify(rv));
-		this.imageQ.unlock();
 		this.imageQ = undefined;
 		return rv;
 	}
