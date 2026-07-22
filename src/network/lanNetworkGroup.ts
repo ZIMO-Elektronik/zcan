@@ -36,7 +36,7 @@ export default class LanNetworkGroup
 
 	async portOpen(clientName: string, clientId: number, comFlags = 0xffffffff): Promise<MsgPortOpen | undefined>
 	{
-		if(this.portOpenQ !== undefined && !await Query.wait(() => !!this.portOpenQ)) {
+		if(this.portOpenQ !== undefined && !await Query.wait(() => !!this.portOpenQ), 0) {
 			this.mx10.logInfo.next("mx10.portOpen: failed to acquire lock");
 			return undefined;
 		}
