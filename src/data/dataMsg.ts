@@ -43,18 +43,25 @@ export class MsgItemsByIndexRsp extends Message
 	public static header(mode: MsgMode, nid: number): Header
 	{return {group: 0x7, cmd: 0x1, mode: mode, nid: nid}}
 
-	constructor(header: Header, index: number, itemNid: number, lastTick: number)
+	constructor(header: Header, index: number, nid: number, state: number)
 	{
 		super(header);
 		super.push({value: index, length: 2});
-		super.push({value: itemNid, length: 2});
-		if(lastTick !== undefined)
-			super.push({value: lastTick, length: 2});
+		super.push({value: nid, length: 2});
+		if(state !== undefined)
+			super.push({value: state, length: 4});
 	}
-	index(): number {return (this.data[0].value as number)}
-	itemNid(): number {return (this.data[1].value as number)}
-	lastTick(): number {return (this.data[2].value as number)}
-	// lastTick(): number {return this.data.length > 4 ? (this.data[4].value as number) : 0}
+	get index(): number {return (this.data[0].value as number)}
+	get nid(): number {return (this.data[1].value as number)}
+	get state(): number {return (this.data[2].value as number)}
+
+	static fromBuffer(mode: MsgMode, nid: number, buf: Buffer)
+	{
+		const index = buf.readUInt16LE(0);
+		const itemNid = buf.readUInt16LE(2);
+		const state = buf.readUInt32LE(4);
+		return new MsgItemsByIndexRsp(MsgItemsByIndexRsp.header(mode, nid), index, itemNid, state);
+	}
 }
 
 export class MsgItemsByNidReq extends Message

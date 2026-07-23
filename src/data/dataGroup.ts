@@ -75,7 +75,7 @@ export default class DataGroup
 		this.byIndexQ.match = ((msg) => {
 			// this.mx10.logInfo.next('listItemsByIndex query rx: ' + JSON.stringify(msg));
 			// this.mx10.logInfo.next('listItemsByIndex query rx: ' + msg.itemNid());
-			const nid = msg.itemNid();
+			const nid = msg.nid;
 			switch(groupNid) {
 				case 0:
 					return nid < 0x2800;
@@ -391,13 +391,13 @@ export default class DataGroup
 	{
 		if(!this.onListItemsByIndex.observed)
 			return;
-		const index = buffer.readUInt16LE(0);
-		const deviceNID = buffer.readUInt16LE(2);
-		const msSinceLastCommunication = buffer.readUInt16LE(4);
-		if(!deviceNID)
-			return;
-		this.onListItemsByIndex.next(new MsgItemsByIndexRsp(MsgItemsByIndexRsp.header(mode, nid),
-			index, deviceNID, msSinceLastCommunication));
+		this.onListItemsByIndex.next(MsgItemsByIndexRsp.fromBuffer(mode, nid, buffer));
+		// const index = buffer.readUInt16LE(0);
+		// const itemNid = buffer.readUInt16LE(2);
+		// const state = buffer.readUInt32LE(4);
+		// if(!itemNid)
+		// 	return;
+		// this.onListItemsByIndex.next(new MsgItemsByIndexRsp(MsgItemsByIndexRsp.header(mode, nid), index, itemNid, state));
 	}
 
 	// 0x07.0x02
