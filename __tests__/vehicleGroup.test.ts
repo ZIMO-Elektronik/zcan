@@ -2,7 +2,7 @@ import {createMX10, initConnection} from './util';
 import {afterAll, beforeAll, expect, it} from '@jest/globals';
 import {firstValueFrom} from 'rxjs';
 import {delay} from '../src/common/utils';
-import {Direction, Manual, OperatingMode, Shunting, SpecialFxNr} from '../src';
+import {Direction, Manual, OpMode, Shunting, SpecialFxNr} from '../src';
 
 describe('Vehicle group tests - 0x02', () =>
 {
@@ -33,8 +33,8 @@ describe('Vehicle group tests - 0x02', () =>
 	it('0x01 - retrieve operating mode', async () => {
 		const msg = await mx10.vehicle.getMode(3);
 
-		expect(msg?.trainNid()).toBe(3);
-		expect(msg?.mode()).toBe(OperatingMode.DCC);
+		expect(msg?.nid).toBe(3);
+		expect(msg?.opMode).toBe(OpMode.DCC);
 	});
 
 	test.each([
@@ -48,12 +48,12 @@ describe('Vehicle group tests - 0x02', () =>
 			
 			const msg = await mx10.vehicle.setSpeed(nid, speedStep, 0, forward, false, eastWest);
 			expect(msg).toBeDefined();
-			expect(msg?.trainNid()).toBe(nid);
-			expect(msg?.divisor()).toBe(0);
-			expect(msg?.speedStep()).toBe(speedStep);
-			expect(msg?.forward()).toBe(forward);
-			expect(msg?.eastWest()).toBe(eastWest);
-			expect(msg?.emergencyStop()).toBe(false);
+			expect(msg?.nid).toBe(nid);
+			expect(msg?.divisor).toBe(0);
+			expect(msg?.speedStep).toBe(speedStep);
+			expect(msg?.forward).toBe(forward);
+			expect(msg?.eastWest).toBe(eastWest);
+			expect(msg?.emergencyStop).toBe(false);
 		},
 	);
 

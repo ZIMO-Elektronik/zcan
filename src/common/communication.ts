@@ -32,9 +32,9 @@ export class Message
 		this.data = data;
 	}
 
-	push(data: ZcanData): void
+	push(...data: ZcanData[]): void
 	{
-		this.data.push(data);
+		this.data.push(...data);
 	}
 
 	rxDelay(millis: number) {/*implement in derived classes*/}

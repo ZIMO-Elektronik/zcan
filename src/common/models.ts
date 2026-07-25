@@ -1,6 +1,7 @@
-import {NameType, Direction, ExternalController, FunctionMode, OperatingMode, SystemStateMode, TrackMode, ImageType,
+import {NameType, Direction, ExternalController, FunctionMode, SystemStateMode, TrackMode, ImageType,
 	FxConfigType, Manual, AccessoryMode, FxModeType,
 	Shunting,
+	OpMode,
 } from './enums';
 import {ZcanDataArray} from './communication';
 
@@ -12,7 +13,6 @@ export interface Train {
 	group: number;
 	image?: string;
 	externalController?: ExternalController;
-	operatingMode: OperatingMode;
 	tacho: string;
 	speedFwd: number;
 	speedRev: number;
@@ -37,20 +37,20 @@ export interface TrainFunction {
 	active: boolean;
 }
 
-export interface DataValueExtendedData {
-	nid: number;
-	functionCount: number;
-	speedStep: number;
-	forward: boolean;
-	eastWest: Direction;
-	emergencyStop: boolean;
-	operatingMode: OperatingMode;
-	functionsStates: boolean[];
-	flags: TrainFlags;
-	shunting: Shunting;
-	manualMode: Manual;
-	deleted: boolean;
-}
+// export interface DataValueExtendedData {
+// 	nid: number;
+// 	functionCount: number;
+// 	speedStep: number;
+// 	forward: boolean;
+// 	eastWest: Direction;
+// 	emergencyStop: boolean;
+// 	operatingMode: OperatingMode;
+// 	functionsStates: boolean[];
+// 	flags: TrainFlags;
+// 	shunting: Shunting;
+// 	manualMode: Manual;
+// 	deleted: boolean;
+// }
 
 export interface DataNameExtendedData {
 	nid: number;
@@ -131,13 +131,13 @@ export interface VehicleStateData {
 	ctrlDevice: number;
 }
 
-export interface VehicleModeData {
-	nid: number;
-	speedSteps: number | undefined;
-	operatingMode: OperatingMode;
-	mode2: number;
-	mode3: number;
-}
+// export interface VehicleModeData {
+// 	nid: number;
+// 	speedSteps: number | undefined;
+// 	operatingMode: OperatingMode;
+// 	mode2: number;
+// 	mode3: number;
+// }
 
 export interface VehicleSpeedData {
 	nid: number;

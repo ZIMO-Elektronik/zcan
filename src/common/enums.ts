@@ -6,34 +6,32 @@ export enum MsgMode {
 	ACK = 0b11,
 }
 
-export enum OperatingMode {
-	UNKNOWN = '',
-	DCC = 'DCC',
-	MM1 = 'MM1',
-	MM2 = 'MM2',
-	SX = 'SX',
-	MFX = 'mfx',
-	NOT_DEFINED = 'N/A',
-	SYS = 'System',
+export enum OpMode {
+	NONE = 0,
+	DCC = 1,
+	MM2 = 2,
+	UNDEF = 3,
+	MFX = 4,
+	SYS = 7,
 }
 
-export const getOperatingMode = (val: number) => {
-	// eslint-disable-next-line no-bitwise
-	const mode = val >> 4;
-	const modes = Object.values(OperatingMode);
-	if (mode >= 1 && mode <= 7) {
-		return modes[mode];
-	}
-	return OperatingMode.UNKNOWN;
-};
+// export const getOperatingMode = (val: number) => {
+// 	// eslint-disable-next-line no-bitwise
+// 	const mode = val >> 4;
+// 	const modes = Object.values(OperatingMode);
+// 	if (mode >= 1 && mode <= 7) {
+// 		return modes[mode];
+// 	}
+// 	return OperatingMode.UNKNOWN;
+// };
 
-export enum MaxSpeedSteps {
-	UNKNOWN,
-	MAX14,
-	MAX27,
-	MAX28,
-	MAX128,
-	MAX1024,
+export enum StepMax {
+	UNKNOWN = 0,
+	MAX14 = 1,
+	MAX27 = 2,
+	MAX28 = 3,
+	MAX128 = 4,
+	MAX1024 = 5,
 }
 
 export enum ExternalController {

@@ -1,14 +1,13 @@
 // 0x17
 import MX10 from '../MX10';
-import {FxConfigType, getOperatingMode, MsgMode} from '../common/enums';
-import {DataNameExtendedData, DataValueExtendedData, LocoSpeedTabExtended, SpeedTabData,
-	Train, TrainFlags} from '../common/models';
+import {FxConfigType, MsgMode} from '../common/enums';
+import {DataNameExtendedData, LocoSpeedTabExtended, SpeedTabData, Train, TrainFlags} from '../common/models';
 import {Subject} from 'rxjs';
 import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
 import {manualModeB, shuntingFunctionB} from '../common/bites';
 import {Query} from '../common/communication';
-import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
+import { MsgDataValueX, MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 
 /**
  *
@@ -17,11 +16,12 @@ import { MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
 export default class LanDataGroup
 {
 	public readonly onLocoGuiExtended = new Subject<MsgLocoGuiRsp>();
-	public readonly onDataValueExtended = new Subject<DataValueExtendedData>();
+	public readonly onDataValueX = new Subject<MsgDataValueX>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
 	private locoGuiQ: Query<MsgLocoGuiRsp> | undefined = undefined;
+	private dataValQ: Query<MsgDataValueX> | undefined = undefined;
 
 	private mx10: MX10;
 
@@ -30,14 +30,72 @@ export default class LanDataGroup
 		this.mx10 = mx10;
 	}
 
-	dataValueExtended(NID: number)
+	async getDataValueX(nid: number, subId = 0)
 	{
-		this.mx10.sendData(0x17, 0x08, [
-			{value: this.mx10.mx10NID, length: 2},
-			{value: NID, length: 2},
-			{value: 1, length: 2},
-		], 0b00);
+		if(this.dataValQ !== undefined && !await Query.wait(() => !!this.dataValQ)) {
+			this.mx10.logInfo.next("mx10.getDataValueX: failed to acquire lock");
+			return undefined;
+		}
+		this.dataValQ = new Query(MsgDataValueX.header(MsgMode.REQ, this.mx10.mx10NID), this.onDataValueX);
+		this.dataValQ.tx = ((header) => {
+			const msg = new MsgDataValueX(header, nid, subId);
+			// this.mx10.logInfo.next('getDataValueX query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.dataValQ.match = ((msg) => {
+			// this.mx10.logInfo.next('getDataValueX query rx: ' + JSON.stringify(msg));
+			return (msg.nid === nid && msg.subId === subId);
+		})
+		const rv = await this.dataValQ.run();
+		// this.mx10.logInfo.next("mx10.getDataValueX.rv: " + JSON.stringify(rv));
+		this.dataValQ = undefined;
+		return rv;
 	}
+
+		// 0x17.0x08
+	private parseDataValueExtended(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onDataValueX.observed)
+			return;
+
+		// const NID = buffer.readUInt16LE(0);
+		// const deletedFlag = buffer.readUInt8(4);
+		// const flagsBytes = buffer.readUInt32LE(4);
+		// const trackMode = buffer.readUInt8(24);
+		// const functionCount = buffer.readUInt8(25);
+		// const speedAndDirection = buffer.readUInt16LE(44);
+		// const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
+		// const operatingMode = getOperatingMode(trackMode);
+		// const flags = this.parseFlags(flagsBytes);
+
+		// let functions = buffer.readUInt32LE(46);
+		// const functionsStates = [];
+		// for (let i = 0; i < 31; i++) {
+		// 	const active = (functions & 1) == 1;
+		// 	functionsStates.push(active);
+		// 	functions = functions >> 1;
+		// }
+
+		// const specialFunc = buffer.readUInt32LE(50);
+		// const shunting = specialFunc & shuntingFunctionB;
+		// const manualMode = (specialFunc & manualModeB) >> 4;
+		// const deleted = this.parseDeleted(deletedFlag);
+
+		// this.onDataValueExtended.next({nid: NID, flags, functionCount, speedStep, forward, eastWest,
+		// 	emergencyStop, operatingMode, functionsStates, shunting, manualMode, deleted});
+
+		const msg = MsgDataValueX.fromBuffer(mode, nid, buffer);
+		this.onDataValueX.next(msg);
+	}
+
+	// dataValueExtended(NID: number)
+	// {
+	// 	this.mx10.sendData(0x17, 0x08, [
+	// 		{value: this.mx10.mx10NID, length: 2},
+	// 		{value: NID, length: 2},
+	// 		{value: 1, length: 2},
+	// 	], 0b00);
+	// }
 
 	dataNameExtended(NID: number)
 	{
@@ -159,39 +217,6 @@ export default class LanDataGroup
 			default:
 				this.mx10.logInfo.next('lanDataGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
-	}
-
-	// 0x17.0x08
-	private parseDataValueExtended(size: number, mode: number, nid: number, buffer: Buffer)
-	{
-		if(!this.onDataValueExtended.observed)
-			return;
-
-		const NID = buffer.readUInt16LE(0);
-		const deletedFlag = buffer.readUInt8(4);
-		const flagsBytes = buffer.readUInt32LE(4);
-		const trackMode = buffer.readUInt8(24);
-		const functionCount = buffer.readUInt8(25);
-		const speedAndDirection = buffer.readUInt16LE(44);
-		const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
-		const operatingMode = getOperatingMode(trackMode);
-		const flags = this.parseFlags(flagsBytes);
-
-		let functions = buffer.readUInt32LE(46);
-		const functionsStates = [];
-		for (let i = 0; i < 31; i++) {
-			const active = (functions & 1) == 1;
-			functionsStates.push(active);
-			functions = functions >> 1;
-		}
-
-		const specialFunc = buffer.readUInt32LE(50);
-		const shunting = specialFunc & shuntingFunctionB;
-		const manualMode = (specialFunc & manualModeB) >> 4;
-		const deleted = this.parseDeleted(deletedFlag);
-
-		this.onDataValueExtended.next({nid: NID, flags, functionCount, speedStep, forward, eastWest,
-			emergencyStop, operatingMode, functionsStates, shunting, manualMode, deleted});
 	}
 
 	// 0x17.0x10

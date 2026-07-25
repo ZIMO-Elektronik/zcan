@@ -24,7 +24,6 @@ export {
   Direction as Direction,
   ExternalController,
   FunctionMode,
-  OperatingMode,
   SystemStateMode,
 } from './common/enums';
 

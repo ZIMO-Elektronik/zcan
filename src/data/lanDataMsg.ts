@@ -1,5 +1,5 @@
-import { FunctionMode, MsgMode } from "../common/enums";
-import { Header, Message } from "../common/communication";
+import { FunctionMode, StepMax, MsgMode, OpMode } from "../common/enums";
+import { Header, Message, ZcanData } from "../common/communication";
 import { TrainFunction } from "../docs_entrypoint";
 
 
@@ -101,5 +101,73 @@ export class MsgLocoGuiRsp extends Message
 			default:
 				return '';
 		}
+	}
+}
+
+export class MsgDataValueX extends Message
+{
+	public static header(mode: MsgMode, nid: number): Header
+	{return {group: 0x17, cmd: 0x08, mode: mode, nid: nid}}
+
+	constructor(header: Header, nid: number, subId: number, data?: ZcanData[])
+	{
+		super(header);
+		super.push({value: nid, length: 2});
+		super.push({value: subId, length: 2});
+		if(data)
+			super.push(...data);
+	}
+	get nid(): number {return (this.data[0].value as number)}
+	get subId(): number {return (this.data[1].value as number)}
+	get decoder() {return {vendor: this.data[2].value as number, uid: this.data[3].value as number,
+		type: this.data[4].value as number, sound: this.data[5].value as number}}
+	get stepMax() {return (this.data[6].value as number & 0xf) as StepMax}
+	get opMode() {return (this.data[6].value as number >> 4) as OpMode}
+	get funCount() {return this.data[7].value as number}
+	get txCount() {return this.data[8].value as number}
+	get rxCount() {return this.data[9].value as number}
+	get something() {return this.data[10].value as number}
+	get owner() {return {nid: this.data[11].value as number, tick: this.data[12].value as number}}
+	get groupie() {return {nid: this.data[13].value as number, tick: this.data[14].value as number}}
+	get dirBits() {return {reverseCmd: !!((this.data[15].value as number)&0x400),
+		reverseAck: !!((this.data[15].value as number)&0x800), stop: !!((this.data[15].value as number)&0x8000)}}
+	get speedStep() {return (this.data[15].value as number) & 0x3ff}
+	get digtalFun() {
+		// Message.log('MsgDataValueX -> digFun' + (this.data[16].value as number).toString(2) + ' = ' +
+		// 	(this.data[16].value as number).toString(2).padStart(32, '0').split('') + ' = ' +
+		// 	(this.data[16].value as number).toString(2).padStart(32, '0').split('').map(bit => bit === '1'));
+		return (this.data[16].value as number).toString(2).padStart(32, '0').split('').reverse().map(bit => bit === '1')}
+	get specialFun() {return {
+		shunt: parseInt((this.data[17].value as number).toString(2).padStart(32, '0').split('').reverse().slice(0, 4).join(''), 2),
+		man: parseInt((this.data[17].value as number).toString(2).padStart(32, '0').split('').reverse().slice(4, 6).join(''), 2)}}
+	get analogFun()
+		{return this.data.slice(18, 64).map(fun => fun.value as number).map(fun => {return {id: fun&0xff, state: fun>>8}})}
+
+	static fromBuffer(mode: MsgMode, nid: number, buffy: Buffer)
+	{
+		const locoNid = buffy.readUInt16LE(0);
+		const subId = buffy.readUInt16LE(2);
+		let offset = 4;
+		const data: ZcanData[] = [];
+		const slices = [2, 4, 2, 4, 1, 1, 2, 2, 2, 2, 4, 2, 4, 2, 4, 4];
+		for(let i=0; i<32; i++)
+			slices.push(2);
+		for(let length of slices) {
+			let value = 0;
+			switch(length) {
+				case 1:
+					value = buffy.readUInt8(offset);
+					break;
+				case 2:
+					value = buffy.readUInt16LE(offset);
+					break;
+				case 4:
+					value = buffy.readUInt32LE(offset);
+					break;
+			}
+			data.push({value, length});
+			offset += length;
+		}
+		return new MsgDataValueX(MsgDataValueX.header(mode, nid), locoNid, subId, data);
 	}
 }
