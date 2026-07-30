@@ -163,7 +163,8 @@ export default class VehicleGroup
 		});
 		this.speedQ.match = ((msg) => {
 			// this.mx10.logInfo.next('speed query rx: ' + JSON.stringify(msg));
-			return (msg.nid === nid);
+			return (msg.nid === nid && msg.speedStep === speedStep && msg.divisor === msg.divisor &&
+				msg.emergencyStop === emergencyStop && msg.forward === forward);
 		})
 		const rv = await this.speedQ.run(MsgVehicleSpeed.rxDelay());
 		// this.mx10.logInfo.next("mx10.setVehicleSpeed.rv: " + JSON.stringify(rv));
@@ -171,15 +172,40 @@ export default class VehicleGroup
 		return rv;
 	}
 
-	changeSpeed(vehicleAddress: number, speedStep: number, forward: boolean, eastWest?: Direction, emergencyStop?: boolean)
+	async changeSpeed(nid: number, speedStep: number, divisor: number = 0, forward: boolean = true,
+		emergencyStop: boolean = false, eastWest: Direction = Direction.UNDEFINED)
 	{
-		const speedAndDirection = combineSpeedAndDirection(speedStep, forward, eastWest, emergencyStop);
-		this.mx10.sendData(0x02, 0x02, [
-			{value: vehicleAddress, length: 2},
-			{value: speedAndDirection, length: 2},
-			{value: 0x0000, length: 2},
-		]);
+		if(this.speedQ !== undefined && !await Query.wait(() => !!this.speedQ, 0)) {
+			this.mx10.logInfo.next("vehicle.changeSpeed: failed to acquire lock");
+			return undefined;
+		}
+		this.speedQ = new Query(MsgVehicleSpeed.header(MsgMode.CMD, nid), this.onVehicleSpeed);
+		this.speedQ.tx = ((header) => {
+			const speedAndDir = MsgVehicleSpeed.speedAndDir(speedStep, forward, emergencyStop, eastWest);
+			const msg = new MsgVehicleSpeed(header, speedAndDir, divisor);
+			// this.mx10.logInfo.next('changeSpeed query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.speedQ.match = ((msg) => {
+			// this.mx10.logInfo.next('changeSpeed query rx: ' + JSON.stringify(msg));
+			return (msg.nid === nid && msg.speedStep === speedStep && msg.divisor === msg.divisor &&
+				msg.emergencyStop === emergencyStop && msg.forward === forward);
+		})
+		const rv = await this.speedQ.run(5, 0);
+		// this.mx10.logInfo.next("vehicle.changeSpeed.rv: " + JSON.stringify(rv));
+		this.speedQ = undefined;
+		return rv;
 	}
+
+	// changeSpeed(vehicleAddress: number, speedStep: number, forward: boolean, eastWest?: Direction, emergencyStop?: boolean)
+	// {
+	// 	const speedAndDirection = combineSpeedAndDirection(speedStep, forward, eastWest, emergencyStop);
+	// 	this.mx10.sendData(0x02, 0x02, [
+	// 		{value: vehicleAddress, length: 2},
+	// 		{value: speedAndDirection, length: 2},
+	// 		{value: 0x0000, length: 2},
+	// 	]);
+	// }
 
 	callFunction(vehicleAddress: number, functionId: number, functionStatus: boolean)
 	{
