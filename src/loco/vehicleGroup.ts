@@ -371,10 +371,9 @@ export default class VehicleGroup
 	{
 		if(!this.onVehicleSpeed.observed)
 			return;
-
 		const msg = MsgVehicleSpeed.fromBuffer(mode, buffer);
-		// this.mx10.logInfo.next('parseVehicleSpeed: ' + JSON.stringify(msg));
-		this.onVehicleSpeed.next(msg);
+		this.mx10.logInfo.next('parseVehicleSpeed: ' + JSON.stringify(msg));
+			this.onVehicleSpeed.next(msg);
 	}
 
 	// 0x02.0x03

@@ -46,17 +46,19 @@ export class MsgVehicleSpeed extends Message
 	public static log: (msg: string) => void = () => {};
 	private static rxTiming = new Ranger({min: 5, max: 20, now: 5});
 
-	constructor(header: Header, speedAndDirection?: number, divisor?: number)
+	constructor(header: Header, speedAndDirection?: number, divisor?: number, srcNid?: number)
 	{
 		super(header);
 		if(header.mode === MsgMode.REQ) return;
 		super.push({value: speedAndDirection || 0, length: 2});
 		super.push({value: divisor || 0, length: 1});
 		super.push({value: 0, length: 1});
+		super.push({value: srcNid??0, length: 2});
 	}
 
 	rxDelay(millis: number) {MsgVehicleSpeed.rxTiming.set(millis)}
 	get nid(): number {return this.header.nid || 0}
+	get srcNid(): number {return this.data[3].value as number}
 	get divisor(): number {return this.data[1].value as number}
 	get speedStep(): number {return (this.data[0].value as number) & 0x3ff}
 	get direction(): boolean {return !!((this.data[0].value as number) & 0x400)}
@@ -70,7 +72,8 @@ export class MsgVehicleSpeed extends Message
 		const nid = buffer.readUInt16LE(0);
 		const speedAndDir = buffer.readUInt16LE(2);
 		const divisor = buffer.readUint8(4);
-		const msg = new MsgVehicleSpeed(MsgVehicleSpeed.header(mode, nid), speedAndDir, divisor);
+		const srcNid = buffer.readUint16LE(6);
+		const msg = new MsgVehicleSpeed(MsgVehicleSpeed.header(mode, nid), speedAndDir, divisor, srcNid);
 		return msg;
 	}
 
