@@ -61,6 +61,8 @@ export default class MX10
 	private readonly debugCommunication: boolean;
 	private readonly reconnectionTime: number = 0;
 
+	readonly locoSpeed = new Map<number, number>();
+
 
 	constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs: number = 2000, debug = false)
 	{

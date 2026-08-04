@@ -188,11 +188,15 @@ export default class VehicleGroup
 		});
 		this.speedQ.match = ((msg) => {
 			// this.mx10.logInfo.next('changeSpeed query rx: ' + JSON.stringify(msg));
+			// this.mx10.logInfo.next('changeSpeed query rx: ' + (msg.nid === nid) + ',' + (msg.speedStep === speedStep) +
+			// 	',' + (msg.divisor === msg.divisor) + ',' + (msg.emergencyStop === emergencyStop) + ',' +
+			// 	(msg.forward === forward));
 			return (msg.nid === nid && msg.speedStep === speedStep && msg.divisor === msg.divisor &&
 				msg.emergencyStop === emergencyStop && msg.forward === forward);
 		})
-		const rv = await this.speedQ.run(5, 0);
-		// this.mx10.logInfo.next("vehicle.changeSpeed.rv: " + JSON.stringify(rv));
+		this.speedQ.subscribe(false);
+		const rv = await this.speedQ.run(20, 1);
+		this.mx10.logInfo.next("vehicle.changeSpeed.rv: " + JSON.stringify(rv));
 		this.speedQ = undefined;
 		return rv;
 	}
@@ -398,6 +402,7 @@ export default class VehicleGroup
 		if(!this.onVehicleSpeed.observed)
 			return;
 		const msg = MsgVehicleSpeed.fromBuffer(mode, buffer);
+		this.mx10.locoSpeed.set(msg.nid, msg.speedStep);
 		this.mx10.logInfo.next('parseVehicleSpeed: ' + JSON.stringify(msg));
 			this.onVehicleSpeed.next(msg);
 	}
