@@ -163,6 +163,8 @@ export default class ExtendedASCII {
 	public static byte2str(buff: Buffer): string {
 		const chars = new Array(buff.length);
 		for (let i = 0; i < buff.length; i++) {
+			if(!buff[i])
+				break;
 			const charCode = buff[i];
 			if (charCode > 0x7f) {
 				chars[i] = ExtendedASCII.extendedChars[charCode - 128];

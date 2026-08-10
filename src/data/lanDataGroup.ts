@@ -100,17 +100,18 @@ export default class LanDataGroup
 	dataNameExtended(NID: number)
 	{
 		this.mx10.sendData(0x17, 0x10, [
+			{value: this.mx10.mx10NID, length: 2},
 			{value: NID, length: 2},
-			{value: 0, length: 2},
 		], 0b00);
 	}
 
 	renameDataExtended(NID: number, type: number, val1: number, val2: number, val3: number, name: string)
 	{
 		this.mx10.sendData(0x17, 0x10, [
+			{value: this.mx10.mx10NID, length: 2},
 			{value: NID, length: 2},
 			{value: type, length: 2},
-			{value: val1, length: 4},
+			{value: val1, length: 2},
 			{value: val2, length: 4},
 			{value: val3, length: 4},
 			{value: name, length: name.length},
@@ -224,14 +225,13 @@ export default class LanDataGroup
 	{
 		if(!this.onDataNameExtended.observed)
 			return;
-
-		const NID = buffer.readUInt16LE(0);
-		const type = buffer.readUInt16LE(2);
-		const val1 = buffer.readUInt32LE(4);
+		//this.mx10.logInfo.next('parse nameX: ' + JSON.stringify(buffer));
+		const NID = buffer.readUInt16LE(2);
+		const type = buffer.readUInt16LE(4);
+		const val1 = buffer.readUInt16LE(6);
 		const val2 = buffer.readUInt32LE(8);
 		const val3 = buffer.readUInt32LE(12);
 		const name = ExtendedASCII.byte2str(buffer.subarray(16, 63));
-
 		this.onDataNameExtended.next({nid: NID, name});
 	}
 

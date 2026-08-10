@@ -66,11 +66,14 @@ export default class LanNetworkGroup
 	{
 		switch (command) {
 			case 0x06:
-				this.mx10.logInfo.next('parsePortOpen, nid = ' + nid + ', buf = ' + JSON.stringify(buffer))
+				this.mx10.logInfo.next('parsePortOpen, nid = ' + nid + ', buf = ' + JSON.stringify(buffer));
 				this.parsePortOpen(size, mode, nid, buffer);
 				break;
 			case 0x0e:
 				this.parseUnknownCommand(size, mode, nid, buffer);
+				break;
+			case 0x0f:
+				this.parseCmd0f(size, mode, nid, buffer);
 				break;
 			default:
 				this.mx10.logInfo.next('lanNetworkGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
@@ -84,6 +87,12 @@ export default class LanNetworkGroup
 		const comFlags = buffer.readUint32LE(0);
 		const clientId = buffer.readUint32LE(4);
 		this.onPortOpen.next(new MsgPortOpen(MsgPortOpen.header(mode, nid), clientId, comFlags));
+	}
+
+	parseCmd0f(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		const chars = buffer.slice(8);
+		this.mx10.logInfo.next('parseCmd0f, nid = ' + nid + ', buf = ' + String.fromCharCode(...chars));
 	}
 
 	// 0x1A.0x0e
