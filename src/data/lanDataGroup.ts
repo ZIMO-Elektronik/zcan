@@ -7,7 +7,8 @@ import {parseSpeed} from '../common/speedUtils';
 import ExtendedASCII from '../common/extendedAscii';
 import {manualModeB, shuntingFunctionB} from '../common/bites';
 import {Query} from '../common/communication';
-import { MsgDataValueX, MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
+import { MsgDataValueX, MsgItemListByIdxX, MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
+import {Buffer} from 'buffer';
 
 /**
  *
@@ -17,9 +18,11 @@ export default class LanDataGroup
 {
 	public readonly onLocoGuiExtended = new Subject<MsgLocoGuiRsp>();
 	public readonly onDataValueX = new Subject<MsgDataValueX>();
+	public readonly onItemListByIdxX = new Subject<MsgItemListByIdxX>();
 	public readonly onDataNameExtended = new Subject<DataNameExtendedData>();
 	public readonly onLocoSpeedTabExtended = new Subject<LocoSpeedTabExtended>();
 
+	private itemListQ: Query<MsgItemListByIdxX> | undefined = undefined;
 	private locoGuiQ: Query<MsgLocoGuiRsp> | undefined = undefined;
 	private dataValQ: Query<MsgDataValueX> | undefined = undefined;
 
@@ -52,42 +55,6 @@ export default class LanDataGroup
 		return rv;
 	}
 
-		// 0x17.0x08
-	private parseDataValueExtended(size: number, mode: number, nid: number, buffer: Buffer)
-	{
-		if(!this.onDataValueX.observed)
-			return;
-
-		// const NID = buffer.readUInt16LE(0);
-		// const deletedFlag = buffer.readUInt8(4);
-		// const flagsBytes = buffer.readUInt32LE(4);
-		// const trackMode = buffer.readUInt8(24);
-		// const functionCount = buffer.readUInt8(25);
-		// const speedAndDirection = buffer.readUInt16LE(44);
-		// const {speedStep, forward, eastWest, emergencyStop} = parseSpeed(speedAndDirection);
-		// const operatingMode = getOperatingMode(trackMode);
-		// const flags = this.parseFlags(flagsBytes);
-
-		// let functions = buffer.readUInt32LE(46);
-		// const functionsStates = [];
-		// for (let i = 0; i < 31; i++) {
-		// 	const active = (functions & 1) == 1;
-		// 	functionsStates.push(active);
-		// 	functions = functions >> 1;
-		// }
-
-		// const specialFunc = buffer.readUInt32LE(50);
-		// const shunting = specialFunc & shuntingFunctionB;
-		// const manualMode = (specialFunc & manualModeB) >> 4;
-		// const deleted = this.parseDeleted(deletedFlag);
-
-		// this.onDataValueExtended.next({nid: NID, flags, functionCount, speedStep, forward, eastWest,
-		// 	emergencyStop, operatingMode, functionsStates, shunting, manualMode, deleted});
-
-		const msg = MsgDataValueX.fromBuffer(mode, nid, buffer);
-		this.onDataValueX.next(msg);
-	}
-
 	// dataValueExtended(NID: number)
 	// {
 	// 	this.mx10.sendData(0x17, 0x08, [
@@ -117,6 +84,28 @@ export default class LanDataGroup
 			{value: name, length: name.length},
 			{value: 0, length: 1},
 		], 0b01);
+	}
+
+	async itemListByIdx(idx: number, group = 0): Promise<MsgItemListByIdxX | undefined>
+	{
+		if(this.itemListQ && !await Query.wait(() => !!this.itemListQ)) {
+			this.mx10.logInfo.next("itemListByIdxX: failed to acquire lock");
+			return undefined;
+		}
+		this.itemListQ = new Query(MsgItemListByIdxX.header(MsgMode.REQ, this.mx10.mx10NID), this.onItemListByIdxX);
+		this.itemListQ.tx = ((header) => {
+			const msg = new MsgItemListByIdxX(header, idx, [], group);
+			this.mx10.logInfo.next('itemListByIdxX query tx: ' + JSON.stringify(msg));
+			this.mx10.sendMsg(msg);
+		});
+		this.itemListQ.match = ((msg) => {
+			this.mx10.logInfo.next('itemListByIdxX query rx: ' + JSON.stringify(msg));
+			return (msg.idx === idx);
+		})
+		const rv = await this.itemListQ.run();
+		this.itemListQ = undefined;
+		this.mx10.logInfo.next("itemListByIdxX.rv: " + JSON.stringify(rv));
+		return rv;
 	}
 
 	/**
@@ -203,6 +192,9 @@ export default class LanDataGroup
 	{
 		switch (command)
 		{
+			case 0x01:
+				this.parseItemListByIdxX(size, mode, nid, buffer);
+				break;
 			case 0x08:
 				this.parseDataValueExtended(size, mode, nid, buffer);
 				break;
@@ -218,6 +210,24 @@ export default class LanDataGroup
 			default:
 				this.mx10.logInfo.next('lanDataGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
 		}
+	}
+
+	// 0x17.0x01
+	private parseItemListByIdxX(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onItemListByIdxX.observed)
+			return;
+		const msg = MsgItemListByIdxX.fromBuffer(mode, nid, buffer);
+		this.onItemListByIdxX.next(msg);
+	}
+
+	// 0x17.0x08
+	private parseDataValueExtended(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		if(!this.onDataValueX.observed)
+			return;
+		const msg = MsgDataValueX.fromBuffer(mode, nid, buffer);
+		this.onDataValueX.next(msg);
 	}
 
 	// 0x17.0x10

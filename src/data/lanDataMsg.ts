@@ -1,6 +1,7 @@
 import { FunctionMode, StepMax, MsgMode, OpMode } from "../common/enums";
 import { Header, Message, ZcanData } from "../common/communication";
-import { TrainFunction } from "../docs_entrypoint";
+import {Buffer} from 'buffer';
+import {TrainFunction} from '../common/models';
 
 
 export class MsgLocoGuiReq extends Message
@@ -169,5 +170,71 @@ export class MsgDataValueX extends Message
 			offset += length;
 		}
 		return new MsgDataValueX(MsgDataValueX.header(mode, nid), locoNid, subId, data);
+	}
+}
+
+export class MsgItemListByIdxX extends Message
+{
+	public static header(mode: MsgMode, nid: number): Header
+	{return {group: 0x17, cmd: 0x01, mode: mode, nid: nid}}
+
+	constructor(header: Header, idx: number, data?: ZcanData[], group?: number)
+	{
+		super(header);
+		if(group !== undefined)
+			super.push({value: group, length: 2});
+		super.push({value: idx, length: 2});
+		if(data && data.length)
+			super.push(...data);
+	}
+	get idx(): number {return (this.data[this.header.mode === MsgMode.REQ ? 1 : 0].value as number)}
+	get nid(): number {return (this.data[1].value as number)}
+	get stepMax() {return (this.data[2].value as number & 0xf) as StepMax}
+	get opMode() {return (this.data[2].value as number >> 4) as OpMode}
+	get speedStep(): number {return (this.data[3].value as number) & 0x3ff}
+	get direction(): boolean {return !!((this.data[3].value as number) & 0x400)}
+	get directionAck(): boolean {return !!((this.data[3].value as number) & 0x800)}
+	get eastWest() {return ((this.data[3].value as number) >> 12) & 3}
+	get railCom() {return !!((this.data[3].value as number) & 0x4000)}
+	get zimoAck() {return !!((this.data[3].value as number) & 0x8000)}
+	get eStop() {return !!((this.data[4].value as number) & 0x1)}
+	get cabEw() {return !!((this.data[4].value as number) & 0x2)}
+	get hasTrain() {return !!((this.data[4].value as number) & 0x4)}
+	get deleted() {return !!((this.data[4].value as number) & 0x80)}
+	get fxCount() {return this.data[5].value as number}
+	get axCount() {return this.data[6].value as number}
+	get fxState()
+		{return (this.data[7].value as number).toString(2).padStart(64, '0').split('').reverse().map(bit => bit === '1')}
+	get owner() {return {nid: this.data[8].value as number, tick: this.data[9].value as number}}
+	get trainNid() {return this.data[10].value as number}
+
+	static fromBuffer(mode: MsgMode, nid: number, buffy: Buffer)
+	{
+		const idx = buffy.readUInt16LE(0);
+		const locoNid = buffy.readUInt16LE(2);
+		let offset = 4;
+		const data: ZcanData[] = [{value: locoNid, length: 2}];
+		const slices = [1, 2, 1, 1, 1, 8, 2, 4, 2];
+		for(let length of slices) {
+			let value = 0;
+			switch(length) {
+				case 1:
+					value = buffy.readUInt8(offset);
+					break;
+				case 2:
+					value = buffy.readUInt16LE(offset);
+					break;
+				case 4:
+					value = buffy.readUInt32LE(offset);
+					break;
+				case 8:
+					value = (buffy.readUInt32LE(offset+4)<<32) | buffy.readUInt32LE(offset);
+					//value = Number(buffy.readBigUInt64LE(offset));
+					break;
+			}
+			data.push({value, length});
+			offset += length;
+		}
+		return new MsgItemListByIdxX(MsgItemListByIdxX.header(mode, nid), idx, data);
 	}
 }

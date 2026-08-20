@@ -6,6 +6,7 @@ import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import { MsgPortOpen } from './networkMsg';
 import { MsgMode } from '../common/enums';
+import {Buffer} from 'buffer';
 
 /**
  *
@@ -84,8 +85,8 @@ export default class LanNetworkGroup
 	{
 		if(!this.onPortOpen.observed)
 			return;
-		const comFlags = buffer.readUint32LE(0);
-		const clientId = buffer.readUint32LE(4);
+		const comFlags = buffer.readUInt32LE(0);
+		const clientId = buffer.readUInt32LE(4);
 		this.onPortOpen.next(new MsgPortOpen(MsgPortOpen.header(mode, nid), clientId, comFlags));
 	}
 

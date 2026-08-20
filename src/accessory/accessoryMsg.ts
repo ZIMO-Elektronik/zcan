@@ -1,5 +1,6 @@
 import { AccessoryMode, MsgMode } from "../common/enums";
 import { Header, Message } from "../common/communication";
+import {Buffer} from 'buffer';
 
 
 export class MsgAccessoryMode extends Message

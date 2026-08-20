@@ -3,6 +3,7 @@ import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {LocoStateData} from '../common/models';
 import ExtendedASCII from '../common/extendedAscii';
+import {Buffer} from 'buffer';
 
 /**
  *

@@ -4,6 +4,7 @@ import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {ModulePowerInfoData} from '../common/models';
 import {TrackMode} from '../common/enums';
+import {Buffer} from 'buffer';
 
 /**
  *

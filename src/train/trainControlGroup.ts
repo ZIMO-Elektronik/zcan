@@ -1,4 +1,5 @@
 import MX10 from '../MX10';
+import {Buffer} from 'buffer';
 
 /**
  *

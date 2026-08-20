@@ -499,55 +499,55 @@ export default class DataGroup
 		this.onDataNameExtended.next(msg);
 		return;
 		
-		const NID = buffer.readUInt16LE(0);
-		const subID = buffer.readUInt16LE(2);
-		const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
-		let value1: DataNameValue1 | undefined;
-		const value2 = buffer.readUInt32LE(8);
-		let type: NameType;
+		// const NID = buffer.readUInt16LE(0);
+		// const subID = buffer.readUInt16LE(2);
+		// const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
+		// let value1: DataNameValue1 | undefined;
+		// const value2 = buffer.readUInt32LE(8);
+		// let type: NameType;
 
-		switch (NID)
-		{
-			case 0x7f00:
-				type = NameType.MANUFACTURER;
-				break;
-			case 0x7f02:
-				type = NameType.DECODER;
-				break;
-			case 0x7f04:
-				type = NameType.DESIGNATION;
-				value1 = {type: buffer.subarray(4).toString('ascii').trim(),
-					cfgNum: parseInt(buffer.subarray(5, 7).toString('ascii'))};
-				break;
-			case 0x7f06:
-				type = NameType.CFGDB;
-				break;
-			case 0x7f10:
-				type = NameType.ICON;
-				break;
-			case 0x7f11:
-				type = NameType.ICON;
-				break;
-			case 0x7f18:
-				type = NameType.ZIMO_PARTNER;
-				break;
-			case 0x7f20:
-				type = NameType.LAND;
-				break;
-			case 0x7f21:
-				type = NameType.COMPANY_CV;
-				break;
-			case 0xc2:
-				type = NameType.CONNECTION;
-				break;
-			default:
-				if (subID == 1)
-					type = NameType.COMPANY_CV;
-				else if (subID == 0)
-					type = NameType.VEHICLE;
-				else
-					type = NameType.CONNECTION;
-		}
+		// switch (NID)
+		// {
+		// 	case 0x7f00:
+		// 		type = NameType.MANUFACTURER;
+		// 		break;
+		// 	case 0x7f02:
+		// 		type = NameType.DECODER;
+		// 		break;
+		// 	case 0x7f04:
+		// 		type = NameType.DESIGNATION;
+		// 		value1 = {type: buffer.subarray(4).toString('ascii').trim(),
+		// 			cfgNum: parseInt(buffer.subarray(5, 7).toString('ascii'))};
+		// 		break;
+		// 	case 0x7f06:
+		// 		type = NameType.CFGDB;
+		// 		break;
+		// 	case 0x7f10:
+		// 		type = NameType.ICON;
+		// 		break;
+		// 	case 0x7f11:
+		// 		type = NameType.ICON;
+		// 		break;
+		// 	case 0x7f18:
+		// 		type = NameType.ZIMO_PARTNER;
+		// 		break;
+		// 	case 0x7f20:
+		// 		type = NameType.LAND;
+		// 		break;
+		// 	case 0x7f21:
+		// 		type = NameType.COMPANY_CV;
+		// 		break;
+		// 	case 0xc2:
+		// 		type = NameType.CONNECTION;
+		// 		break;
+		// 	default:
+		// 		if (subID == 1)
+		// 			type = NameType.COMPANY_CV;
+		// 		else if (subID == 0)
+		// 			type = NameType.VEHICLE;
+		// 		else
+		// 			type = NameType.CONNECTION;
+		// }
 		
 		// this.onDataNameExtended.next({nid: NID, type, subID, value1, value2, name});
 	}

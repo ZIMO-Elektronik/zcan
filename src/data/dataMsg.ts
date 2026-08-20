@@ -2,6 +2,7 @@
 import ExtendedASCII from "../common/extendedAscii";
 import { Header, Message } from "../common/communication";
 import { MsgMode, NameType } from "../common/enums";
+import {Buffer} from 'buffer';
 
 
 export class MsgGroupCount extends Message
@@ -164,8 +165,8 @@ export class MsgDataName extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const subId = buffer.readUInt16LE(2);
-		const v1 = buffer.readUint32LE(4);
-		const v2 = buffer.readUint32LE(8);
+		const v1 = buffer.readUInt32LE(4);
+		const v2 = buffer.readUInt32LE(8);
 		const name = ExtendedASCII.byte2str(buffer.subarray(12, 203));
 		const msg = new MsgDataName(MsgDataName.header(mode, nid), subId, name, v1, v2);
 		return msg;

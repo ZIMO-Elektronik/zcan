@@ -5,6 +5,7 @@ import {Direction, Manual, StepMax, MsgMode, OpMode, SpecialFxNr} from '../commo
 import {combineSpeedAndDirection} from '../common/speedUtils';
 import { Query } from '../common/communication';
 import { MsgFx, MsgFxStates, MsgSpecialFx, MsgVehicleLastCtl, MsgVehicleMode, MsgVehicleSpeed, MsgVehicleState } from './vehicleMsg';
+import {Buffer} from 'buffer';
 
 /**
  *

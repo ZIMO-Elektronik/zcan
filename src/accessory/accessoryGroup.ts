@@ -5,6 +5,7 @@ import {AccessoryModeData, AccessoryPin4Data, AccessoryPin6Data, AccessoryPortDa
 import {AccessoryMode, MsgMode} from '../common/enums';
 import { Query } from '../docs_entrypoint';
 import { MsgAccessoryMode } from './accessoryMsg';
+import {Buffer} from 'buffer';
 
 /**
  *

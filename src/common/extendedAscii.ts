@@ -160,7 +160,7 @@ export default class ExtendedASCII {
 		return length;
 	}
 
-	public static byte2str(buff: Buffer): string {
+	public static byte2str(buff: Buffer | Uint8Array): string {
 		const chars = new Array(buff.length);
 		for (let i = 0; i < buff.length; i++) {
 			if(!buff[i])

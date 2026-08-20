@@ -3,6 +3,7 @@ import { Header, Message } from "../common/communication";
 import { Ranger } from "../common/utils";
 import { Direction, StepMax, MsgMode, OpMode, SpecialFxNr } from "../common/enums";
 import { directACKBites, directionBites, eastWestBites_, emergencyStopB, speedBites____ } from "../common/bites";
+import {Buffer} from 'buffer';
 
 
 export class MsgVehicleMode extends Message
@@ -71,8 +72,8 @@ export class MsgVehicleSpeed extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const speedAndDir = buffer.readUInt16LE(2);
-		const divisor = buffer.readUint8(4);
-		const srcNid = buffer.readUint16LE(6);
+		const divisor = buffer.readUInt8(4);
+		const srcNid = buffer.readUInt16LE(6);
 		const msg = new MsgVehicleSpeed(MsgVehicleSpeed.header(mode, nid), speedAndDir, divisor, srcNid);
 		return msg;
 	}
@@ -109,8 +110,8 @@ export class MsgVehicleState extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const flags = buffer.readUInt16LE(2);
-		const lastTick = buffer.readUint16LE(4);
-		const lastNid = buffer.readUint16LE(6);
+		const lastTick = buffer.readUInt16LE(4);
+		const lastNid = buffer.readUInt16LE(6);
 		const msg = new MsgVehicleState(MsgVehicleState.header(mode, nid), flags, lastTick, lastNid);
 		return msg;
 	}
@@ -139,8 +140,8 @@ export class MsgVehicleLastCtl extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const type = buffer.readUInt16LE(2);
-		const ctlNid = buffer.readUint16LE(4);
-		const seconds = buffer.readUint16LE(6);
+		const ctlNid = buffer.readUInt16LE(4);
+		const seconds = buffer.readUInt16LE(6);
 		const msg = new MsgVehicleLastCtl(MsgVehicleLastCtl.header(mode, nid), type, ctlNid, seconds);
 		return msg;
 	}
@@ -166,7 +167,7 @@ export class MsgFx extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const fxNr = buffer.readUInt16LE(2);
-		const state = buffer.readUint16LE(4);
+		const state = buffer.readUInt16LE(4);
 		const msg = new MsgFx(MsgFx.header(mode, nid), fxNr, state);
 		return msg;
 	}
@@ -191,7 +192,7 @@ export class MsgFxStates extends Message
 	public static fromBuffer(mode: MsgMode, buffer: Buffer)
 	{
 		const nid = buffer.readUInt16LE(0);
-		const state = buffer.readUint32LE(2);
+		const state = buffer.readUInt32LE(2);
 		const msg = new MsgFxStates(MsgFxStates.header(mode, nid), state);
 		return msg;
 	}
@@ -217,7 +218,7 @@ export class MsgSpecialFx extends Message
 	{
 		const nid = buffer.readUInt16LE(0);
 		const sfxNr = buffer.readUInt16LE(2);
-		const state = buffer.readUint16LE(4);
+		const state = buffer.readUInt16LE(4);
 		const msg = new MsgSpecialFx(MsgSpecialFx.header(mode, nid), sfxNr, state);
 		return msg;
 	}

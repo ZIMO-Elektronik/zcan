@@ -4,6 +4,7 @@ import {Subject} from 'rxjs';
 import {Query} from '../common/communication';
 import {MsgMode} from '../common/enums';
 import { MsgCvRead, MsgCvWrite, MsgCvWrite16 } from './trackMsg';
+import {Buffer} from 'buffer';
 
 /**
  *
@@ -41,8 +42,8 @@ export default class TrackCfgGroup
 			// const sysNid = buffer.readUInt16LE(0);
 			const NID = buffer.readUInt16LE(2);
 			const cfgNum = buffer.readUInt32LE(4);
-			const cvState = buffer.readUint8(8);
-			const cvCode = buffer.readUint8(9);
+			const cvState = buffer.readUInt8(8);
+			const cvCode = buffer.readUInt8(9);
 
 			this.onTseInfoExtended.next({
 				nid: NID,
@@ -75,7 +76,7 @@ export default class TrackCfgGroup
 
 		const NID = buffer.readUInt16LE(0);
 		const cfgNum = buffer.readUInt32LE(2);
-		const cvValue = buffer.readUint8(6);
+		const cvValue = buffer.readUInt8(6);
 		this.mx10.logInfo.next("parseTseProgWrite: mode=" + mode + " ... " + JSON.stringify(buffer));
 
 		this.onTseProgWriteExtended.next(new MsgCvWrite(MsgCvWrite.header(mode, nid), NID, cfgNum, cvValue));
@@ -91,8 +92,8 @@ export default class TrackCfgGroup
 			throw new Error('parseTseProgWrite16 rx: ' + JSON.stringify(buffer));
 
 		const NID = buffer.readUInt16LE(0);
-		const cfgNum = buffer.readUint16LE(2);
-		const cvValue = buffer.readUint16LE(4);
+		const cfgNum = buffer.readUInt16LE(2);
+		const cvValue = buffer.readUInt16LE(4);
 
 		this.onTseProgWrite16Extended.next(new MsgCvWrite16(MsgCvWrite16.header(mode, nid), NID, cfgNum, cvValue));
 	}

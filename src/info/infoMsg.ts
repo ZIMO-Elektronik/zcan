@@ -1,7 +1,7 @@
 
 import { Header, Message, ZcanDataArray } from "../common/communication";
 import { BidiType, ModInfoType, MsgMode } from "../common/enums";
-
+import {Buffer} from 'buffer';
 
 
 export class MsgModInfo extends Message
