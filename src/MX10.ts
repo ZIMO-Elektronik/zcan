@@ -64,9 +64,10 @@ export default class MX10
 	readonly locoSpeed = new Map<number, number>();
 
 
-	constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs: number = 2000, debug = false)
+	constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs: number = 4000, debug = false)
 	{
 		Query.log = (msg) => this.logInfo.next(msg);
+		Message.log = (msg) => this.logInfo.next(msg);
 		this.debugCommunication = debug;
 		this.reconnectionTime = 2000;
 		this.clientName = clientName;
@@ -75,13 +76,12 @@ export default class MX10
 
 		interval(1000).subscribe(async () => {
 			if(this.connected) {
-				// this.logInfo.next('ping, weil connected');
-				const msg = await this.network.ping(this.mx10NID);
-				//const msg = await this.network.ping(this.myNID);
+				//this.logInfo.next('sending ping evt');
+				const msg = await this.network.ping(this.myNID);
 				if(msg)
 					this.lastPing = Date.now();
 				else if(Date.now() - this.lastPing > pingTimeoutMs) {
-					this.logInfo.next('No ping for 2 seconds!');
+					this.logInfo.next('No ping for ' + (pingTimeoutMs/1000) + ' seconds!');
 					this.onTimeout();
 					// await this.closeSocket();
 					// this.logError.next('.mx10.connection.not_connected');
@@ -190,7 +190,8 @@ export default class MX10
 	{
 		// Message.log = (msg) => this.logInfo.next(msg);
 		const buffer = msg.udp(this.myNID);
-		this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
+		if(msg.header.group !== 0xa || msg.header.cmd !== 0)
+			this.logInfo.next("mx10.sendMsg: " + JSON.stringify(buffer));
 		this.send(buffer, force);
 	}
 

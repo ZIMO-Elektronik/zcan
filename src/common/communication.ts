@@ -41,7 +41,8 @@ export class Message
 
 	udp(ownNid: number): Buffer
 	{
-		const size = 2 + this.data.reduce((sum, obj) => sum + obj.length, 0);
+		let size = this.header.nid !== undefined && this.header.nid !== ownNid ? 2 : 0;
+		size += this.data.reduce((sum, obj) => sum + obj.length, 0);
 		const buffer = Buffer.alloc(size + 8);
 		const cmd_md = (this.header.cmd << 2) | this.header.mode;
 
@@ -52,6 +53,7 @@ export class Message
 		buffer.writeUInt16LE(ownNid, 6);
 		let offset = 8;
 		if(this.header.nid !== undefined && this.header.nid !== ownNid) {
+			//Message.log('header nid: ' + this.header.nid);
 			buffer.writeUInt16LE(this.header.nid, offset);
 			offset += 2;
 		}
@@ -154,7 +156,7 @@ export class Query<T extends Message>
 				this.tx(this.header);
 
 			if(!tick--) {
-				this.log('query.run.failed :(');
+				this.log('query.run.failed: ' + JSON.stringify(this.header));
 				this.rx?.unsubscribe();
 				return undefined;
 			}

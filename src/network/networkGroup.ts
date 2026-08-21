@@ -37,22 +37,21 @@ export default class NetworkGroup
 			this.mx10.logInfo.next("mx10.ping: failed to acquire lock");
 			return undefined;
 		}
-		this.pingQ = new Query(MsgPing.header(MsgMode.CMD, nid), this.onPing);
-		//this.pingQ = new Query(MsgPing.header(MsgMode.REQ, nid), this.onPing);
+		this.pingQ = new Query(MsgPing.header(nid === 0xc000 ? MsgMode.CMD : MsgMode.EVT, nid), this.onPing);
 		this.pingQ.tx = ((header) => {
-			const msg = new MsgPing(header, nid);
-			// this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));
+			const msg = new MsgPing(header, nid === 0xc000 ? nid : undefined);
+			this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg, true);
 		});
 		this.pingQ.match = ((msg) => {
-			// this.mx10.logInfo.next('ping query rx: ' + JSON.stringify(msg));
-			if(nid & 0xff)
-				return msg.header.nid === nid;
+			this.mx10.logInfo.next('ping query rx: ' + JSON.stringify(msg));
+			if(nid !== 0xc000)
+				return true;
 			return ((msg.header.nid||0) & 0xff00) === (nid & 0xff00);
 		});
 		this.pingQ.subscribe(false);
-		const rv = await this.pingQ.run(100);
-		// this.mx10.logInfo.next("mx10.ping.rv: " + JSON.stringify(rv));
+		const rv = await this.pingQ.run(250);
+		this.mx10.logInfo.next("mx10.ping.rv: " + JSON.stringify(rv));
 		this.pingQ = undefined;
 		return rv;
 	}

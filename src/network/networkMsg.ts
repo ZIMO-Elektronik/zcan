@@ -41,7 +41,7 @@ export class MsgPing extends Message
 	constructor(header: Header, masterUid?: number, type?: number, session?: number)
 	{
 		super(header);
-		if(header.mode < MsgMode.EVT)
+		if(header.mode < MsgMode.ACK)
 			return;
 		super.push({value: masterUid || 0, length: 4});
 		super.push({value: type || 0, length: 2});

@@ -66,6 +66,7 @@ export default class LanDataGroup
 
 	dataNameExtended(NID: number)
 	{
+		this.mx10.logInfo.next('dataNameExtended of ' + NID);
 		this.mx10.sendData(0x17, 0x10, [
 			{value: this.mx10.mx10NID, length: 2},
 			{value: NID, length: 2},
