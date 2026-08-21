@@ -38,6 +38,7 @@ export default class NetworkGroup
 			return undefined;
 		}
 		this.pingQ = new Query(MsgPing.header(MsgMode.CMD, nid), this.onPing);
+		//this.pingQ = new Query(MsgPing.header(MsgMode.REQ, nid), this.onPing);
 		this.pingQ.tx = ((header) => {
 			const msg = new MsgPing(header, nid);
 			// this.mx10.logInfo.next('ping query tx: ' + JSON.stringify(msg));

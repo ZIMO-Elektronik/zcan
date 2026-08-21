@@ -77,6 +77,7 @@ export default class MX10
 			if(this.connected) {
 				// this.logInfo.next('ping, weil connected');
 				const msg = await this.network.ping(this.mx10NID);
+				//const msg = await this.network.ping(this.myNID);
 				if(msg)
 					this.lastPing = Date.now();
 				else if(Date.now() - this.lastPing > pingTimeoutMs) {
