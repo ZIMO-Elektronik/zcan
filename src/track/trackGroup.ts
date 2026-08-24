@@ -134,11 +134,11 @@ export default class TrackCfgGroup
 		this.getCvQ = new Query(MsgCvRead.header(MsgMode.CMD, this.mx10.mx10NID), this.onTseProgReadExtended);
 		this.getCvQ.tx = ((header) => {
 			const msg = new MsgCvRead(header, trainNid, cvNum);
-			// this.mx10.log.next('cv query tx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('cv query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.getCvQ.match = ((msg) => {
-			// this.mx10.log.next('cv query rx: ' + JSON.stringify(msg));
+			this.mx10.logInfo.next('cv query rx: ' + JSON.stringify(msg));
 			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum);
 		})
 		const rv = await this.getCvQ.run(70);
