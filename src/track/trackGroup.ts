@@ -3,7 +3,7 @@ import MX10 from '../MX10';
 import {Subject} from 'rxjs';
 import {Query} from '../common/communication';
 import {MsgMode} from '../common/enums';
-import { MsgCvRead, MsgCvWrite, MsgCvWrite16 } from './trackMsg';
+import { MsgCvRead, MsgCvWrite, MsgCvWrite16, MsgCvWriteBit } from './trackMsg';
 import {Buffer} from 'buffer';
 
 /**
@@ -16,9 +16,11 @@ export default class TrackCfgGroup
 	public readonly onTseProgReadExtended = new Subject<MsgCvRead>();
 	public readonly onTseProgWriteExtended = new Subject<MsgCvWrite>();
 	public readonly onTseProgWrite16Extended = new Subject<MsgCvWrite16>();
+	//public readonly onTseProgWriteBit = new Subject<MsgCvWriteBit>();
 
 	private getCvQ: Query<MsgCvRead> | undefined = undefined;
 	private setCvQ: Query<MsgCvWrite> | undefined = undefined;
+	//private setCvBitQ: Query<MsgCvWrite> | undefined = undefined;
 
 	private mx10: MX10;
 	constructor(mx10: MX10) {this.mx10 = mx10}
@@ -121,6 +123,17 @@ export default class TrackCfgGroup
 			{value: NID, length: 2},
 			{value: CV, length: 2},
 			{value: value, length: 2},
+		]);
+	}
+
+	tseProgWriteBit(nid: number, cv: number, bit: number, val: number) {
+		this.mx10.logInfo.next('mx10.tseProgWriteBit @ ' + nid + ', cv #' + cv + '.' + bit + ' = ' + val);
+		this.mx10.sendData(0x16, 0x06, [
+			{value: this.mx10.mx10NID, length: 2},
+			{value: nid, length: 2},
+			{value: cv, length: 4},
+			{value: bit, length: 1},
+			{value: val, length: 1},
 		]);
 	}
 
