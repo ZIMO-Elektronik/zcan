@@ -1,6 +1,6 @@
 import {TseInfoExtended} from '../common/models';
 import MX10 from '../MX10';
-import {Subject} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {Query} from '../common/communication';
 import {MsgMode} from '../common/enums';
 import { MsgCvRead, MsgCvWrite, MsgCvWrite16, MsgCvWriteBit } from './trackMsg';
@@ -21,6 +21,8 @@ export default class TrackCfgGroup
 	private getCvQ: Query<MsgCvRead> | undefined = undefined;
 	private setCvQ: Query<MsgCvWrite> | undefined = undefined;
 	//private setCvBitQ: Query<MsgCvWrite> | undefined = undefined;
+
+	private subTseInfo: Subscription | undefined = undefined;
 
 	private mx10: MX10;
 	constructor(mx10: MX10) {this.mx10 = mx10}
@@ -137,7 +139,15 @@ export default class TrackCfgGroup
 		]);
 	}
 
-	async getCv(trainNid: number, cvNum: number): Promise<MsgCvRead | undefined>
+	/**
+	 * Get a CV from loco with specified NID
+	 * Also listen to onTseInfoExtended to watch progress of the operation
+	 * and mute the Query once received and abort it on timeout
+	 * @param nid 
+	 * @param cvNum 
+	 * @returns 
+	 */
+	async getCv(nid: number, cvNum: number): Promise<MsgCvRead | undefined>
 	{
 		if(this.getCvQ !== undefined && !await Query.wait(() => !!this.getCvQ)) {
 			this.mx10.logInfo.next("mx10.getCv: failed to acquire lock");
@@ -146,15 +156,36 @@ export default class TrackCfgGroup
 
 		this.getCvQ = new Query(MsgCvRead.header(MsgMode.CMD, this.mx10.mx10NID), this.onTseProgReadExtended);
 		this.getCvQ.tx = ((header) => {
-			const msg = new MsgCvRead(header, trainNid, cvNum);
+			const msg = new MsgCvRead(header, nid, cvNum);
 			this.mx10.logInfo.next('cv query tx: ' + JSON.stringify(msg));
 			this.mx10.sendMsg(msg);
 		});
 		this.getCvQ.match = ((msg) => {
 			this.mx10.logInfo.next('cv query rx: ' + JSON.stringify(msg));
-			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum);
+			return (msg.nid === nid && msg.cvNum === cvNum);
 		})
-		const rv = await this.getCvQ.run(70);
+		this.subTseInfo = this.onTseInfoExtended.subscribe(msg => {
+			this.mx10.logInfo.next('cv info: ' + JSON.stringify(msg));
+			if(!this.getCvQ) {
+				if(this.subTseInfo)
+					this.subTseInfo.unsubscribe();
+				return;
+			}
+			this.mx10.logInfo.next('cv info.: ' + JSON.stringify(msg));
+			if(msg.nid !== nid || msg.cfgNum !== cvNum)
+				return;
+			this.mx10.logInfo.next('cv info matches.. ' + JSON.stringify(msg));
+			if(this.subTseInfo)
+				this.subTseInfo.unsubscribe();
+			if(msg.cvState === 0x10) {
+				this.mx10.logInfo.next('cv info mute ' + JSON.stringify(msg));
+				this.getCvQ.mute = true;
+			} else if(msg.cvState >= 0xf0) {
+				this.mx10.logInfo.next('cv info is error' + JSON.stringify(msg));
+				this.getCvQ.abort = true;
+			}
+		});
+		const rv = await this.getCvQ.run(50, 50);
 		this.mx10.logInfo.next("mx10.getCv.rv: " + JSON.stringify(rv));
 		this.getCvQ = undefined;
 		return rv;
@@ -175,7 +206,7 @@ export default class TrackCfgGroup
 		});
 		this.setCvQ.match = ((msg) => {
 			// this.mx10.logInfo.next('cv write query rx: ' + JSON.stringify(msg));
-			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum && msg.cvVal() === cvVal);
+			return (msg.nid === trainNid && msg.cvNum === cvNum && msg.cvVal === cvVal);
 		})
 		const rv = await this.setCvQ.run(150, Math.min(1, retries));
 		this.mx10.logInfo.next("mx10.setCv.rv: " + JSON.stringify(rv));
@@ -198,7 +229,7 @@ export default class TrackCfgGroup
 		});
 		this.setCvQ.match = ((msg) => {
 			// this.mx10.log.next('cv write query rx: ' + JSON.stringify(msg));
-			return (msg.trainNid() === trainNid && msg.cvNum() === cvNum && msg.cvVal() === cvVal);
+			return (msg.nid === trainNid && msg.cvNum === cvNum && msg.cvVal === cvVal);
 		})
 		const rv = await this.setCvQ.run(150, retries);
 		this.mx10.logInfo.next("mx10.setCv.rv: " + JSON.stringify(rv));

@@ -16,9 +16,9 @@ export class MsgCvRead extends Message
 		if(cvVal !== undefined)
 			super.push({value: cvVal, length: 2});
 	}
-	trainNid(): number {return (this.data[0].value as number)}
-	cvNum(): number {return (this.data[1].value as number)}
-	cvVal(): number | undefined {return this.data.length > 2 ? this.data[2].value as number : undefined}
+	get nid(): number {return (this.data[0].value as number)}
+	get cvNum(): number {return (this.data[1].value as number)}
+	get cvVal(): number | undefined {return this.data.length > 2 ? this.data[2].value as number : undefined}
 }
 
 export class MsgCvWrite extends MsgCvRead

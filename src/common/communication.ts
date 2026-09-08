@@ -91,6 +91,8 @@ export class Query<T extends Message>
 
 	header: Header;
 	subject: Subject<T>;
+	mute: boolean = false;
+	abort: boolean = false;
 	private result: T | undefined = undefined;
 	rx: Subscription | undefined = undefined;
 	tx: (header: Header) => void = () => {};
@@ -152,10 +154,9 @@ export class Query<T extends Message>
 		{
 			if(tick % 2)
 				await delay(rxDelay);
-			else
+			else if(!this.abort && !this.mute)
 				this.tx(this.header);
-
-			if(!tick--) {
+			if(!tick-- || this.abort) {
 				this.log('query.run.failed: ' + JSON.stringify(this.header));
 				this.rx?.unsubscribe();
 				return undefined;
