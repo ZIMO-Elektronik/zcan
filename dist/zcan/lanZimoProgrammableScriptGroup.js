@@ -1,0 +1,9 @@
+export default class LanZimoProgrammableScriptGroup {
+    mx10;
+    constructor(mx10) {
+        this.mx10 = mx10;
+    }
+    parse(size, command, mode, nid, buffer) {
+    }
+}
+//# sourceMappingURL=lanZimoProgrammableScriptGroup.js.map

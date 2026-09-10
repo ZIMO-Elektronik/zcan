@@ -1,0 +1,34 @@
+import MX10 from '../MX10';
+import { Buffer } from 'buffer';
+import { Subject } from 'rxjs';
+import { RemoveLocomotiveData, DataNameExtended, GroupCountData, ItemFxMode, ItemFxConfig, ItemImageData, ItemListByIndexData, ItemListByNidData } from '../@types/models';
+import { FxConfigType, ImageType } from '../util/enums';
+export default class DataGroup {
+    readonly onGroupCount: Subject<GroupCountData>;
+    readonly onListItemsByIndex: Subject<ItemListByIndexData>;
+    readonly onListItemsByNID: Subject<ItemListByNidData>;
+    readonly onRemoveLocomotive: Subject<RemoveLocomotiveData>;
+    readonly onItemImageConfig: Subject<ItemImageData>;
+    readonly onItemFxMode: Subject<ItemFxMode>;
+    readonly onItemFxConfig: Subject<ItemFxConfig>;
+    readonly onDataNameExtended: Subject<DataNameExtended>;
+    private mx10;
+    constructor(mx10: MX10);
+    groupCount(objType?: number): void;
+    listItemsByIndex(groupNID: number, index: number): void;
+    listItemsByNID(searchAfterValue: number): void;
+    removeLocomotive(toRemove: number, removeFrom?: number): void;
+    itemImageConfig(nid: number, type: ImageType, imageId: number): void;
+    itemFxMode(nid: number, group: number, mode: number[]): void;
+    itemFxConfig(nid: number, fx: number, item: FxConfigType, data: number): void;
+    dataNameExtended(NID: number, subID: number, name: string): void;
+    parse(size: number, command: number, mode: number, nid: number, buffer: Buffer): void;
+    private parseGroupCount;
+    private parseItemListByIndex;
+    private parseItemListByNid;
+    private parseDataClear;
+    private parseItemImageConfig;
+    private parseItemFxMode;
+    private parseItemFxConfig;
+    private parseDataNameExtended;
+}

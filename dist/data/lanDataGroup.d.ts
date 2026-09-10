@@ -1,0 +1,34 @@
+import MX10 from '../MX10';
+import { FxConfigType } from '../common/enums';
+import { DataNameExtendedData, LocoSpeedTabExtended, Train } from '../common/models';
+import { Subject } from 'rxjs';
+import { MsgDataValueX, MsgItemListByIdxX, MsgLocoGuiRsp } from './lanDataMsg';
+import { Buffer } from 'buffer';
+export default class LanDataGroup {
+    readonly onLocoGuiExtended: Subject<MsgLocoGuiRsp>;
+    readonly onDataValueX: Subject<MsgDataValueX>;
+    readonly onItemListByIdxX: Subject<MsgItemListByIdxX>;
+    readonly onDataNameExtended: Subject<DataNameExtendedData>;
+    readonly onLocoSpeedTabExtended: Subject<LocoSpeedTabExtended>;
+    private itemListQ;
+    private locoGuiQ;
+    private dataValQ;
+    private mx10;
+    constructor(mx10: MX10);
+    getDataValueX(nid: number, subId?: number): Promise<MsgDataValueX | undefined>;
+    dataNameExtended(NID: number): void;
+    renameDataExtended(NID: number, type: number, val1: number, val2: number, val3: number, name: string): void;
+    itemListByIdx(idx: number, group?: number): Promise<MsgItemListByIdxX | undefined>;
+    itemFxConfig(nid: number, fx: number, type: FxConfigType, addr: number, mode: number, icon: number): void;
+    getLocoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>;
+    setLocoGuiExtended(loco: Train): Promise<MsgLocoGuiRsp | undefined>;
+    locoSpeedTapExtended(NID: number): void;
+    parse(size: number, command: number, mode: number, nid: number, buffer: Buffer): void;
+    private parseItemListByIdxX;
+    private parseDataValueExtended;
+    private parseDataNameExtended;
+    private parseLocoGuiExtended;
+    private parseLocoSpeedTabExtended;
+    private parseFlags;
+    private parseDeleted;
+}

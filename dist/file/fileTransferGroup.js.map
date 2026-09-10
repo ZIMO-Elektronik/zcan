@@ -1,0 +1,1 @@
+{"version":3,"file":"fileTransferGroup.js","sourceRoot":"","sources":["../../src/file/fileTransferGroup.ts"],"names":[],"mappings":"AAQA,MAAM,CAAC,OAAO,OAAO,iBAAiB;IAC9B,IAAI,CAAO;IAEnB,YAAY,IAAU;QACrB,IAAI,CAAC,IAAI,GAAG,IAAI,CAAC;IAClB,CAAC;IAED,KAAK,CACJ,IAAY,EACZ,OAAe,EACf,IAAY,EACZ,GAAW,EACX,MAAc;IAGf,CAAC;CACA"}

@@ -1,0 +1,240 @@
+import { MsgMode } from '../common/enums';
+import { Subject } from 'rxjs';
+import ExtendedASCII from '../common/extendedAscii';
+import { Query } from '../common/communication';
+import { MsgDataValueX, MsgItemListByIdxX, MsgLocoGuiReq, MsgLocoGuiRsp } from './lanDataMsg';
+export default class LanDataGroup {
+    onLocoGuiExtended = new Subject();
+    onDataValueX = new Subject();
+    onItemListByIdxX = new Subject();
+    onDataNameExtended = new Subject();
+    onLocoSpeedTabExtended = new Subject();
+    itemListQ = undefined;
+    locoGuiQ = undefined;
+    dataValQ = undefined;
+    mx10;
+    constructor(mx10) {
+        this.mx10 = mx10;
+    }
+    async getDataValueX(nid, subId = 0) {
+        if (this.dataValQ !== undefined && !await Query.wait(() => !!this.dataValQ)) {
+            this.mx10.logInfo.next("mx10.getDataValueX: failed to acquire lock");
+            return undefined;
+        }
+        this.dataValQ = new Query(MsgDataValueX.header(MsgMode.REQ, this.mx10.mx10NID), this.onDataValueX);
+        this.dataValQ.tx = ((header) => {
+            const msg = new MsgDataValueX(header, nid, subId);
+            this.mx10.sendMsg(msg);
+        });
+        this.dataValQ.match = ((msg) => {
+            return (msg.nid === nid && msg.subId === subId);
+        });
+        const rv = await this.dataValQ.run();
+        this.dataValQ = undefined;
+        return rv;
+    }
+    dataNameExtended(NID) {
+        this.mx10.logInfo.next('dataNameExtended of ' + NID);
+        this.mx10.sendData(0x17, 0x10, [
+            { value: this.mx10.mx10NID, length: 2 },
+            { value: NID, length: 2 },
+        ], 0b00);
+    }
+    renameDataExtended(NID, type, val1, val2, val3, name) {
+        this.mx10.sendData(0x17, 0x10, [
+            { value: this.mx10.mx10NID, length: 2 },
+            { value: NID, length: 2 },
+            { value: type, length: 2 },
+            { value: val1, length: 2 },
+            { value: val2, length: 4 },
+            { value: val3, length: 4 },
+            { value: name, length: name.length },
+            { value: 0, length: 1 },
+        ], 0b01);
+    }
+    async itemListByIdx(idx, group = 0) {
+        if (this.itemListQ && !await Query.wait(() => !!this.itemListQ)) {
+            this.mx10.logInfo.next("itemListByIdxX: failed to acquire lock");
+            return undefined;
+        }
+        this.itemListQ = new Query(MsgItemListByIdxX.header(MsgMode.REQ, this.mx10.mx10NID), this.onItemListByIdxX);
+        this.itemListQ.tx = ((header) => {
+            const msg = new MsgItemListByIdxX(header, idx, [], group);
+            this.mx10.logInfo.next('itemListByIdxX query tx: ' + JSON.stringify(msg));
+            this.mx10.sendMsg(msg);
+        });
+        this.itemListQ.match = ((msg) => {
+            this.mx10.logInfo.next('itemListByIdxX query rx: ' + JSON.stringify(msg));
+            return (msg.idx === idx);
+        });
+        const rv = await this.itemListQ.run();
+        this.itemListQ = undefined;
+        this.mx10.logInfo.next("itemListByIdxX.rv: " + JSON.stringify(rv));
+        return rv;
+    }
+    itemFxConfig(nid, fx, type, addr, mode, icon) {
+        this.mx10.sendData(0x17, 0x15, [
+            { value: nid, length: 2 },
+            { value: fx, length: 2 },
+            { value: type, length: 2 },
+            { value: addr, length: 2 },
+            { value: mode, length: 2 },
+            { value: icon, length: 2 },
+        ]);
+    }
+    async getLocoGuiExtended(nid) {
+        if (this.locoGuiQ && !await Query.wait(() => !!this.locoGuiQ)) {
+            this.mx10.logInfo.next("getLocoGuiExtended: failed to acquire lock");
+            return undefined;
+        }
+        this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.REQ, this.mx10.mx10NID), this.onLocoGuiExtended);
+        this.locoGuiQ.tx = ((header) => {
+            const msg = new MsgLocoGuiReq(header, nid, 0);
+            this.mx10.logInfo.next('getLocoGuiExtended query tx: ' + JSON.stringify(msg));
+            this.mx10.sendMsg(msg);
+        });
+        this.locoGuiQ.match = ((msg) => {
+            return (msg.locoNid() === nid);
+        });
+        const rv = await this.locoGuiQ.run();
+        this.locoGuiQ = undefined;
+        return rv;
+    }
+    async setLocoGuiExtended(loco) {
+        if (this.locoGuiQ && !await Query.wait(() => !!this.locoGuiQ)) {
+            this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
+            return undefined;
+        }
+        this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.CMD, this.mx10.myNID), this.onLocoGuiExtended);
+        this.locoGuiQ.tx = ((header) => {
+            const msg = new MsgLocoGuiRsp(header, loco.nid, loco.subId, 0, 0, loco.group, loco.name, loco.image ? parseInt(loco.image) : 0, 0, parseInt(loco.tacho), 0, loco.speedFwd, loco.speedRev, loco.speedRange, loco.driveType, parseInt(loco.era), loco.countryCode, loco.functions.map(fun => fun.icon ? parseInt(fun.icon) : 0), loco.functions.map(fun => fun.mode));
+            this.mx10.sendMsg(msg);
+        });
+        this.locoGuiQ.match = ((msg) => {
+            return (msg.locoNid() === loco.nid);
+        });
+        this.locoGuiQ.subscribe(false);
+        const rv = await this.locoGuiQ.run(40);
+        this.locoGuiQ = undefined;
+        return rv;
+    }
+    locoSpeedTapExtended(NID) {
+        this.mx10.sendData(0x17, 0x19, [
+            { value: this.mx10.mx10NID, length: 2 },
+            { value: NID, length: 2 },
+            { value: 0, length: 1 },
+            { value: 0, length: 1 },
+        ], 0b00);
+    }
+    parse(size, command, mode, nid, buffer) {
+        switch (command) {
+            case 0x01:
+                this.parseItemListByIdxX(size, mode, nid, buffer);
+                break;
+            case 0x08:
+                this.parseDataValueExtended(size, mode, nid, buffer);
+                break;
+            case 0x10:
+                this.parseDataNameExtended(size, mode, nid, buffer);
+                break;
+            case 0x28:
+                this.parseLocoGuiExtended(size, mode, nid, buffer);
+                break;
+            case 0x19:
+                this.parseLocoSpeedTabExtended(size, mode, nid, buffer);
+                break;
+            default:
+                this.mx10.logInfo.next('lanDataGroup command ' + command + ' not parsed: ' + JSON.stringify(buffer));
+        }
+    }
+    parseItemListByIdxX(size, mode, nid, buffer) {
+        if (!this.onItemListByIdxX.observed)
+            return;
+        const msg = MsgItemListByIdxX.fromBuffer(mode, nid, buffer);
+        this.onItemListByIdxX.next(msg);
+    }
+    parseDataValueExtended(size, mode, nid, buffer) {
+        if (!this.onDataValueX.observed)
+            return;
+        const msg = MsgDataValueX.fromBuffer(mode, nid, buffer);
+        this.onDataValueX.next(msg);
+    }
+    parseDataNameExtended(size, mode, nid, buffer) {
+        if (!this.onDataNameExtended.observed)
+            return;
+        const NID = buffer.readUInt16LE(2);
+        const type = buffer.readUInt16LE(4);
+        const val1 = buffer.readUInt16LE(6);
+        const val2 = buffer.readUInt32LE(8);
+        const val3 = buffer.readUInt32LE(12);
+        const name = ExtendedASCII.byte2str(buffer.subarray(16, 63));
+        this.onDataNameExtended.next({ nid: NID, name });
+    }
+    parseLocoGuiExtended(size, mode, nid, buffer) {
+        if (!this.onLocoGuiExtended.observed)
+            return;
+        const NID = buffer.readUInt16LE(0);
+        const SubID = buffer.readUInt16LE(2);
+        const version = buffer.readUInt32LE(4);
+        const flags = buffer.readUInt16LE(8);
+        const group = buffer.readUInt16LE(10);
+        const name = ExtendedASCII.byte2str(buffer.subarray(12, 32));
+        const imageId = buffer.readUInt16LE(44);
+        const imageCrc = buffer.readUInt32LE(46);
+        const tachoId = buffer.readUInt16LE(50);
+        const tachoCrc = buffer.readUInt32LE(52);
+        const speedFwd = buffer.readUInt16LE(56);
+        const speedRev = buffer.readUInt16LE(58);
+        const speedRank = buffer.readUInt16LE(60);
+        const driveType = buffer.readUInt16LE(62);
+        const era = buffer.readUInt16LE(64);
+        const countryCode = buffer.readUInt16LE(66);
+        const funImg = [];
+        for (let i = 0; i < 64; i++) {
+            const fun = buffer.readUInt16LE(68 + 2 * i);
+            funImg.push(fun);
+        }
+        const funMode = [];
+        for (let i = 0; i < 64; i++) {
+            const fun = buffer.readUInt16LE(196 + 2 * i);
+            funMode.push(fun);
+        }
+        const msg = new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, version, flags, group, name, imageId, imageCrc, tachoId, tachoCrc, speedFwd, speedRev, speedRank, driveType, era, countryCode, funImg, funMode);
+        this.onLocoGuiExtended.next(msg);
+    }
+    parseLocoSpeedTabExtended(size, mode, nid, buffer) {
+        if (!this.onLocoSpeedTabExtended.observed)
+            return;
+        const setDBat6 = 5;
+        const bufferLengthOfSpeedTab = 24;
+        const SrcID = buffer.readUInt16LE(0);
+        const NID = buffer.readUInt16LE(2);
+        const DBat6 = buffer.readUInt8(5);
+        let locoSpeedTab = undefined;
+        if (DBat6 !== setDBat6)
+            locoSpeedTab = undefined;
+        else {
+            locoSpeedTab = [];
+            for (let i = 0; i < 4; i++) {
+                const offset = 6 + i * 4;
+                if (bufferLengthOfSpeedTab >= offset + 2) {
+                    const speedStep = buffer.readUInt16LE(offset);
+                    const speed = buffer.readUInt16LE(offset + 2);
+                    locoSpeedTab.push({ id: i + 1, speedStep: speedStep, speed: speed });
+                }
+                else {
+                    console.warn(`Train with id:${NID} has wrong speedStepTab buffer`);
+                    break;
+                }
+            }
+        }
+        this.onLocoSpeedTabExtended.next({ srcid: SrcID, nid: NID, dbat6: DBat6, speedTab: locoSpeedTab });
+    }
+    parseFlags(flagsNumber) {
+        return { deleted: flagsNumber >> 31 === 1 };
+    }
+    parseDeleted(parseDeletedFlag) {
+        return parseDeletedFlag === 1;
+    }
+}
+//# sourceMappingURL=lanDataGroup.js.map

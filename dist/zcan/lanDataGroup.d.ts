@@ -1,0 +1,30 @@
+import MX10 from '../MX10';
+import { DataNameExtendedData, DataValueExtendedData, LocoGuiMXExtended, LocoSpeedTabExtended, Train } from '../@types/models';
+import { Subject } from 'rxjs';
+import { ZcanDataArray } from '../@types/communication';
+export default class LanDataGroup {
+    readonly onLocoGuiExtended: Subject<Train>;
+    readonly onLocoGuiMXExtended: Subject<LocoGuiMXExtended>;
+    readonly onDataValueExtended: Subject<DataValueExtendedData>;
+    readonly onDataNameExtended: Subject<DataNameExtendedData>;
+    readonly onLocoSpeedTabExtended: Subject<LocoSpeedTabExtended>;
+    private mx10;
+    constructor(mx10: MX10);
+    dataValueExtended(NID: number): void;
+    dataNameExtended(NID: number): void;
+    renameDataExtended(NID: number, type: number, val1: number, val2: number, val3: number, name: string): void;
+    locoGuiExtended(NID: number): void;
+    locoGuiMXExtended(NID: number): void;
+    locoSpeedTapExtended(NID: number): void;
+    mxUpdateFnIcons(destructuredBuffer: ZcanDataArray): void;
+    parse(size: number, command: number, mode: number, nid: number, buffer: Buffer): void;
+    private parseDataValueExtended;
+    private parseDataNameExtended;
+    private parseLocoGuiExtended;
+    private parseLocoGuiMXExtended;
+    private parseLocoSpeedTabExtended;
+    private parseEra;
+    private parseFlags;
+    private parseDeleted;
+    private destructureBuffer;
+}
