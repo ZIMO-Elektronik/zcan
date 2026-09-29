@@ -274,13 +274,10 @@ export default class MX10
 		// this.logInfo.next('rx: ' + JSON.stringify(message));
 		if(!this.mx10NID && (group !== 0x1a || command !== 0x06 || mode !== MsgMode.ACK))
 			return;
-		if(this.mx10NID && nid !== this.mx10NID) {
-			if((nid >> 8 !== 0xc0)) {
-				if(!(group === 0xa && command === 0 && mode === MsgMode.EVT))
-					this.logInfo.next('Not from MX10: ' + JSON.stringify(message));
-			}
-			// else
-			// 	this.logInfo.next('This packet is not from our MX10: ' + JSON.stringify(message));
+		const isPingEvt = group === 0xa && command === 0 && mode === MsgMode.EVT;
+		if(this.mx10NID && nid !== this.mx10NID && !isPingEvt) {
+			if(nid >> 8 !== 0xc0)
+				this.logInfo.next('Not from MX10: ' + JSON.stringify(message));
 			return;
 		}
 		// this.log.next('MX10 >> ' + JSON.stringify(message));
