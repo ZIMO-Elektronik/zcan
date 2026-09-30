@@ -1,4 +1,26 @@
-import {AccessoryPortState} from '../common/enums';
+import {AccessoryPortState, Direction, HluSignal} from '../common/enums';
+import {HluAspect, HluState} from '../common/models';
+
+export const steinNid = (module: number) => 0xd000 + module;
+
+//mask so out-of-range hlu/dir values can't spill into the flag bits
+const encodeAspect = (aspect: HluAspect) =>
+  0x80 | ((aspect.dir & 0x03) << 4) | (aspect.hlu & 0x0f);
+
+const decodeAspect = (byte: number): HluAspect => ({
+  hlu: (byte & 0x0f) as HluSignal,
+  dir: ((byte >> 4) & 0x03) as Direction,
+});
+
+export const encodeHlu = (state: HluState): number =>
+  ((state.contact ? encodeAspect(state.contact) : 0x00) << 8) | encodeAspect(state);
+
+export const decodeHlu = (value: number): HluState => {
+  const state: HluState = decodeAspect(value);
+  if (value & 0x8000)
+    state.contact = decodeAspect(value >> 8);
+  return state;
+};
 
 export const parseAccessory4Byte = (accessoryState: number) => {
   const portStates = new Map<number, AccessoryPortState>();

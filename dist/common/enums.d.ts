@@ -149,3 +149,20 @@ export declare enum AccessoryPortState {
     OFF = "off",
     UNKNOWN = "unknown"
 }
+export declare enum SectionState {
+    FREE_OFF = 0,
+    FREE_ON = 1,
+    OCCUPIED_OFF = 16,
+    OCCUPIED_ON = 17,
+    OCCUPIED_FAULT = 18
+}
+export declare enum HluSignal {
+    OFF = 0,
+    HALT = 2,
+    UH = 4,
+    U = 6,
+    LU = 8,
+    L = 10,
+    FL = 12,
+    FAHRT = 14
+}

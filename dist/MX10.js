@@ -205,7 +205,8 @@ export default class MX10 {
         if (!this.mx10NID && (group !== 0x1a || command !== 0x06 || mode !== MsgMode.ACK))
             return;
         const isPingEvt = group === 0xa && command === 0 && mode === MsgMode.EVT;
-        if (this.mx10NID && nid !== this.mx10NID && !isPingEvt) {
+        const isForwardedAccessory = group === 0x01;
+        if (this.mx10NID && nid !== this.mx10NID && !isPingEvt && !isForwardedAccessory) {
             if (nid >> 8 !== 0xc0)
                 this.logInfo.next('Not from MX10: ' + JSON.stringify(message));
             return;

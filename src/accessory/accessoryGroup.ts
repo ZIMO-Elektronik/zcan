@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {Subject} from 'rxjs';
 import MX10 from '../MX10';
-import {AccessoryModeData, AccessoryPin4Data, AccessoryPin6Data, AccessoryPortData} from '../common/models';
+import {AccessoryPin4Data, AccessoryPortData} from '../common/models';
 import {AccessoryMode, MsgMode} from '../common/enums';
 import { Query } from '../docs_entrypoint';
-import { MsgAccessoryMode } from './accessoryMsg';
+import { MsgAccessoryMode, MsgAccessoryPin6 } from './accessoryMsg';
 import {Buffer} from 'buffer';
 
 /**
@@ -16,7 +16,7 @@ export default class AccessoryGroup
 	public readonly onAccessoryMode = new Subject<MsgAccessoryMode>();
 	public readonly onAccessoryPort = new Subject<AccessoryPortData>();
 	public readonly onAccessoryPin4 = new Subject<AccessoryPin4Data>();
-	public readonly onAccessoryPin6 = new Subject<AccessoryPin6Data>();
+	public readonly onAccessoryPin6 = new Subject<MsgAccessoryPin6>();
 
 	private modeQ: Query<MsgAccessoryMode> | undefined = undefined;
 
@@ -69,6 +69,30 @@ export default class AccessoryGroup
 		this.mx10.logInfo.next("mx10.setAccessoryMode.rv: " + JSON.stringify(rv));
 		this.modeQ = undefined;
 		return rv;
+	}
+
+	private async pin6Query(mode: MsgMode, nid: number, pin: number, type: number, value?: number)
+	{
+		const msg = new MsgAccessoryPin6(MsgAccessoryPin6.header(mode, nid), pin, type, value);
+		this.mx10.logInfo.next('accPin6 tx: ' + JSON.stringify(msg));
+		const q = new Query(msg.header, this.onAccessoryPin6);
+		q.tx = (() => this.mx10.sendMsg(msg));
+		//a CMD is answered by an ACK; a REQ reply may be ACK or EVT
+		q.match = ((rx) => rx.pin === pin && rx.type === type && (mode === MsgMode.REQ || rx.header.mode === MsgMode.ACK));
+		//the reply travels LAN -> CAN -> StEin and back, the default ~25 ms window is too tight
+		const rv = await q.run(10, 10);
+		this.mx10.logInfo.next('accPin6 rv: ' + JSON.stringify(rv));
+		return rv;
+	}
+
+	async getAccessoryPin6(nid: number, pin: number, type: number)
+	{
+		return this.pin6Query(MsgMode.REQ, nid, pin, type);
+	}
+
+	async setAccessoryPin6(nid: number, pin: number, type: number, value: number)
+	{
+		return this.pin6Query(MsgMode.CMD, nid, pin, type, value);
 	}
 
 	accessoryModeByNid(nid: number)
@@ -158,14 +182,9 @@ export default class AccessoryGroup
 
 	parseAccessoryPin6(size: number, mode: number, nid: number, buffer: Buffer)
 	{
-		if (this.onAccessoryPin6.observed) {
-			const deviceNID = buffer.readUInt16LE(0);
-			const pin = buffer.readUInt8(2);
-			const type = buffer.readUInt8(3);
-			const state = buffer.readUInt16LE(4);
-			if (deviceNID) {
-				this.onAccessoryPin6.next({nid: deviceNID, pin, type, state});
-			}
-		}
+		if(mode === MsgMode.REQ || buffer.length < 6)
+			return;
+		if(this.onAccessoryPin6.observed)
+			this.onAccessoryPin6.next(MsgAccessoryPin6.fromBuffer(mode, buffer));
 	}
 }

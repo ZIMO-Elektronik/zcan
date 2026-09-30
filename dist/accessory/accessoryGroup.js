@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { MsgMode } from '../common/enums';
 import { Query } from '../docs_entrypoint';
-import { MsgAccessoryMode } from './accessoryMsg';
+import { MsgAccessoryMode, MsgAccessoryPin6 } from './accessoryMsg';
 export default class AccessoryGroup {
     onAccessoryMode = new Subject();
     onAccessoryPort = new Subject();
@@ -51,6 +51,22 @@ export default class AccessoryGroup {
         this.mx10.logInfo.next("mx10.setAccessoryMode.rv: " + JSON.stringify(rv));
         this.modeQ = undefined;
         return rv;
+    }
+    async pin6Query(mode, nid, pin, type, value) {
+        const msg = new MsgAccessoryPin6(MsgAccessoryPin6.header(mode, nid), pin, type, value);
+        this.mx10.logInfo.next('accPin6 tx: ' + JSON.stringify(msg));
+        const q = new Query(msg.header, this.onAccessoryPin6);
+        q.tx = (() => this.mx10.sendMsg(msg));
+        q.match = ((rx) => rx.pin === pin && rx.type === type && (mode === MsgMode.REQ || rx.header.mode === MsgMode.ACK));
+        const rv = await q.run(10, 10);
+        this.mx10.logInfo.next('accPin6 rv: ' + JSON.stringify(rv));
+        return rv;
+    }
+    async getAccessoryPin6(nid, pin, type) {
+        return this.pin6Query(MsgMode.REQ, nid, pin, type);
+    }
+    async setAccessoryPin6(nid, pin, type, value) {
+        return this.pin6Query(MsgMode.CMD, nid, pin, type, value);
     }
     accessoryModeByNid(nid) {
         this.mx10.sendData(0x01, 0x01, [{ value: nid, length: 2 }], 0b00);
@@ -104,15 +120,10 @@ export default class AccessoryGroup {
         }
     }
     parseAccessoryPin6(size, mode, nid, buffer) {
-        if (this.onAccessoryPin6.observed) {
-            const deviceNID = buffer.readUInt16LE(0);
-            const pin = buffer.readUInt8(2);
-            const type = buffer.readUInt8(3);
-            const state = buffer.readUInt16LE(4);
-            if (deviceNID) {
-                this.onAccessoryPin6.next({ nid: deviceNID, pin, type, state });
-            }
-        }
+        if (mode === MsgMode.REQ || buffer.length < 6)
+            return;
+        if (this.onAccessoryPin6.observed)
+            this.onAccessoryPin6.next(MsgAccessoryPin6.fromBuffer(mode, buffer));
     }
 }
 //# sourceMappingURL=accessoryGroup.js.map
