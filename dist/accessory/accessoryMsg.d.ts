@@ -14,6 +14,13 @@ export declare class MsgAccessoryMode extends Message {
     get mode(): number;
     static fromBuffer(mode: MsgMode, buffer: Buffer): MsgAccessoryMode;
 }
+export interface HluAspect {
+    hlu: number;
+    dir: number;
+}
+export interface HluState extends HluAspect {
+    contact?: HluAspect;
+}
 export declare class MsgAccessoryPin6 extends Message {
     static readonly TYPE_OCCUPANCY = 1;
     static readonly TYPE_HLU = 2;
@@ -28,5 +35,9 @@ export declare class MsgAccessoryPin6 extends Message {
     get pin(): number;
     get type(): number;
     get state(): number | undefined;
+    static encodeAspect(aspect: HluAspect): number;
+    static decodeAspect(byte: number): HluAspect;
+    static encodeHlu(state: HluState): number;
+    static decodeHlu(value: number): HluState;
     static fromBuffer(mode: MsgMode, buffer: Buffer): MsgAccessoryPin6;
 }

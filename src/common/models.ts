@@ -2,7 +2,6 @@ import {NameType, Direction, ExternalController, FunctionMode, SystemStateMode, 
 	FxConfigType, Manual, AccessoryMode, FxModeType,
 	Shunting,
 	OpMode,
-	HluSignal,
 } from './enums';
 import {ZcanDataArray} from './communication';
 
@@ -273,12 +272,4 @@ export interface AccessoryPin4Data {
 	nid: number;
 	pin: number;
 	state: number;
-}
-export interface HluAspect {
-	hlu: HluSignal;
-	dir: Direction;
-}
-
-export interface HluState extends HluAspect {
-	contact?: HluAspect;
 }

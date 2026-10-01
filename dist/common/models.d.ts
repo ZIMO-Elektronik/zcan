@@ -1,4 +1,4 @@
-import { NameType, Direction, ExternalController, FunctionMode, SystemStateMode, TrackMode, ImageType, FxConfigType, AccessoryMode, FxModeType, HluSignal } from './enums';
+import { NameType, Direction, ExternalController, FunctionMode, SystemStateMode, TrackMode, ImageType, FxConfigType, AccessoryMode, FxModeType } from './enums';
 import { ZcanDataArray } from './communication';
 export interface Train {
     nid: number;
@@ -172,11 +172,4 @@ export interface AccessoryPin4Data {
     nid: number;
     pin: number;
     state: number;
-}
-export interface HluAspect {
-    hlu: HluSignal;
-    dir: Direction;
-}
-export interface HluState extends HluAspect {
-    contact?: HluAspect;
 }

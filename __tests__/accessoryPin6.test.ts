@@ -1,12 +1,11 @@
 import {beforeEach, describe, expect, it} from '@jest/globals';
 import {Buffer} from 'buffer';
 import MX10 from '../src';
-import {Direction, HluSignal, HluState, Message, MsgAccessoryPin6, MsgMode, SectionState, decodeHlu, encodeHlu, steinNid} from '../src';
+import {Direction, HluState, Message, MsgAccessoryPin6, MsgMode} from '../src';
 
 const ownNid = 0x0100;
-const nid = steinNid(1); // 0xd001
-const hluWire = [0x01, 0xd0, 0x03, 0x02, 0x9a, 0x82]; // section 3, HLU type, L east, contact HALT
-const hluState = {hlu: HluSignal.L, dir: Direction.EAST, contact: {hlu: HluSignal.HALT, dir: Direction.UNDEFINED}};
+const nid = 0xd001; // StEin module 1
+const hluWire = [0x01, 0xd0, 0x03, 0x02, 0x9a, 0x82]; // section 3, HLU type, encoded state 0x829a (L east, contact HALT)
 
 let mx10: MX10;
 
@@ -26,24 +25,28 @@ describe('Accessory Pin6 (0x01.0x06) StEin HLU - offline', () => {
 		mx10 = new MX10(ownNid, 'test', 1);
 	});
 
-	it('steinNid maps module numbers to the StEin NID range', () => {
-		expect(steinNid(1)).toBe(0xd001);
-		expect(steinNid(0x0a)).toBe(0xd00a);
-	});
-
 	it('encodeHlu/decodeHlu round-trip', () => {
-		expect(encodeHlu(hluState)).toBe(0x829a);
-		expect(decodeHlu(0x829a)).toEqual(hluState);
+		// hlu 0xA = L; dir per protocol docs: 1 = East, 2 = West; contact hlu 0x2 = HALT
+		const state: HluState = {hlu: 0xA, dir: Direction.EAST, contact: {hlu: 0x2, dir: Direction.UNDEFINED}};
+		expect(MsgAccessoryPin6.encodeHlu(state)).toBe(0x829a);
+		expect(MsgAccessoryPin6.decodeHlu(0x829a)).toEqual(state);
 
-		const noContact = {hlu: HluSignal.FAHRT, dir: Direction.UNDEFINED};
-		expect(encodeHlu(noContact)).toBe(0x008e);
-		expect(decodeHlu(0x008e)).toEqual(noContact);
+		const noContact: HluState = {hlu: 0xE, dir: Direction.UNDEFINED};
+		expect(MsgAccessoryPin6.encodeHlu(noContact)).toBe(0x008e);
+		expect(MsgAccessoryPin6.decodeHlu(0x008e)).toEqual(noContact);
 	});
 
 	it('encodeHlu masks out-of-range hlu/dir inputs', () => {
 		const raw = {hlu: 0x1a, dir: 5, contact: {hlu: 0x12, dir: 6}} as unknown as HluState;
-		expect(encodeHlu(raw)).toBe(0xa29a);
-		expect(decodeHlu(0xa29a)).toEqual({hlu: HluSignal.L, dir: Direction.EAST, contact: {hlu: HluSignal.HALT, dir: Direction.WEST}});
+		expect(MsgAccessoryPin6.encodeHlu(raw)).toBe(0xa29a);
+		expect(MsgAccessoryPin6.decodeHlu(0xa29a)).toEqual({hlu: 0xA, dir: Direction.EAST,
+			contact: {hlu: 0x2, dir: Direction.WEST}});
+	});
+
+	it('a CMD value beyond 0xFFFF is masked, not thrown', () => {
+		const cmd = new MsgAccessoryPin6(MsgAccessoryPin6.header(MsgMode.CMD, nid), 3, MsgAccessoryPin6.TYPE_HLU, 0x123456);
+		expect(() => cmd.udp(ownNid)).not.toThrow();
+		expect(cmd.state).toBe(0x3456);
 	});
 
 	it('REQ frame carries nid, pin, type and DLC 4', () => {
@@ -61,7 +64,7 @@ describe('Accessory Pin6 (0x01.0x06) StEin HLU - offline', () => {
 	});
 
 	it('CMD frame carries the encoded HLU and DLC 6', () => {
-		const cmd = new MsgAccessoryPin6(MsgAccessoryPin6.header(MsgMode.CMD, nid), 3, MsgAccessoryPin6.TYPE_HLU, encodeHlu(hluState));
+		const cmd = new MsgAccessoryPin6(MsgAccessoryPin6.header(MsgMode.CMD, nid), 3, MsgAccessoryPin6.TYPE_HLU, 0x829a);
 		const buffer = cmd.udp(ownNid);
 		expect(buffer.readUInt16LE(0)).toBe(6); // DLC
 		expect(buffer.readUInt8(5)).toBe((0x06 << 2) | MsgMode.CMD);
@@ -123,7 +126,6 @@ describe('Accessory Pin6 (0x01.0x06) StEin HLU - offline', () => {
 
 		const rv = await mx10.accessory.getAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU);
 		expect(rv?.state).toBe(0x829a);
-		expect(decodeHlu(rv!.state!)).toEqual(hluState);
 		expect(sent.length).toBe(1);
 		expect(sent[0].header.mode).toBe(MsgMode.REQ);
 		expect((sent[0] as MsgAccessoryPin6).pin).toBe(3);
@@ -137,11 +139,22 @@ describe('Accessory Pin6 (0x01.0x06) StEin HLU - offline', () => {
 			feed(MsgMode.ACK, 3, MsgAccessoryPin6.TYPE_HLU, (msg as MsgAccessoryPin6).state ?? 0);
 		};
 
-		const rv = await mx10.accessory.setAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU, encodeHlu(hluState));
+		const rv = await mx10.accessory.setAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU, 0x829a);
 		expect(rv?.state).toBe(0x829a);
 		expect(sent.length).toBe(1);
 		expect(sent[0].header.mode).toBe(MsgMode.CMD);
 		expect([...sent[0].udp(ownNid).subarray(8)]).toEqual(hluWire);
+	});
+
+	it('a silent module times out: undefined after the window, one REQ per retry slot', async () => {
+		const sent: Message[] = [];
+		mx10.sendMsg = (msg: Message) => {sent.push(msg);};
+		const started = Date.now();
+		const rv = await mx10.accessory.getAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU);
+		expect(rv).toBeUndefined();
+		expect(Date.now() - started).toBeGreaterThanOrEqual(90); // window is 10 x 10 ms
+		// tx runs on every even tick, including the final give-up tick: 20,18,...,2,0 = 11 REQs
+		expect(sent.length).toBe(11);
 	});
 
 	it('setAccessoryPin6 ignores unsolicited EVT frames and resolves on the ACK', async () => {
@@ -150,7 +163,7 @@ describe('Accessory Pin6 (0x01.0x06) StEin HLU - offline', () => {
 			feed(MsgMode.ACK, 3, MsgAccessoryPin6.TYPE_HLU, 0x829a); // the reply to our CMD
 		};
 
-		const rv = await mx10.accessory.setAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU, encodeHlu(hluState));
+		const rv = await mx10.accessory.setAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_HLU, 0x829a);
 		expect(rv?.state).toBe(0x829a);
 	});
 });
@@ -168,7 +181,7 @@ describe('Accessory Pin6 (0x01.0x06) StEin occupancy - offline', () => {
 		};
 
 		const rv = await mx10.accessory.getAccessoryPin6(nid, 3, MsgAccessoryPin6.TYPE_OCCUPANCY);
-		expect(rv!.state! >> 8).toBe(SectionState.OCCUPIED_ON);
+		expect(rv!.state! >> 8).toBe(0x11); // SectionState.OCCUPIED_ON (the enum lives in the app now)
 		expect(sent.length).toBe(1);
 		expect(sent[0].header.mode).toBe(MsgMode.REQ);
 		const buffer = sent[0].udp(ownNid);

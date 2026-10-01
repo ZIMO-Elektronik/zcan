@@ -169,23 +169,4 @@ export var AccessoryPortState;
     AccessoryPortState["OFF"] = "off";
     AccessoryPortState["UNKNOWN"] = "unknown";
 })(AccessoryPortState || (AccessoryPortState = {}));
-export var SectionState;
-(function (SectionState) {
-    SectionState[SectionState["FREE_OFF"] = 0] = "FREE_OFF";
-    SectionState[SectionState["FREE_ON"] = 1] = "FREE_ON";
-    SectionState[SectionState["OCCUPIED_OFF"] = 16] = "OCCUPIED_OFF";
-    SectionState[SectionState["OCCUPIED_ON"] = 17] = "OCCUPIED_ON";
-    SectionState[SectionState["OCCUPIED_FAULT"] = 18] = "OCCUPIED_FAULT";
-})(SectionState || (SectionState = {}));
-export var HluSignal;
-(function (HluSignal) {
-    HluSignal[HluSignal["OFF"] = 0] = "OFF";
-    HluSignal[HluSignal["HALT"] = 2] = "HALT";
-    HluSignal[HluSignal["UH"] = 4] = "UH";
-    HluSignal[HluSignal["U"] = 6] = "U";
-    HluSignal[HluSignal["LU"] = 8] = "LU";
-    HluSignal[HluSignal["L"] = 10] = "L";
-    HluSignal[HluSignal["FL"] = 12] = "FL";
-    HluSignal[HluSignal["FAHRT"] = 14] = "FAHRT";
-})(HluSignal || (HluSignal = {}));
 //# sourceMappingURL=enums.js.map
