@@ -25,6 +25,8 @@ export * from './common/models';
 export * from './common/communication';
 export * from 'rxjs';
 export * from './accessory/accessoryGroup';
+export * from './accessory/accessoryMsg';
+export * from './accessory/accessoryUtils';
 export * from './data/dataGroup';
 export * from './data/lanDataGroup';
 export * from './data/dataMsg';

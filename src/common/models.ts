@@ -273,9 +273,3 @@ export interface AccessoryPin4Data {
 	pin: number;
 	state: number;
 }
-export interface AccessoryPin6Data {
-	nid: number;
-	pin: number;
-	type: number;
-	state: number;
-}

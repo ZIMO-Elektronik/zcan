@@ -18,12 +18,12 @@ export default class NetworkGroup {
         }
         this.pingQ = new Query(MsgPing.header(nid === 0xc000 ? MsgMode.CMD : MsgMode.EVT, nid), this.onPing);
         this.pingQ.tx = ((header) => {
-            const msg = new MsgPing(header, nid === 0xc000 ? nid : undefined);
+            const msg = new MsgPing(header);
             this.mx10.sendMsg(msg, true);
         });
         this.pingQ.match = ((msg) => {
             if (nid !== 0xc000)
-                return true;
+                return msg.header.nid === this.mx10.mx10NID;
             return ((msg.header.nid || 0) & 0xff00) === (nid & 0xff00);
         });
         this.pingQ.subscribe(false);
@@ -50,6 +50,8 @@ export default class NetworkGroup {
             this.onPing.next(new MsgPing(MsgPing.header(mode, nid)));
         }
         else {
+            if (buffer.length < 8)
+                return;
             const masterUid = buffer.readUInt32LE(0);
             const type = buffer.readUInt16LE(4);
             const session = buffer.readUInt16LE(6);
