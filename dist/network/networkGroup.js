@@ -11,12 +11,14 @@ export default class NetworkGroup {
     constructor(mx10) {
         this.mx10 = mx10;
     }
-    async ping(nid = 0xc000) {
+    async ping(nid = 0) {
+        if (!nid)
+            nid = this.mx10.mx10NID ? this.mx10.mx10NID : 0xc000;
         if (this.pingQ !== undefined && !await Query.wait(() => !!this.pingQ)) {
             this.mx10.logInfo.next("mx10.ping: failed to acquire lock");
             return undefined;
         }
-        this.pingQ = new Query(MsgPing.header(nid === 0xc000 ? MsgMode.CMD : MsgMode.EVT, nid), this.onPing);
+        this.pingQ = new Query(MsgPing.header((nid & 0xff00) === 0xc200 ? MsgMode.EVT : MsgMode.REQ, nid), this.onPing);
         this.pingQ.tx = ((header) => {
             const msg = new MsgPing(header);
             this.mx10.sendMsg(msg, true);

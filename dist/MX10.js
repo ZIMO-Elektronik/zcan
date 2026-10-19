@@ -36,7 +36,6 @@ export default class MX10 {
     incomingPort = 14521;
     outgoingPort = 14520;
     lastPing = 0;
-    interval = undefined;
     clientName;
     clientId;
     debugCommunication;
@@ -72,7 +71,7 @@ export default class MX10 {
         }
         if (this.mx10Socket == null) {
             this.logInfo.next('.initSocket: ' + 'creating socket');
-            const socket = (this.mx10Socket = createSocketFunction({ type: 'udp4' }));
+            const socket = (this.mx10Socket = createSocketFunction({ type: 'udp4', reusePort: true, debug: true }));
             this.logInfo.next('.initSocket: ' + 'socket = ' + JSON.stringify(socket));
             await new Promise((resolve) => {
                 socket.bind(incomingPort, () => {
@@ -105,31 +104,11 @@ export default class MX10 {
             this.logInfo.next('.initSocket: ' + 'socket wasnt null');
         }
     }
-    reconnectLogic() {
-        const date = Date.now();
-        if (date - this.lastPing < this.reconnectionTime && this.interval !== undefined) {
-            clearInterval(this.interval);
-            this.interval = undefined;
-        }
-        if (this.interval === undefined) {
-            this.interval = setInterval(() => {
-                if (!this.connected) {
-                    this.logInfo.next('Reconnecting...');
-                    this.network.portClose();
-                    this.connected = false;
-                    this.mx10NID = 0;
-                    this.lanNetwork.portOpen(this.clientName, this.clientId);
-                    this.network.ping();
-                }
-            }, this.reconnectionTime);
-        }
-        this.lastPing = date;
-    }
     async closeSocket() {
         this.logInfo.next('.closeSocket');
         if (this.mx10Socket != null) {
             await this.network.portClose();
-            this.mx10Socket?.close();
+            this.mx10Socket?.close(() => this.logInfo.next('MX10 socket closed'));
             this.mx10Socket = null;
         }
         this.mx10NID = 0;

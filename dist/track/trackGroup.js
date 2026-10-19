@@ -155,6 +155,7 @@ export default class TrackCfgGroup {
             this.mx10.sendMsg(msg);
         });
         this.setCvQ.match = ((msg) => {
+            this.mx10.logInfo.next('cv write query rx: ' + JSON.stringify(msg));
             return (msg.nid === trainNid && msg.cvNum === cvNum && msg.cvVal === cvVal);
         });
         const rv = await this.setCvQ.run(150, Math.min(1, retries));

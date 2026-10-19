@@ -35,7 +35,6 @@ export default class MX10 {
     private incomingPort;
     private outgoingPort;
     private lastPing;
-    private interval;
     private clientName;
     private clientId;
     private readonly debugCommunication;
@@ -43,7 +42,6 @@ export default class MX10 {
     readonly locoSpeed: Map<number, number>;
     constructor(ownNid: number, clientName: string, clientId: number, pingTimeoutMs?: number, debug?: boolean);
     initSocket(createSocketFunction: CreateSocketFunction, ipAddress: string, incomingPort?: number, outgoingPort?: number): Promise<void>;
-    reconnectLogic(): void;
     closeSocket(): Promise<void>;
     sendMsg(msg: Message, force?: boolean): void;
     sendData(group: number, cmd: number, data?: ZcanDataArray, mode?: MsgMode, nid?: number, force?: boolean): void;

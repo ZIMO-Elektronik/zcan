@@ -54,7 +54,6 @@ export default class MX10
 	private incomingPort = 14521;
 	private outgoingPort = 14520;
 	private lastPing = 0;
-	private interval: NodeJS.Timeout | undefined = undefined;
 	private clientName: string;
 	private clientId: number;
 
@@ -106,7 +105,7 @@ export default class MX10
 		if(this.mx10Socket == null)
 		{
 			this.logInfo.next('.initSocket: ' + 'creating socket');
-			const socket = (this.mx10Socket = createSocketFunction({type: 'udp4'}) as Socket);
+			const socket = (this.mx10Socket = createSocketFunction({type: 'udp4', reusePort: true, debug: true}) as Socket);
 			this.logInfo.next('.initSocket: ' + 'socket = ' + JSON.stringify(socket));
 
 			await new Promise((resolve) => {
@@ -151,34 +150,34 @@ export default class MX10
 		}
 	}
 
-	reconnectLogic()
-	{
-		const date = Date.now();
-		if (date - this.lastPing < this.reconnectionTime && this.interval !== undefined) {
-			clearInterval(this.interval);
-			this.interval = undefined;
-		}
-		if (this.interval === undefined) {
-			this.interval = setInterval(() => {
-				if (!this.connected) {
-					this.logInfo.next('Reconnecting...');
-					this.network.portClose();
-					this.connected = false;
-					this.mx10NID = 0;
-					this.lanNetwork.portOpen(this.clientName, this.clientId);
-					this.network.ping();
-				}
-			}, this.reconnectionTime);
-		}
-		this.lastPing = date;
-	}
+	// reconnectLogic()
+	// {
+	// 	const date = Date.now();
+	// 	if (date - this.lastPing < this.reconnectionTime && this.interval !== undefined) {
+	// 		clearInterval(this.interval);
+	// 		this.interval = undefined;
+	// 	}
+	// 	if (this.interval === undefined) {
+	// 		this.interval = setInterval(() => {
+	// 			if (!this.connected) {
+	// 				this.logInfo.next('Reconnecting...');
+	// 				this.network.portClose();
+	// 				this.connected = false;
+	// 				this.mx10NID = 0;
+	// 				this.lanNetwork.portOpen(this.clientName, this.clientId);
+	// 				this.network.ping();
+	// 			}
+	// 		}, this.reconnectionTime);
+	// 	}
+	// 	this.lastPing = date;
+	// }
 
 	async closeSocket()
 	{
 		this.logInfo.next('.closeSocket');
 		if(this.mx10Socket != null) {
 			await this.network.portClose();
-			this.mx10Socket?.close();
+			this.mx10Socket?.close(() => this.logInfo.next('MX10 socket closed'));
 			this.mx10Socket = null;
 		}
 		this.mx10NID = 0;
