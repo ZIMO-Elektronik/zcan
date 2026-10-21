@@ -17,6 +17,7 @@ export default class InfoGroup
 	public readonly onBidiSpeed = new Subject<MsgBidiSpeed>();
 	public readonly onBidiInfo = new Subject<MsgBidiInfo>();
 	public readonly onModuleInfoChange = new Subject<MsgModInfo>();
+	public readonly onLocoStats = new Subject<{nid: number, dccCount: number, rcCount: number}>();
 
 	private modInfoQ: Query<MsgModInfo> | undefined = undefined;
 	private bidiQ: Query<MsgBidiInfo> | undefined = undefined;
@@ -115,6 +116,9 @@ export default class InfoGroup
 	parse(size: number, command: number, mode: number, nid: number, buffer: Buffer)
 	{
 		switch (command) {
+			case 0x04:
+				this.parseLocoStats(size, mode, nid, buffer);
+				break;
 			case 0x05:
 				this.parseBidiInfo(size, mode, nid, buffer);
 				break;
@@ -158,6 +162,14 @@ export default class InfoGroup
 				this.onBidiInfo.next(msg as MsgBidiInfo);
 				break;
 		}
+	}
+
+	private parseLocoStats(size: number, mode: number, nid: number, buffer: Buffer)
+	{
+		const NID = buffer.readUInt16LE(0);
+		const dccCount = buffer.readUInt16LE(2);
+		const rcCount = buffer.readUInt16LE(4);
+		this.onLocoStats.next({nid: NID, dccCount, rcCount});
 	}
 
 	// private parseEastWest(data: number)

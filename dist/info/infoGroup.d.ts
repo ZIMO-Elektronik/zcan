@@ -9,6 +9,11 @@ export default class InfoGroup {
     readonly onBidiSpeed: Subject<MsgBidiSpeed>;
     readonly onBidiInfo: Subject<MsgBidiInfo>;
     readonly onModuleInfoChange: Subject<MsgModInfo>;
+    readonly onLocoStats: Subject<{
+        nid: number;
+        dccCount: number;
+        rcCount: number;
+    }>;
     private modInfoQ;
     private bidiQ;
     private bidiDirQ;
@@ -21,4 +26,5 @@ export default class InfoGroup {
     parse(size: number, command: number, mode: number, nid: number, buffer: Buffer): void;
     private parseModuleInfo;
     private parseBidiInfo;
+    private parseLocoStats;
 }

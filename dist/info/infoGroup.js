@@ -8,6 +8,7 @@ export default class InfoGroup {
     onBidiSpeed = new Subject();
     onBidiInfo = new Subject();
     onModuleInfoChange = new Subject();
+    onLocoStats = new Subject();
     modInfoQ = undefined;
     bidiQ = undefined;
     bidiDirQ = undefined;
@@ -92,6 +93,9 @@ export default class InfoGroup {
     }
     parse(size, command, mode, nid, buffer) {
         switch (command) {
+            case 0x04:
+                this.parseLocoStats(size, mode, nid, buffer);
+                break;
             case 0x05:
                 this.parseBidiInfo(size, mode, nid, buffer);
                 break;
@@ -127,6 +131,12 @@ export default class InfoGroup {
                 this.onBidiInfo.next(msg);
                 break;
         }
+    }
+    parseLocoStats(size, mode, nid, buffer) {
+        const NID = buffer.readUInt16LE(0);
+        const dccCount = buffer.readUInt16LE(2);
+        const rcCount = buffer.readUInt16LE(4);
+        this.onLocoStats.next({ nid: NID, dccCount, rcCount });
     }
 }
 //# sourceMappingURL=infoGroup.js.map
