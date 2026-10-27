@@ -1,30 +1,31 @@
 import { StepMax, MsgMode, OpMode } from "../common/enums";
 import { Header, Message, ZcanData } from "../common/communication";
 import { Buffer } from 'buffer';
-import { TrainFunction } from '../common/models';
+import { DriveType, Era, LocoFx, LocoGui } from '../common/models';
 export declare class MsgLocoGuiReq extends Message {
     static header(mode: MsgMode, nid: number): Header;
     constructor(header: Header, locoNid: number, subNid: number);
-    locoNid(): number;
-    subNid(): number;
+    get nid(): number;
+    get subNid(): number;
 }
-export declare class MsgLocoGuiRsp extends Message {
+export declare class MsgLocoGuiRsp extends Message implements LocoGui {
     static header(mode: MsgMode, nid: number): Header;
-    constructor(header: Header, locoNid: number, subNid: number, version: number, flags: number, group: number, name: string, imageId: number, imageCrc: number, tachoId: number, tachoCrc: number, speedFwd: number, speedRev: number, speedRnk: number, driveType: number, era: number, country: number, funImgs: number[], funModes: number[]);
-    locoNid(): number;
-    subNid(): number;
-    group(): number;
-    name(): string;
-    imageId(): number;
-    tacho(): number;
-    speedFwd(): number;
-    speedRev(): number;
-    speedRnk(): number;
-    driveType(): number;
-    era(): number;
-    country(): number;
-    functions(): Array<TrainFunction>;
-    static parseEra(era: number): "" | "I" | "II" | "III" | "IV" | "V" | "VI" | "VII";
+    constructor(header: Header, locoNid: number, subId: number, version: number, flags: number, group: number, name: string, imageId: number, imageCrc: number, tachoId: number, tachoCrc: number, maxSpeedFwd: number, maxSpeedRev: number, shuntingSpeed: number, driveType: DriveType, era: Era, country: number, funImgs: number[], fxModes: number[]);
+    get nid(): number;
+    get subId(): number;
+    get group(): number;
+    get name(): string;
+    get image(): number;
+    get tacho(): number;
+    get maxSpeedFwd(): number;
+    get maxSpeedRev(): number;
+    get shuntingSpeed(): number;
+    get driveType(): number;
+    get era(): number;
+    get country(): number;
+    get fx(): Array<LocoFx>;
+    static fromBuffer(mode: MsgMode, nid: number, buffer: Buffer): MsgLocoGuiRsp;
+    static parseEra(era: number): "I" | "II" | "III" | "IV" | "V" | "VI" | "VII" | "";
 }
 export declare class MsgDataValueX extends Message {
     static header(mode: MsgMode, nid: number): Header;

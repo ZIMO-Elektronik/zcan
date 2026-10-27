@@ -94,24 +94,26 @@ export default class LanDataGroup {
             this.mx10.sendMsg(msg);
         });
         this.locoGuiQ.match = ((msg) => {
-            return (msg.locoNid() === nid);
+            return (msg.nid === nid);
         });
         const rv = await this.locoGuiQ.run();
         this.locoGuiQ = undefined;
         return rv;
     }
-    async setLocoGuiExtended(loco) {
+    async setLocoGuiExtended(gui) {
         if (this.locoGuiQ && !await Query.wait(() => !!this.locoGuiQ)) {
             this.mx10.logInfo.next("mx10.locoGuiExtended: failed to acquire lock");
             return undefined;
         }
         this.locoGuiQ = new Query(MsgLocoGuiReq.header(MsgMode.CMD, this.mx10.myNID), this.onLocoGuiExtended);
         this.locoGuiQ.tx = ((header) => {
-            const msg = new MsgLocoGuiRsp(header, loco.nid, loco.subId, 0, 0, loco.group, loco.name, loco.image ? parseInt(loco.image) : 0, 0, parseInt(loco.tacho), 0, loco.speedFwd, loco.speedRev, loco.speedRange, loco.driveType, parseInt(loco.era), loco.countryCode, loco.functions.map(fun => fun.icon ? parseInt(fun.icon) : 0), loco.functions.map(fun => fun.mode));
+            const msg = new MsgLocoGuiRsp(header, gui.nid, gui.subId, 0, 0, gui.group, gui.name, gui.image, 0, gui.tacho, 0, gui.maxSpeedFwd, gui.maxSpeedRev, gui.shuntingSpeed, gui.driveType, gui.era, gui.country, gui.fx.map(fx => fx.icon), gui.fx.map(fx => fx.mode));
+            this.mx10.logInfo.next('setLocoGuiExtended query tx: ' + JSON.stringify(msg));
             this.mx10.sendMsg(msg);
         });
         this.locoGuiQ.match = ((msg) => {
-            return (msg.locoNid() === loco.nid);
+            this.mx10.logInfo.next('setLocoGuiExtended query rx: ' + JSON.stringify(msg));
+            return (msg.nid === gui.nid);
         });
         this.locoGuiQ.subscribe(false);
         const rv = await this.locoGuiQ.run(40);
@@ -173,34 +175,7 @@ export default class LanDataGroup {
     parseLocoGuiExtended(size, mode, nid, buffer) {
         if (!this.onLocoGuiExtended.observed)
             return;
-        const NID = buffer.readUInt16LE(0);
-        const SubID = buffer.readUInt16LE(2);
-        const version = buffer.readUInt32LE(4);
-        const flags = buffer.readUInt16LE(8);
-        const group = buffer.readUInt16LE(10);
-        const name = ExtendedASCII.byte2str(buffer.subarray(12, 32));
-        const imageId = buffer.readUInt16LE(44);
-        const imageCrc = buffer.readUInt32LE(46);
-        const tachoId = buffer.readUInt16LE(50);
-        const tachoCrc = buffer.readUInt32LE(52);
-        const speedFwd = buffer.readUInt16LE(56);
-        const speedRev = buffer.readUInt16LE(58);
-        const speedRank = buffer.readUInt16LE(60);
-        const driveType = buffer.readUInt16LE(62);
-        const era = buffer.readUInt16LE(64);
-        const countryCode = buffer.readUInt16LE(66);
-        const funImg = [];
-        for (let i = 0; i < 64; i++) {
-            const fun = buffer.readUInt16LE(68 + 2 * i);
-            funImg.push(fun);
-        }
-        const funMode = [];
-        for (let i = 0; i < 64; i++) {
-            const fun = buffer.readUInt16LE(196 + 2 * i);
-            funMode.push(fun);
-        }
-        const msg = new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, version, flags, group, name, imageId, imageCrc, tachoId, tachoCrc, speedFwd, speedRev, speedRank, driveType, era, countryCode, funImg, funMode);
-        this.onLocoGuiExtended.next(msg);
+        this.onLocoGuiExtended.next(MsgLocoGuiRsp.fromBuffer(mode, nid, buffer));
     }
     parseLocoSpeedTabExtended(size, mode, nid, buffer) {
         if (!this.onLocoSpeedTabExtended.observed)

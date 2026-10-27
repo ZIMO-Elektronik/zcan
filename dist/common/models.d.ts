@@ -1,31 +1,38 @@
-import { NameType, Direction, ExternalController, FunctionMode, SystemStateMode, TrackMode, ImageType, FxConfigType, AccessoryMode, FxModeType } from './enums';
-import { ZcanDataArray } from './communication';
-export interface Train {
+import { NameType, Direction, FxMode, SystemStateMode, TrackMode, ImageType, FxConfigType, AccessoryMode } from './enums';
+export declare enum DriveType {
+    NONE = 0,
+    STEAM = 1,
+    DIESEL = 2,
+    ELECTRIC = 4
+}
+export declare enum Era {
+    NONE = 0,
+    I = 1,
+    II = 2,
+    III = 3,
+    IV = 4,
+    V = 5,
+    VI = 6
+}
+export interface LocoGui {
     nid: number;
     subId: number;
     name: string;
     group: number;
-    image?: string;
-    externalController?: ExternalController;
-    tacho: string;
-    speedFwd: number;
-    speedRev: number;
-    speedRange: number;
-    driveType: number;
-    era: string;
-    countryCode: number;
-    functions: TrainFunction[];
+    image: number;
+    tacho: number;
+    maxSpeedFwd: number;
+    maxSpeedRev: number;
+    shuntingSpeed: number;
+    driveType: DriveType;
+    era: Era;
+    country: number;
+    fx: LocoFx[];
 }
-export interface LocoGuiMXExtended {
-    nid: number;
-    name: string;
-    image?: string;
-    destructuredBuffer: ZcanDataArray;
-    functions: TrainFunction[];
-}
-export interface TrainFunction {
-    mode: FunctionMode;
-    icon?: string;
+export interface LocoFx {
+    mode: FxMode;
+    icon: number;
+    time: number;
     active: boolean;
 }
 export interface DataNameExtendedData {
@@ -121,7 +128,7 @@ export interface ItemImageData {
 export interface ItemFxMode {
     nid: number;
     group: number;
-    mode: FxModeType[];
+    mode: FxMode[];
 }
 export interface ItemFxConfig {
     nid: number;

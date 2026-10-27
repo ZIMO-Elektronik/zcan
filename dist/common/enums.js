@@ -32,11 +32,14 @@ export var ExternalController;
     ExternalController["FT2"] = "FT(2)";
     ExternalController["FS2"] = "FS(2)";
 })(ExternalController || (ExternalController = {}));
-export var FunctionMode;
-(function (FunctionMode) {
-    FunctionMode[FunctionMode["switch"] = 0] = "switch";
-    FunctionMode[FunctionMode["moment"] = 16384] = "moment";
-})(FunctionMode || (FunctionMode = {}));
+export var FxMode;
+(function (FxMode) {
+    FxMode[FxMode["TOGGLE"] = 0] = "TOGGLE";
+    FxMode[FxMode["MOMENT"] = 1] = "MOMENT";
+    FxMode[FxMode["TIMEOUT"] = 2] = "TIMEOUT";
+    FxMode[FxMode["EXTENDED"] = 3] = "EXTENDED";
+    FxMode[FxMode["TIMEMASK"] = 16383] = "TIMEMASK";
+})(FxMode || (FxMode = {}));
 export var SystemStateMode;
 (function (SystemStateMode) {
     SystemStateMode[SystemStateMode["NORMAL"] = 1] = "NORMAL";
@@ -86,13 +89,6 @@ export var ImageType;
     ImageType[ImageType["VEHICLE_INSTRUMENT_BRAKE_BAR"] = 10] = "VEHICLE_INSTRUMENT_BRAKE_BAR";
     ImageType[ImageType["VEHICLE_INSTRUMENT"] = 31] = "VEHICLE_INSTRUMENT";
 })(ImageType || (ImageType = {}));
-export var FxModeType;
-(function (FxModeType) {
-    FxModeType[FxModeType["TOGGLE"] = 0] = "TOGGLE";
-    FxModeType[FxModeType["MOMENT"] = 1] = "MOMENT";
-    FxModeType[FxModeType["TIMEOUT"] = 2] = "TIMEOUT";
-    FxModeType[FxModeType["EXTENDED"] = 3] = "EXTENDED";
-})(FxModeType || (FxModeType = {}));
 export var FxConfigType;
 (function (FxConfigType) {
     FxConfigType[FxConfigType["REDIRECT_ADDR"] = 1] = "REDIRECT_ADDR";

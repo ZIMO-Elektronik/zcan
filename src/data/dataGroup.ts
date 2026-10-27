@@ -2,9 +2,8 @@
 import MX10 from '../MX10';
 import {Buffer} from 'buffer';
 import {Subject} from 'rxjs';
-import {DataNameValue1, ItemFxMode, ItemFxConfig} from '../common/models';
-import {FxConfigType, FxModeType, ImageType, MsgMode, NameType} from '../common/enums';
-import ExtendedASCII from '../common/extendedAscii';
+import {ItemFxMode, ItemFxConfig} from '../common/models';
+import {FxConfigType, FxMode, ImageType, MsgMode} from '../common/enums';
 import {MsgDataClear, MsgDataName, MsgGroupCount, MsgItemImage, MsgItemsByIndexReq, MsgItemsByIndexRsp,
 	MsgItemsByNidReq, MsgItemsByNidRsp } from './dataMsg';
 import {Query} from '../docs_entrypoint';
@@ -353,7 +352,7 @@ export default class DataGroup
 				this.parseItemListByIndex(size, mode, nid, buffer);
 				break;
 			case 0x02:
-				this.mx10.logInfo.next('parseItemListByNid: ' + JSON.stringify(buffer));
+				// this.mx10.logInfo.next('parseItemListByNid: ' + JSON.stringify(buffer));
 				this.parseItemListByNid(size, mode, nid, buffer);
 				break;
 			case 0x12:
@@ -443,7 +442,7 @@ export default class DataGroup
 		const NID = buffer.readUInt16LE(0);
 		const group = buffer.readUInt8(2);
 		const fxModes = buffer.readUInt32LE(4);
-		const fxMode: FxModeType[] = [];
+		const fxMode: FxMode[] = [];
 		for(let i=0; i<32; i+=2)
 			fxMode.push((fxModes>>i)&0b11);
 		const msg: ItemFxMode = {nid: NID, group, mode: fxMode};

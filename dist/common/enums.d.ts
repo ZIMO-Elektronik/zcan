@@ -28,9 +28,12 @@ export declare enum ExternalController {
     FT2 = "FT(2)",
     FS2 = "FS(2)"
 }
-export declare enum FunctionMode {
-    switch = 0,
-    moment = 16384
+export declare enum FxMode {
+    TOGGLE = 0,
+    MOMENT = 1,
+    TIMEOUT = 2,
+    EXTENDED = 3,
+    TIMEMASK = 16383
 }
 export declare enum SystemStateMode {
     NORMAL = 1,
@@ -75,12 +78,6 @@ export declare enum ImageType {
     TACHO = 3,
     VEHICLE_INSTRUMENT_BRAKE_BAR = 10,
     VEHICLE_INSTRUMENT = 31
-}
-export declare enum FxModeType {
-    TOGGLE = 0,
-    MOMENT = 1,
-    TIMEOUT = 2,
-    EXTENDED = 3
 }
 export declare enum FxConfigType {
     REDIRECT_ADDR = 1,

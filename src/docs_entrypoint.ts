@@ -23,7 +23,7 @@ export {
 export {
   Direction as Direction,
   ExternalController,
-  FunctionMode,
+  FxMode,
   SystemStateMode,
 } from './common/enums';
 

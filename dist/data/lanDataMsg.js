@@ -1,5 +1,6 @@
-import { FunctionMode, MsgMode } from "../common/enums";
+import { FxMode, MsgMode } from "../common/enums";
 import { Message } from "../common/communication";
+import ExtendedASCII from "../common/extendedAscii";
 export class MsgLocoGuiReq extends Message {
     static header(mode, nid) { return { group: 0x17, cmd: 0x28, mode: mode, nid: nid }; }
     constructor(header, locoNid, subNid) {
@@ -7,15 +8,15 @@ export class MsgLocoGuiReq extends Message {
         super.push({ value: locoNid, length: 2 });
         super.push({ value: subNid, length: 2 });
     }
-    locoNid() { return this.data[0].value; }
-    subNid() { return this.data[1].value; }
+    get nid() { return this.data[0].value; }
+    get subNid() { return this.data[1].value; }
 }
 export class MsgLocoGuiRsp extends Message {
     static header(mode, nid) { return { group: 0x17, cmd: 0x28, mode: mode, nid: nid }; }
-    constructor(header, locoNid, subNid, version, flags, group, name, imageId, imageCrc, tachoId, tachoCrc, speedFwd, speedRev, speedRnk, driveType, era, country, funImgs, funModes) {
+    constructor(header, locoNid, subId, version, flags, group, name, imageId, imageCrc, tachoId, tachoCrc, maxSpeedFwd, maxSpeedRev, shuntingSpeed, driveType, era, country, funImgs, fxModes) {
         super(header);
         super.push({ value: locoNid, length: 2 });
-        super.push({ value: subNid, length: 2 });
+        super.push({ value: subId, length: 2 });
         super.push({ value: version, length: 4 });
         super.push({ value: flags, length: 2 });
         super.push({ value: group, length: 2 });
@@ -24,44 +25,67 @@ export class MsgLocoGuiRsp extends Message {
         super.push({ value: imageCrc, length: 4 });
         super.push({ value: tachoId, length: 2 });
         super.push({ value: tachoCrc, length: 4 });
-        super.push({ value: speedFwd, length: 2 });
-        super.push({ value: speedRev, length: 2 });
-        super.push({ value: speedRnk, length: 2 });
+        super.push({ value: maxSpeedFwd, length: 2 });
+        super.push({ value: maxSpeedRev, length: 2 });
+        super.push({ value: shuntingSpeed, length: 2 });
         super.push({ value: driveType, length: 2 });
         super.push({ value: era, length: 2 });
         super.push({ value: country, length: 2 });
-        funImgs.forEach(funk => {
-            super.push({ value: funk, length: 2 });
-        });
-        funModes.forEach(funk => {
-            super.push({ value: funk, length: 2 });
-        });
+        funImgs.forEach(img => super.push({ value: img, length: 2 }));
+        fxModes.forEach(mode => super.push({ value: mode, length: 2 }));
     }
-    locoNid() { return this.data[0].value; }
-    subNid() { return this.data[1].value; }
-    group() { return this.data[4].value; }
-    name() { return this.data[5].value; }
-    imageId() { return this.data[6].value; }
-    tacho() { return this.data[8].value; }
-    speedFwd() { return this.data[10].value; }
-    speedRev() { return this.data[11].value; }
-    speedRnk() { return this.data[12].value; }
-    driveType() { return this.data[13].value; }
-    era() { return this.data[14].value; }
-    country() { return this.data[15].value; }
-    functions() {
+    get nid() { return this.data[0].value; }
+    get subId() { return this.data[1].value; }
+    get group() { return this.data[4].value; }
+    get name() { return this.data[5].value; }
+    get image() { return this.data[6].value; }
+    get tacho() { return this.data[8].value; }
+    get maxSpeedFwd() { return this.data[10].value; }
+    get maxSpeedRev() { return this.data[11].value; }
+    get shuntingSpeed() { return this.data[12].value; }
+    get driveType() { return this.data[13].value; }
+    get era() { return this.data[14].value; }
+    get country() { return this.data[15].value; }
+    get fx() {
         const rv = Array();
         for (let i = 16; i < 80; i++) {
             const icon = this.data[i].value;
-            const iconString = icon === 0 ? String(i).padStart(2, '0') : String(icon);
-            rv.push({ mode: FunctionMode.switch, active: false,
-                icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-            });
+            rv.push({ icon, mode: FxMode.TOGGLE, active: false, time: 0 });
         }
         for (let i = 80; i < 144; i++) {
-            rv[i - 80].mode = this.data[i].value;
+            rv[i - 80].mode = this.data[i].value >> 14;
+            rv[i - 80].time = this.data[i].value & 0x3fff;
         }
         return rv;
+    }
+    static fromBuffer(mode, nid, buffer) {
+        const NID = buffer.readUInt16LE(0);
+        const SubID = buffer.readUInt16LE(2);
+        const version = buffer.readUInt32LE(4);
+        const flags = buffer.readUInt16LE(8);
+        const group = buffer.readUInt16LE(10);
+        const name = ExtendedASCII.byte2str(buffer.subarray(12, 32));
+        const imageId = buffer.readUInt16LE(44);
+        const imageCrc = buffer.readUInt32LE(46);
+        const tachoId = buffer.readUInt16LE(50);
+        const tachoCrc = buffer.readUInt32LE(52);
+        const maxSpeedFwd = buffer.readUInt16LE(56);
+        const maxSpeedRev = buffer.readUInt16LE(58);
+        const shuntingSpeed = buffer.readUInt16LE(60);
+        const driveType = buffer.readUInt16LE(62);
+        const era = buffer.readUInt16LE(64);
+        const country = buffer.readUInt16LE(66);
+        const funImg = [];
+        for (let i = 0; i < 64; i++) {
+            const img = buffer.readUInt16LE(68 + 2 * i);
+            funImg.push(img);
+        }
+        const funMode = [];
+        for (let i = 0; i < 64; i++) {
+            const fmode = buffer.readUInt16LE(196 + 2 * i);
+            funMode.push(fmode);
+        }
+        return new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, version, flags, group, name, imageId, imageCrc, tachoId, tachoCrc, maxSpeedFwd, maxSpeedRev, shuntingSpeed, driveType, era, country, funImg, funMode);
     }
     static parseEra(era) {
         switch (era & 0xf0) {

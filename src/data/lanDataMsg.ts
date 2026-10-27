@@ -1,7 +1,8 @@
-import { FunctionMode, StepMax, MsgMode, OpMode } from "../common/enums";
+import { FxMode, StepMax, MsgMode, OpMode } from "../common/enums";
 import { Header, Message, ZcanData } from "../common/communication";
 import {Buffer} from 'buffer';
-import {TrainFunction} from '../common/models';
+import {DriveType, Era, LocoFx, LocoGui} from '../common/models';
+import ExtendedASCII from "../common/extendedAscii";
 
 
 export class MsgLocoGuiReq extends Message
@@ -15,23 +16,23 @@ export class MsgLocoGuiReq extends Message
 		super.push({value: locoNid, length: 2});
 		super.push({value: subNid, length: 2});
 	}
-	locoNid(): number {return (this.data[0].value as number)}
-	subNid(): number {return (this.data[1].value as number)}
+	get nid(): number {return (this.data[0].value as number)}
+	get subNid(): number {return (this.data[1].value as number)}
 }
 
-export class MsgLocoGuiRsp extends Message
+export class MsgLocoGuiRsp extends Message implements LocoGui
 {
 	public static header(mode: MsgMode, nid: number): Header
 	{return {group: 0x17, cmd: 0x28, mode: mode, nid: nid}}
 
-	constructor(header: Header, locoNid: number, subNid: number, version: number, flags: number, group: number,
+	constructor(header: Header, locoNid: number, subId: number, version: number, flags: number, group: number,
 		name: string, imageId: number, imageCrc: number,  tachoId: number, tachoCrc: number,
-		speedFwd: number, speedRev: number, speedRnk: number, driveType: number, era: number,
-		country: number, funImgs: number[], funModes: number[])
+		maxSpeedFwd: number, maxSpeedRev: number, shuntingSpeed: number, driveType: DriveType, era: Era,
+		country: number, funImgs: number[], fxModes: number[])
 	{
 		super(header);
 		super.push({value: locoNid, length: 2});
-		super.push({value: subNid, length: 2});
+		super.push({value: subId, length: 2});
 		super.push({value: version, length: 4});
 		super.push({value: flags, length: 2});
 		super.push({value: group, length: 2});
@@ -40,45 +41,73 @@ export class MsgLocoGuiRsp extends Message
 		super.push({value: imageCrc, length: 4});
 		super.push({value: tachoId, length: 2});
 		super.push({value: tachoCrc, length: 4});
-		super.push({value: speedFwd, length: 2});
-		super.push({value: speedRev, length: 2});
-		super.push({value: speedRnk, length: 2});
+		super.push({value: maxSpeedFwd, length: 2});
+		super.push({value: maxSpeedRev, length: 2});
+		super.push({value: shuntingSpeed, length: 2});
 		super.push({value: driveType, length: 2});
 		super.push({value: era, length: 2});
 		super.push({value: country, length: 2});
-		funImgs.forEach(funk => {
-			super.push({value: funk, length: 2});
-		});
-		funModes.forEach(funk => {
-			super.push({value: funk, length: 2});
-		});
+		funImgs.forEach(img => super.push({value: img, length: 2}));
+		fxModes.forEach(mode => super.push({value: mode, length: 2}));
 	}
-	locoNid(): number {return (this.data[0].value as number)}
-	subNid(): number {return (this.data[1].value as number)}
-	group(): number {return (this.data[4].value as number)}
-	name(): string {return (this.data[5].value as string)}
-	imageId(): number {return (this.data[6].value as number)}
-	tacho(): number {return (this.data[8].value as number)}
-	speedFwd(): number {return (this.data[10].value as number)}
-	speedRev(): number {return (this.data[11].value as number)}
-	speedRnk(): number {return (this.data[12].value as number)}
-	driveType(): number {return (this.data[13].value as number)}
-	era(): number {return (this.data[14].value as number)}
-	country(): number {return (this.data[15].value as number)}
-	functions(): Array<TrainFunction>
+	get nid(): number {return (this.data[0].value as number)}
+	get subId(): number {return (this.data[1].value as number)}
+	get group(): number {return (this.data[4].value as number)}
+	get name(): string {return (this.data[5].value as string)}
+	get image(): number {return (this.data[6].value as number)}
+	get tacho(): number {return (this.data[8].value as number)}
+	get maxSpeedFwd(): number {return (this.data[10].value as number)}
+	get maxSpeedRev(): number {return (this.data[11].value as number)}
+	get shuntingSpeed(): number {return (this.data[12].value as number)}
+	get driveType(): number {return (this.data[13].value as number)}
+	get era(): number {return (this.data[14].value as number)}
+	get country(): number {return (this.data[15].value as number)}
+	get fx(): Array<LocoFx>
 	{
-		const rv = Array<TrainFunction>();
-		for (let i = 16; i < 80; i++) {
+		const rv = Array<LocoFx>();
+		for(let i=16; i<80; i++) {
 			const icon = (this.data[i].value as number);
-			const iconString = icon === 0 ? String(i).padStart(2, '0') : String(icon);
-			rv.push({mode: FunctionMode.switch, active: false,
-				icon: iconString.padStart(4, icon === 0 ? '07' : '0'),
-			});
+			rv.push({icon, mode: FxMode.TOGGLE, active: false, time: 0});
 		}
-		for (let i = 80; i < 144; i++) {
-			rv[i-80].mode = this.data[i].value as number;
+		for(let i=80; i<144; i++) {
+			rv[i-80].mode = (this.data[i].value as number) >> 14;
+			rv[i-80].time = (this.data[i].value as number) & 0x3fff;
 		}
 		return rv;
+	}
+
+	public static fromBuffer(mode: MsgMode, nid: number, buffer: Buffer)
+	{
+		const NID = buffer.readUInt16LE(0);
+		const SubID = buffer.readUInt16LE(2);
+		const version = buffer.readUInt32LE(4);
+		const flags = buffer.readUInt16LE(8);
+		const group = buffer.readUInt16LE(10);
+		const name = ExtendedASCII.byte2str(buffer.subarray(12, 32));
+		const imageId = buffer.readUInt16LE(44);
+		const imageCrc = buffer.readUInt32LE(46);
+		const tachoId = buffer.readUInt16LE(50);
+		const tachoCrc = buffer.readUInt32LE(52);
+		const maxSpeedFwd = buffer.readUInt16LE(56);
+		const maxSpeedRev = buffer.readUInt16LE(58);
+		const shuntingSpeed = buffer.readUInt16LE(60);
+		const driveType = buffer.readUInt16LE(62);
+		const era = buffer.readUInt16LE(64);
+		const country = buffer.readUInt16LE(66);
+		const funImg: number[] = [];
+		for(let i=0; i<64; i++) {
+			const img = buffer.readUInt16LE(68 + 2*i);
+			funImg.push(img);
+		}
+		const funMode: number[] = [];
+		for(let i=0; i<64; i++) {
+			const fmode = buffer.readUInt16LE(196 + 2*i);
+			funMode.push(fmode);
+		}
+
+		return new MsgLocoGuiRsp(MsgLocoGuiRsp.header(mode, nid), NID, SubID, version, flags, group, name,
+			imageId, imageCrc, tachoId, tachoCrc, maxSpeedFwd, maxSpeedRev, shuntingSpeed, driveType, era, country,
+			funImg, funMode);
 	}
 
 	public static parseEra(era: number)

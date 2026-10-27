@@ -47,14 +47,12 @@ export enum ExternalController {
 	FS2 = 'FS(2)',
 }
 
-/**
- * Enum describing how given functions behaves.
- */
-export enum FunctionMode {
-	/** Function works as standard toggle switch */
-	switch = 0,
-	/** Functions needs to be pressed down and held to remain activated */
-    moment = 0x4000,
+export enum FxMode {
+	TOGGLE = 0b00,
+	MOMENT = 0b01,
+	TIMEOUT = 0b10,
+	EXTENDED = 0b11,
+	TIMEMASK = 0x3fff,
 }
 
 export enum SystemStateMode {
@@ -104,13 +102,6 @@ export enum ImageType {
 	TACHO = 3,
 	VEHICLE_INSTRUMENT_BRAKE_BAR = 10,
 	VEHICLE_INSTRUMENT = 0x1f,
-}
-
-export enum FxModeType {
-	TOGGLE = 0b00,
-	MOMENT = 0b01,
-	TIMEOUT = 0b10,
-	EXTENDED = 0b11,
 }
 
 export enum FxConfigType {

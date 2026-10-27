@@ -260,7 +260,6 @@ export default class DataGroup {
                 this.parseItemListByIndex(size, mode, nid, buffer);
                 break;
             case 0x02:
-                this.mx10.logInfo.next('parseItemListByNid: ' + JSON.stringify(buffer));
                 this.parseItemListByNid(size, mode, nid, buffer);
                 break;
             case 0x12:

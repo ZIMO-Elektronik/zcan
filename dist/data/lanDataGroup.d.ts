@@ -1,6 +1,6 @@
 import MX10 from '../MX10';
 import { FxConfigType } from '../common/enums';
-import { DataNameExtendedData, LocoSpeedTabExtended, Train } from '../common/models';
+import { DataNameExtendedData, LocoSpeedTabExtended, LocoGui } from '../common/models';
 import { Subject } from 'rxjs';
 import { MsgDataValueX, MsgItemListByIdxX, MsgLocoGuiRsp } from './lanDataMsg';
 import { Buffer } from 'buffer';
@@ -21,7 +21,7 @@ export default class LanDataGroup {
     itemListByIdx(idx: number, group?: number): Promise<MsgItemListByIdxX | undefined>;
     itemFxConfig(nid: number, fx: number, type: FxConfigType, addr: number, mode: number, icon: number): void;
     getLocoGuiExtended(nid: number): Promise<MsgLocoGuiRsp | undefined>;
-    setLocoGuiExtended(loco: Train): Promise<MsgLocoGuiRsp | undefined>;
+    setLocoGuiExtended(gui: LocoGui): Promise<MsgLocoGuiRsp | undefined>;
     locoSpeedTapExtended(NID: number): void;
     parse(size: number, command: number, mode: number, nid: number, buffer: Buffer): void;
     private parseItemListByIdxX;
