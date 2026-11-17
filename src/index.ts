@@ -18,6 +18,7 @@ import LanZimoProgrammableScriptGroup from './script/lanScriptGroup';
 import LanInfoGroup from './info/lanInfoGroup';
 import LanDataGroup from './data/lanDataGroup';
 import LanLocoStateGroup from './misc/lanLocoStateGroup';
+import ExtendedASCII from './common/extendedAscii';
 
 export default MX10;
 export * from './common/enums';
@@ -68,4 +69,5 @@ export {
   LanInfoGroup,
   LanDataGroup,
   LanLocoStateGroup,
+  ExtendedASCII,
 };

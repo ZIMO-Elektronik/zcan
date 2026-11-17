@@ -17,6 +17,7 @@ import LanZimoProgrammableScriptGroup from './script/lanScriptGroup';
 import LanInfoGroup from './info/lanInfoGroup';
 import LanDataGroup from './data/lanDataGroup';
 import LanLocoStateGroup from './misc/lanLocoStateGroup';
+import ExtendedASCII from './common/extendedAscii';
 export default MX10;
 export * from './common/enums';
 export * from './common/models';
@@ -46,5 +47,5 @@ export * from './train/trainControlGroup';
 export * from './misc/lanLocoStateGroup';
 export * from './misc/propertyConfigGroup';
 export * from './misc/railwayControlGroup';
-export { LanNetworkGroup, NetworkGroup, VehicleGroup, SystemControlGroup, AccessoryGroup, TrainControlGroup, TrackCfgGroup, DataGroup, InfoGroup, PropertyConfigGroup, RailwayControlGroup, ZimoProgrammableScriptGroup, FileControlGroup, FileTransferGroup, LanZimoProgrammableScriptGroup, LanInfoGroup, LanDataGroup, LanLocoStateGroup, };
+export { LanNetworkGroup, NetworkGroup, VehicleGroup, SystemControlGroup, AccessoryGroup, TrainControlGroup, TrackCfgGroup, DataGroup, InfoGroup, PropertyConfigGroup, RailwayControlGroup, ZimoProgrammableScriptGroup, FileControlGroup, FileTransferGroup, LanZimoProgrammableScriptGroup, LanInfoGroup, LanDataGroup, LanLocoStateGroup, ExtendedASCII, };
 //# sourceMappingURL=index.js.map
